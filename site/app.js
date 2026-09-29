@@ -6,6 +6,7 @@ import { parseRecordJSON, inputFailureSummary } from "../src/record-input.js";
 import { captureViewerViewport, restoreViewerViewport, revealViewerSelection, captureViewerLayout, restoreViewerLayout } from "../src/viewer-state.js";
 import { createRenderedValueFoldObserver } from "../src/rendered-value-fold.js";
 import { createEinoRunViewer, setRunViewerLocale, inspectRunViewer } from "./agent-reader.js?v=__EINO_VIEWER_ASSET_REVISION__";
+import { buildGraphReading } from "./graph-reading.js?v=__EINO_VIEWER_ASSET_REVISION__";
 
 const messages = {
   en: {
@@ -26,6 +27,9 @@ const messages = {
     inspectionTitle: "Find steps and evidence",
     agentInspectionTitle: "Find steps",
     graphInspectionTitle: "Steps",
+    graphVisit: "Execution",
+    graphCalls: "{count} calls",
+    graphFailedCalls: "{count} failed",
     agentInspectionSearch: "Search names or status",
     agentUnconfirmedRecord: "Agent record",
     hierarchyScope: "Call scope",
@@ -358,6 +362,9 @@ const messages = {
     inspectionTitle: "查找步骤与证据",
     agentInspectionTitle: "查找步骤",
     graphInspectionTitle: "步骤",
+    graphVisit: "执行记录",
+    graphCalls: "执行 {count} 次",
+    graphFailedCalls: "{count} 次失败",
     agentInspectionSearch: "搜索名称或状态",
     agentUnconfirmedRecord: "Agent 记录",
     hierarchyScope: "调用范围",
@@ -821,6 +828,7 @@ let currentFixture;
 let openingRejectionDiagnostics;
 let currentProjection;
 let currentExecutionDAG;
+let currentGraphReading;
 let currentTrajectory;
 let currentExplanation;
 let currentInspection;
@@ -1747,7 +1755,7 @@ function restorePathSelection() {
   const executionNode = currentExecutionDAG?.nodes?.find((entry) => entry.id === id);
   const renderedNode = { id: executionNode?.id || node.path.at(-1), path: node.path,
     name: node.label, component: node.component, metadata: node.technical?.metadata || {}, status: node.status };
-  workflowInstance.setActiveNodePath(node.path.slice(currentSnapshotPrefix.length));
+  activateReadingPath(node.id, node.path);
   renderExplanationNode(node, { renderedNode, executionNode, synchronize: false, activate: false });
   selectedPathIsPrompt = false;
   ui.selectedPath.textContent = selectedNodeDetail?.presentation?.title || renderedNode.name || renderedNode.id;
@@ -2335,6 +2343,7 @@ function renderExplanationNode(explanationNode, { renderedNode, executionNode, a
     hero.append(htmlElement("p", "source-primary-value", presentation.value));
   }
   content.append(hero);
+  appendGraphVisitPicker(content, explanationNode.id);
   const identity = currentIdentityLabels.get(explanationNode.id);
   if (identity && currentObjectKind === "graph") {
     const label = htmlElement("p", "step-reading-identity", identity);
@@ -2411,7 +2420,7 @@ function selectInspectionStep(id, trigger, { activate = true } = {}) {
   const renderedNode = { id, path: explanationNode.path || [id], name: explanationNode.label,
     component: explanationNode.component, metadata: explanationNode.technical?.metadata || {} };
   renderExplanationNode(explanationNode, { renderedNode, executionNode, activate });
-  workflowInstance?.setActiveNodePath(renderedNode.path.slice(currentSnapshotPrefix.length));
+  activateReadingPath(id, renderedNode.path);
   selectedPathIsPrompt = false;
   ui.selectedPath.textContent = invocationLabel(explanationNode.id, explanationNode.label);
 }
@@ -2459,7 +2468,7 @@ function markInspectionSelection() {
   }
 }
 
-function jumpToInspectionStep(id, trigger = document.activeElement) {
+function jumpToInspectionStep(id, trigger = document.activeElement, { scroll = true, activate = true } = {}) {
   if (!currentInspection?.getNode(id)) return;
   if (!currentScopeReading?.nodeIds.includes(id)) selectInspectionGroup(undefined);
   if (currentObjectKind === "agent") {
@@ -2477,8 +2486,8 @@ function jumpToInspectionStep(id, trigger = document.activeElement) {
   }
   inspectionOffset = Math.max(0, Math.floor(matches.findIndex((node) => node.id === id) / 25) * 25);
   renderInspectionResults();
-  selectInspectionStep(id, trigger);
-  ui.inspector.scrollIntoView({ block: "start" });
+  selectInspectionStep(id, trigger, { activate });
+  if (scroll) ui.inspector.scrollIntoView({ block: "start" });
 }
 
 function renderInspectionResults() {
@@ -3054,9 +3063,74 @@ function locateEnvelopeInEditor(index) {
   ui.editor.setSelectionRange(range.start, range.end);
 }
 
+function activateReadingPath(executionId, path = [executionId]) {
+  const graphId = currentObjectKind === "graph" && currentGraphReading?.nodeIdByExecutionId.get(executionId);
+  workflowInstance?.setActiveNodePath(graphId ? [graphId] : path.slice(currentSnapshotPrefix.length));
+}
+
+function graphVisitIds(executionId) {
+  if (currentObjectKind !== "graph") return [];
+  const graphId = currentGraphReading?.nodeIdByExecutionId.get(executionId);
+  return currentGraphReading?.memberIdsByNodeId.get(graphId) || [];
+}
+
+function appendGraphVisitPicker(content, executionId) {
+  const members = graphVisitIds(executionId);
+  if (members.length < 2) return;
+  const label = htmlElement("label", "graph-visit-picker");
+  label.append(htmlElement("span", "", translate("graphVisit")));
+  const select = htmlElement("select");
+  select.dataset.graphVisit = "";
+  select.setAttribute("aria-label", translate("graphVisit"));
+  for (const id of members) {
+    const node = currentInspection.getNode(id);
+    const state = currentExecutionDAG.nodes.find((item) => item.id === id);
+    const option = htmlElement("option", "", [currentInvocationLabels.get(id),
+      !confirmedStepSuccess(state) && stepStatusLabel(state), recordedTimingText(node?.timing)].filter(Boolean).join(" · "));
+    option.value = id;
+    select.append(option);
+  }
+  select.value = executionId;
+  label.append(select);
+  content.append(label);
+}
+
+function readingPresentationSnapshot(snapshot) {
+  const timings = new Map((currentExplanation?.nodes || []).map((node) => [node.id, node.timing]));
+  const invocations = new Map(currentInvocationLabels);
+  const identities = new Map(currentIdentityLabels);
+  if (currentObjectKind === "graph") for (const [id, members] of currentGraphReading?.memberIdsByNodeId || []) {
+    if (members.length === 1) {
+      if (members[0] !== id) {
+        timings.set(id, timings.get(members[0]));
+        invocations.set(id, invocations.get(members[0]));
+        identities.set(id, identities.get(members[0]));
+      }
+      continue;
+    }
+    timings.delete(id);
+    invocations.delete(id);
+    identities.delete(id);
+  }
+  const presented = workflowPresentationSnapshot(snapshot, currentLanguage, timings, invocations, identities);
+  if (currentObjectKind !== "graph") return presented;
+  return { ...presented, workflow: { ...presented.workflow, nodes: presented.workflow.nodes.map((node) => {
+    const members = currentGraphReading?.memberIdsByNodeId.get(node.id);
+    if (!members || members.length < 2) return node;
+    const counts = node.metadata.graphReading.statusCounts;
+    const states = Object.entries(counts).filter(([state]) => state !== "success").map(([state, count]) =>
+      state === "failed" ? translate("graphFailedCalls", { count }) : `${count} · ${stepStatusLabel({ status: state })}`);
+    const presentation = { ...node.metadata.einoViewerPresentation, invocation: translate("graphCalls", { count: members.length }), state: states.join(" · ") };
+    delete presentation.timing;
+    // Aggregate labels describe the group, never the first visit's outcome or duration.
+    return { ...node, name: [presentation.name, presentation.invocation, presentation.state].filter(Boolean).join(" · "),
+      metadata: { ...node.metadata, einoViewerPresentation: presentation } };
+  }) } };
+}
+
 function mountWorkflow(snapshot) {
   workflowInstance = workflowAPI.createWorkflowDAG(ui.host, {
-    snapshot: workflowPresentationSnapshot(snapshot, currentLanguage, new Map((currentExplanation?.nodes || []).map((node) => [node.id, node.timing])), currentInvocationLabels, currentIdentityLabels),
+    snapshot: readingPresentationSnapshot(snapshot),
     direction: currentDirection,
     theme: readingGraphTheme(),
     locale: rendererLocales[currentLanguage],
@@ -3065,6 +3139,17 @@ function mountWorkflow(snapshot) {
     nodeLabelFormatter: workflowNodeLabel,
     accessibilityLabelFormatter: (summary, visible) => workflowAccessibilityLabel(summary, visible, currentLanguage),
     onNodeClick(node) {
+      const members = currentObjectKind === "graph" && currentGraphReading?.memberIdsByNodeId.get(node.id);
+      if (members?.length) {
+        const selectedId = selectedNodeDetail?.explanationNode?.id;
+        const memberNodes = members.map((id) => currentExecutionDAG.nodes.find((entry) => entry.id === id));
+        const id = members.includes(selectedId) ? selectedId
+          : memberNodes.find((entry) => entry.status === "failed")?.id
+            || memberNodes.find((entry) => !confirmedStepSuccess(entry))?.id || members[0];
+        jumpToInspectionStep(id, document.activeElement, { scroll: ui.workbench.getBoundingClientRect().width < 1200 });
+        scheduleDiagnostics();
+        return;
+      }
       workflowInstance.setActiveNodePath(node.path);
       selectedPathIsPrompt = false;
       renderNodeDetail({ ...node, path: [...currentSnapshotPrefix, ...node.path] });
@@ -3166,7 +3251,7 @@ function showWorkflow(snapshot, { fit = true, pathPrefix = [], graphViewport } =
   clearNodeDetail();
   const applySnapshot = () => {
     if (!workflowInstance) mountWorkflow(snapshot);
-    else workflowInstance.update(workflowPresentationSnapshot(snapshot, currentLanguage, new Map((currentExplanation?.nodes || []).map((node) => [node.id, node.timing])), currentInvocationLabels, currentIdentityLabels), { preserveExpanded: true, fit });
+    else workflowInstance.update(readingPresentationSnapshot(snapshot), { preserveExpanded: true, fit });
     workflowInstance.setActiveNodePath(null);
     restorePathSelection();
     if (fit) workflowInstance.resetView();
@@ -3671,6 +3756,7 @@ function recordDiagnostics() {
 function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } = {}) {
   if (!currentProjection?.ok) return;
   if (currentProjection.document.kind === "agent") {
+    currentGraphReading = undefined;
     cancelAnimationFrame(workflowRevealFrame);
     cancelPathMount();
     workflowInstance?.destroy();
@@ -3716,7 +3802,9 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   const scoped = currentScopeReading?.mode !== "all";
   const visibleExecution = currentScopeReading?.execution || currentExecutionDAG;
   const scopeSize = currentScopeReading?.nodeIds.length ?? visibleExecution?.nodes.length ?? 0;
-  if (projected.kind === "graph") ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(400, scopeSize * 100))}px`);
+  currentGraphReading = projected.kind === "graph" && currentExecutionDAG
+    ? buildGraphReading(currentExecutionDAG, projected.evidence, { visibleExecution }) : undefined;
+  if (projected.kind === "graph") ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(400, (currentGraphReading?.execution.nodes.length ?? scopeSize) * 100))}px`);
   else ui.workbench.style.removeProperty("--graph-reading-height");
   const emptyScope = scopeSize === 0;
   if (emptyScope || scopeSize > 500 && !largeVisualRequested) {
@@ -3743,7 +3831,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
     ui.inspection.open = true;
     renderExplanationOverview(currentExplanation);
   } else if (projected.kind === "workflow" || currentExecutionDAG) {
-    showWorkflow(visibleExecution ? executionSnapshot(visibleExecution, projected, { local: scoped })
+    showWorkflow(visibleExecution ? executionSnapshot(currentGraphReading?.execution || visibleExecution, projected, { local: scoped })
       : workflowAPI.parseWorkflowSnapshot(currentScopeReading?.definitionSnapshot || projected.definition),
     { fit, pathPrefix: currentScopeReading?.definitionPathPrefix || [], graphViewport });
     restorePathSelection();
@@ -3786,7 +3874,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
       const renderedNode = { id: node.path.at(-1), path: node.path, name: node.label, component: node.component, metadata: node.technical?.metadata || {} };
       const executionNode = currentExecutionDAG?.nodes.find(({ id }) => id === previousSelection);
       renderExplanationNode(node, { renderedNode, executionNode, activate: false, synchronize: false });
-      workflowInstance?.setActiveNodePath(node.path.slice(currentSnapshotPrefix.length));
+      activateReadingPath(node.id, node.path);
     }
   }
   updateRunViewTabs();
@@ -4084,10 +4172,22 @@ ui.nodeDetail.addEventListener("click", (event) => {
     durationMs: explanationNode.timing?.durationMs,
   };
   const executionNode = currentExecutionDAG?.nodes?.find((node) => node.id === explanationNode.id);
-  if (!ui.host.hidden && workflowInstance) workflowInstance.setActiveNodePath(explanationNode.path.slice(currentSnapshotPrefix.length));
+  if (!ui.host.hidden && workflowInstance) activateReadingPath(explanationNode.id, explanationNode.path);
   selectedPathIsPrompt = false;
   renderExplanationNode(explanationNode, { renderedNode, executionNode });
   ui.selectedPath.textContent = selectedNodeDetail?.presentation?.title || explanationNode.label;
+});
+ui.nodeDetail.addEventListener("change", (event) => {
+  const select = event.target.closest("select[data-graph-visit]");
+  if (!select || !graphVisitIds(selectedNodeDetail?.explanationNode?.id).includes(select.value)) return;
+  // Replacing the list can temporarily shrink a narrow page in WebKit. Keep
+  // the reader's viewport after both the list and the detail regain their size.
+  const position = { top: window.scrollY, left: window.scrollX };
+  const detailPosition = { top: ui.nodeDetail.scrollTop, left: ui.nodeDetail.scrollLeft };
+  jumpToInspectionStep(select.value, inspectorReturnFocus, { scroll: false, activate: false });
+  ui.nodeDetail.querySelector("select[data-graph-visit]")?.focus({ preventScroll: true });
+  ui.nodeDetail.scrollTo(detailPosition);
+  window.scrollTo(position);
 });
 ui.runResultSummary.addEventListener("click", async (event) => {
   const issue = event.target.closest("[data-run-issue-step]");

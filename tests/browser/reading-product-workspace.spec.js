@@ -6,6 +6,7 @@ import { buildScopeReading } from "../../src/scope-reading.js";
 import { buildExecutionTrajectory } from "../../src/trajectory.js";
 import { trajectoryRecordValue } from "../../src/trajectory-reading.js";
 import { syntheticGraphRecord } from "../helpers/synthetic-record.js";
+import { buildGraphReading } from "../../site/graph-reading.js";
 import { openSample, revealSource, openRunInformation, expectSelectedEvidence, selectAgentStep, openWorkbenchRecord } from "../helpers/workbench-ui.js";
 
 const root = new URL("../../", import.meta.url);
@@ -139,6 +140,15 @@ async function graphFacts(page, mode) {
   });
 }
 
+async function canvasStepPath(page, mode, executionId) {
+  if (mode !== "workbench" || await page.evaluate(() => window.playground.objectKind) !== "graph") return [executionId];
+  const state = await page.evaluate(() => ({ execution: window.playground.executionDAG,
+    evidence: window.playground.document.evidence, visibleExecution: window.playground.scopeReading.execution }));
+  const graphId = buildGraphReading(state.execution, state.evidence, { visibleExecution: state.visibleExecution }).nodeIdByExecutionId.get(executionId);
+  expect(graphId).toBeTruthy();
+  return [graphId];
+}
+
 async function expectActiveStep(page, mode, id) {
   const agent = mode === "workbench" ? await page.evaluate(() => window.playground.objectKind === "agent")
     : await page.locator("[data-eino-run-viewer]").getAttribute("data-eino-run-viewer") === "agent";
@@ -149,7 +159,8 @@ async function expectActiveStep(page, mode, id) {
     await expect(page.locator(mode === "workbench" ? "#dag canvas, #dag svg" : "[data-run-graph] canvas, [data-run-graph] svg")).toHaveCount(0);
     return;
   }
-  await expect.poll(async () => (await graphFacts(page, mode))?.active.map(({ path }) => path)).toEqual([[id]]);
+  const expectedPath = await canvasStepPath(page, mode, id);
+  await expect.poll(async () => (await graphFacts(page, mode))?.active.map(({ path }) => path)).toEqual([expectedPath]);
   await expect.poll(async () => {
     const graph = await graphFacts(page, mode), bounds = graph?.active[0]?.bounds;
     return bounds && bounds.x1 >= -1 && bounds.y1 >= -1 && bounds.x2 <= graph.width + 1 && bounds.y2 <= graph.height + 1
@@ -688,7 +699,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     const viewport = await graphFacts(page, mode);
     const layout = mode === "workbench" ? await workbenchGraphLayout(page) : undefined;
     await setLocale(page, mode, "en");
-    await expect.poll(async () => (await graphFacts(page, mode))?.active.map(({ path }) => path)).toEqual([[graphId]]);
+    await expect.poll(async () => (await graphFacts(page, mode))?.active.map(({ path }) => path)).toEqual([await canvasStepPath(page, mode, graphId)]);
     await expect.poll(async () => (await graphFacts(page, mode))?.zoom).toBeCloseTo(viewport.zoom, 8);
     await expect.poll(async () => (await graphFacts(page, mode))?.pan).toEqual(viewport.pan);
     if (mode === "workbench") await expect.poll(() => workbenchGraphLayout(page)).toEqual(layout);

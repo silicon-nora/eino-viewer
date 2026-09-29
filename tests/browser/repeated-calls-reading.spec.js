@@ -58,7 +58,7 @@ async function showRoundTwo(page, mode, second) {
   expect(JSON.parse(await value.textContent()).round).toBe(2);
 }
 
-async function checkKeyboardLabel(page, mode, id, expected) {
+async function checkKeyboardLabel(page, mode, id, expected, logical) {
   if (mode !== "workbench") {
     await ensureDiagramVisible(page.locator("[data-eino-run-viewer]"));
   }
@@ -66,23 +66,30 @@ async function checkKeyboardLabel(page, mode, id, expected) {
   await expect.poll(() => host.evaluate((element) => [element, ...element.querySelectorAll("*")].some((item) => item._cyreg?.cy))).toBe(true);
   await host.focus();
   await host.press("Home");
-  // The workbench intentionally toggles an already active graph node off.
-  // Select the root first so Enter below tests a new keyboard selection.
-  await host.press("Enter");
+  // Embedded and portable still select individual calls. The workbench must
+  // preserve the selected call while moving focus across its logical graph.
+  if (mode !== "workbench") await host.press("Enter");
   let reached = false;
   for (let attempt = 0; attempt < 30; attempt += 1) {
     reached = await host.evaluate((element, target) => {
       const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
       const current = cy?.nodes(".keyboard-focus").first();
       return (current?.data("path")?.at(-1) || current?.id()) === target;
-    }, id);
+    }, mode === "workbench" ? logical.id : id);
     if (reached) break;
     await host.press("ArrowRight");
   }
   expect(reached).toBe(true);
-  await expect(host).toHaveAttribute("aria-label", expected);
+  if (mode === "workbench") {
+    await expect(host).toHaveAttribute("aria-label", logical.countLabel);
+    if (logical.failureLabel) await expect(host).toHaveAttribute("aria-label", logical.failureLabel);
+  } else await expect(host).toHaveAttribute("aria-label", expected);
   await host.press("Enter");
   await expect(title(page, mode)).toContainText(expected);
+  if (mode === "workbench") {
+    expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode.id)).toBe(id);
+    await expect(page.locator("[data-graph-visit]")).toHaveValue(id);
+  }
 }
 
 for (const mode of ["workbench", "embedded", "portable"]) {
@@ -123,7 +130,8 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         await expect(row(page, mode, second.node.id)).toContainText("第 2 次");
         await expect(row(page, mode, visits[0].node.id)).toHaveCount(0);
       }
-      await checkKeyboardLabel(page, mode, second.node.id, /第 2 次/);
+      await checkKeyboardLabel(page, mode, second.node.id, /第 2 次/, { id: visits[0].node.id,
+        countLabel: new RegExp(`执行 ${visits.length} 次`), failureLabel: outcome === "failed" ? /1 次失败/ : undefined });
       if (mode === "workbench") await page.locator('[data-language="en"]').click();
       else if (mode === "portable") await page.locator("#locale").selectOption("en");
       else await page.evaluate((input) => {
@@ -135,7 +143,8 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       await showRoundTwo(page, mode, second);
       await expect(title(page, mode)).toContainText("Call 2");
       await expect(title(page, mode)).not.toContainText("第 2 次");
-      await checkKeyboardLabel(page, mode, second.node.id, /Call 2/);
+      await checkKeyboardLabel(page, mode, second.node.id, /Call 2/, { id: visits[0].node.id,
+        countLabel: new RegExp(`${visits.length} calls`), failureLabel: outcome === "failed" ? /1 failed/ : undefined });
       if (mode === "workbench") {
         expect(await page.evaluate(() => window.playground.document)).toEqual(record);
         expect(await page.evaluate((id) => window.playground.executionDAG.nodes.find((node) => node.id === id).label, second.node.id)).toBe("evaluate");

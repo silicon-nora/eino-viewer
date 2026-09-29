@@ -29,7 +29,7 @@ function loopRecord(outcome) {
         && source.payload.phase === "error" && source.correlation.invocationId === envelope.correlation.invocationId),
     }));
   expect(visits).toHaveLength(outcome === "success" ? 3 : 2);
-  return { id, record, nodes: projection.document.execution.nodes, visits };
+  return { id, record, execution: projection.document.execution, nodes: projection.document.execution.nodes, visits };
 }
 
 const row = (page, id) => page.locator(`button[data-inspection-node=${JSON.stringify(id)}]`);
@@ -72,7 +72,68 @@ async function expectSelectedVisit(page, fixture, visit) {
   await expect.poll(() => page.locator("#dag").evaluate((host) => {
     const cy = [host, ...host.querySelectorAll("*")].map((element) => element._cyreg?.cy).find(Boolean);
     return cy?.nodes(".active-node").map((node) => node.data("path")?.at(-1) || node.id());
-  })).toEqual([visit.node.id]);
+  })).toEqual([fixture.visits[0].node.id]);
+  const picker = page.locator("select[data-graph-visit]");
+  await expect(picker).toBeVisible();
+  await expect(picker).toHaveValue(visit.node.id);
+  expect(await picker.locator("option").evaluateAll((options) => options.map((option) => option.value)))
+    .toEqual(fixture.visits.map(({ node }) => node.id));
+}
+
+async function expectLogicalGraph(page, fixture, outcome) {
+  const displayed = await page.locator("#dag").evaluate((host) => {
+    const cy = [host, ...host.querySelectorAll("*")].map((element) => element._cyreg?.cy).find(Boolean);
+    const id = (node) => node.data("path")?.at(-1) || node.id();
+    return {
+      nodes: cy.nodes().filter((node) => node.data("metadata")?.executionKind).map((node) => ({
+        id: id(node), members: node.data("metadata")?.graphReading?.memberIds,
+        counts: node.data("metadata")?.graphReading?.statusCounts, label: node.data("label"),
+      })),
+      edges: cy.edges().map((edge) => ({ from: id(edge.source()), to: id(edge.target()),
+        kind: edge.data("metadata")?.executionEdgeKind, originals: edge.data("metadata")?.graphReading?.edgeIds })),
+    };
+  });
+  // These counts come from the real named scenario, not the grouping helper.
+  expect(displayed.nodes).toHaveLength(outcome === "success" ? 5 : 4);
+  const evaluate = displayed.nodes.filter(({ members }) => members.includes(fixture.visits[0].node.id));
+  expect(evaluate).toHaveLength(1);
+  expect(evaluate[0].id).toBe(fixture.visits[0].node.id);
+  expect(evaluate[0].members).toEqual(fixture.visits.map(({ node }) => node.id));
+  expect(evaluate[0].label).toContain(`执行 ${outcome === "success" ? 3 : 2} 次`);
+  if (outcome === "failed") {
+    expect(evaluate[0].label).toContain("1 次失败");
+    expect(evaluate[0].counts.failed).toBe(1);
+  }
+  expect(displayed.nodes.flatMap(({ members }) => members).sort()).toEqual(fixture.nodes.map(({ id }) => id).sort());
+  const owner = new Map(displayed.nodes.flatMap(({ id, members }) => members.map((member) => [member, id])));
+  expect(displayed.edges.flatMap(({ originals }) => originals).sort()).toEqual(fixture.execution.edges.map(({ id }) => id).sort());
+  for (const edge of displayed.edges) {
+    expect(edge.originals.length).toBeGreaterThan(0);
+    for (const originalId of edge.originals) {
+      const original = fixture.execution.edges.find(({ id }) => id === originalId);
+      expect({ from: edge.from, to: edge.to, kind: edge.kind })
+        .toEqual({ from: owner.get(original.from), to: owner.get(original.to), kind: original.kind });
+    }
+  }
+  expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(fixture.execution);
+}
+
+async function activateLogicalEvaluate(page, fixture) {
+  const host = page.locator("#dag");
+  await host.focus();
+  await host.press("Home");
+  let reached = false;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    reached = await host.evaluate((element, target) => {
+      const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
+      const node = cy.nodes(".keyboard-focus").first();
+      return (node.data("path")?.at(-1) || node.id()) === target;
+    }, fixture.visits[0].node.id);
+    if (reached) break;
+    await host.press("ArrowRight");
+  }
+  expect(reached).toBe(true);
+  await host.press("Enter");
 }
 
 async function expectQuietControls(page) {
@@ -96,6 +157,7 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     await expect(row(page, fixture.nodes[0].id)).toHaveAttribute("aria-current", "true");
     expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toEqual(fixture.nodes[0]);
     await expectQuietControls(page);
+    await expectLogicalGraph(page, fixture, outcome);
     if (outcome === "success") {
       await summary.locator(":scope > summary").click();
       await expectQuietControls(page);
@@ -128,6 +190,14 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     await expectSelectedVisit(page, fixture, second);
     expect(second.io.find(({ envelope }) => envelope.payload.direction === "input").envelope.payload.body.round).toBe(2);
     await expect(page.locator("#node-detail .node-detail-hero h3")).toContainText("第 2 次");
+    await expect(page.locator("select[data-graph-visit]")).toHaveAccessibleName("执行记录");
+    await activateLogicalEvaluate(page, fixture);
+    await expectSelectedVisit(page, fixture, second);
+    for (const visit of [fixture.visits.at(-1), fixture.visits[0], second]) {
+      await page.locator("select[data-graph-visit]").selectOption(visit.node.id);
+      await expectSelectedVisit(page, fixture, visit);
+      if (outcome === "failed" && visit === fixture.visits[0]) await expect(page.locator("#inspection-scope")).toHaveValue("steps");
+    }
 
     const before = await page.evaluate(() => ({ selection: window.playground.linkedSelection,
       scope: window.playground.inspectionScope, document: window.playground.document }));
@@ -139,9 +209,20 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     expect(await page.evaluate(() => ({ selection: window.playground.linkedSelection,
       scope: window.playground.inspectionScope, document: window.playground.document }))).toEqual(before);
     await expect(page.locator("#node-detail .node-detail-hero h3")).toContainText("Call 2");
+    await expect(page.locator("select[data-graph-visit]")).toHaveAccessibleName("Execution");
     await expectSelectedVisit(page, fixture, second);
     if (outcome === "success") await expect(summary).not.toHaveAttribute("open");
     else await expect(summary).toHaveAttribute("open");
+    // Coming from another logical node has a deterministic choice: the real
+    // failed call wins when present; otherwise the first recorded call wins.
+    await page.locator("#inspection-search").fill("");
+    await page.locator("#inspection-scope").selectOption("steps");
+    await row(page, fixture.nodes[0].id).click();
+    await activateLogicalEvaluate(page, fixture);
+    const preferred = outcome === "failed" ? second : fixture.visits[0];
+    await expectSelectedVisit(page, fixture, preferred);
+    await activateLogicalEvaluate(page, fixture);
+    await expectSelectedVisit(page, fixture, preferred);
     expect(await page.evaluate(() => window.playground.document)).toEqual(fixture.record);
   }
 });
@@ -165,6 +246,21 @@ test("Graph workbench keeps the path primary and complete details reachable at f
     await page.keyboard.press("Enter");
     await expectSelectedVisit(page, fixture, fixture.visits[1]);
     if (viewport.width < 1200) await expect(page.locator("#editor-title")).toBeInViewport();
+    if (viewport.width < 1200) {
+      const picker = page.locator("select[data-graph-visit]");
+      await picker.scrollIntoViewIfNeeded();
+      await picker.focus();
+      const settle = () => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await settle();
+      const position = await page.evaluate(() => window.scrollY);
+      for (const visit of [fixture.visits[0], fixture.visits[1]]) {
+        await picker.selectOption(visit.node.id);
+        await settle();
+        expect(await page.evaluate(() => window.scrollY)).toBe(position);
+        await expect(picker).toBeFocused();
+        await expectSelectedVisit(page, fixture, visit);
+      }
+    }
     await page.screenshot({ path: `.artifacts/graph-reading-${viewport.width}-detail.png` });
     const geometry = await page.evaluate(() => {
       const graph = document.querySelector("#reading-main").getBoundingClientRect();

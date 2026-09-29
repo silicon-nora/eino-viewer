@@ -47,6 +47,7 @@ revisionHash.update(readFileSync(resolve(source, "app.js")));
 revisionHash.update(readFileSync(resolve(source, "index.html")));
 revisionHash.update(readFileSync(resolve(source, "styles.css")));
 revisionHash.update(readFileSync(resolve(source, "agent-reader.js")));
+revisionHash.update(readFileSync(resolve(source, "graph-reading.js")));
 const internalModules = ["renderer-presentation.js", "reading-presentation.js", "scope-reading.js", "execution-scopes.js", "content-presentation.js", "record-input.js", "json-value.js", "viewer-state.js", "rendered-value-fold.js", "trajectory-reading.js"];
 for (const name of internalModules) revisionHash.update(readFileSync(resolve(projectRoot, "src", name)));
 const einoViewerRevision = revisionHash.digest("hex").slice(0, 12);
@@ -113,5 +114,8 @@ writeFileSync(
     .replace('"../src/scope-reading.js"', `"./internal/${einoViewerRevision}/scope-reading.js"`),
 );
 writeFileSync(resolve(output, ".nojekyll"), "");
+const graphReadingPath = resolve(output, "graph-reading.js");
+writeFileSync(graphReadingPath, readFileSync(graphReadingPath, "utf8")
+  .replace('"../src/renderer-presentation.js"', `"./internal/${einoViewerRevision}/renderer-presentation.js"`));
 
 console.log(`OK: public playground built at ${output}`);

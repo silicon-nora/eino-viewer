@@ -5,6 +5,7 @@ import { projectEinoViewerDocument } from "../../src/viewer.js";
 import { validateEinoRunRecord } from "../../src/run-record.js";
 import { runCompletion } from "../../src/run-lifecycle.js";
 import { buildExecutionTrajectory } from "../../src/trajectory.js";
+import { buildGraphReading } from "../../site/graph-reading.js";
 import { editCopy, openSample, openWorkbenchRecord, expectAgentTrajectory, openRecordActions, openRunInformation, openDetails, openStepSearch, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 function fixtureRecord(name) {
@@ -56,6 +57,13 @@ async function expectRepeatedCanvasSelection(page, node) {
   const heading = await detail.locator(".node-detail-hero h3").textContent();
   const values = await detail.locator("[data-business-channel] .business-value-text").allTextContents();
   const host = page.locator("#dag");
+  const graphState = await page.evaluate(() => ({ kind: window.playground.objectKind,
+    execution: window.playground.executionDAG, evidence: window.playground.document.evidence,
+    visibleExecution: window.playground.scopeReading.execution }));
+  const canvasId = graphState.kind === "graph"
+    ? buildGraphReading(graphState.execution, graphState.evidence, { visibleExecution: graphState.visibleExecution }).nodeIdByExecutionId.get(node.id)
+    : node.id;
+  expect(canvasId).toBeTruthy();
   await host.focus();
   await host.press("Home");
   let reached = false;
@@ -64,7 +72,7 @@ async function expectRepeatedCanvasSelection(page, node) {
       const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
       const focused = cy?.nodes(".keyboard-focus").first();
       return (focused?.data("path")?.at(-1) || focused?.id()) === id;
-    }, node.id);
+    }, canvasId);
     if (reached) break;
     await host.press("ArrowRight");
   }
@@ -633,6 +641,25 @@ test("Graph keeps its cyclic definition while showing repeated runtime visits", 
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toBeVisible();
   await expect(page.locator(".node-detail-hero h3")).toHaveText("Model");
   await expect(page.locator(".technical-disclosure")).toHaveCount(0);
+  const legacy = fixtureRecord("eino-graph-recorder-cyclic-completed-v1.json");
+  const visits = projectEinoViewerDocument(legacy).document.execution.nodes
+    .filter((node) => node.correlation.entityId?.endsWith("node:model"));
+  expect(visits).toHaveLength(2);
+  await page.locator("[data-inspection-node]").nth(2).click();
+  await expectRepeatedCanvasSelection(page, visits[1]);
+  // Canonical nodes may use the start event ID as a derived invocation ID.
+  // Only an explicit ID in the original callbacks can prove these repeats.
+  for (const visit of visits) {
+    const callbacks = visit.evidence.map(({ envelopeIndex }) => legacy.evidence[envelopeIndex])
+      .filter(({ kind }) => kind === "callback.event");
+    expect(callbacks.map(({ payload }) => payload.phase)).toEqual(["start", "end"]);
+    for (const callback of callbacks) expect(Object.hasOwn(callback.correlation, "invocationId")).toBe(false);
+  }
+  await expect(page.locator("[data-graph-visit]")).toHaveCount(0);
+  expect(await page.locator("#dag").evaluate((host, ids) => {
+    const cy = [host, ...host.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
+    return cy.nodes().filter((node) => ids.includes(node.data("path")?.at(-1) || node.id())).map((node) => node.data("path")?.at(-1) || node.id());
+  }, visits.map(({ id }) => id))).toEqual(visits.map(({ id }) => id));
 });
 
 test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: "@P0" }, async ({ page }) => {

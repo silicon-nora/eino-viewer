@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync } from "node:fs";
 import { openStepSearch, openReadingDirectory, openRunInformation, openScopeInformation, openAgentScope, openWorkbenchRecord, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 import { expectedScopeTrajectoryIds } from "../helpers/run-viewer-ui.js";
 import { buildScopeReading } from "../../src/scope-reading.js";
+import { buildGraphReading } from "../../site/graph-reading.js";
 import { buildExecutionTrajectory } from "../../src/trajectory.js";
 
 const fixture = (id) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${id}.json`, import.meta.url), "utf8"));
@@ -114,7 +115,19 @@ async function expectInducedGraph(page) {
     for (const id of represented) expect(expected.nodes).toContain(id);
     await expect(page.locator("#reading-sidebar, #inspection-results")).toHaveCount(0);
   } else {
-    await expect.poll(() => graphState(page)).toEqual(expected);
+    if (await page.evaluate(() => window.playground.objectKind === "graph")) {
+      const state = await page.evaluate(() => ({ execution: window.playground.executionDAG,
+        evidence: window.playground.document.evidence, visibleExecution: window.playground.scopeReading.execution }));
+      // Only the reading diagram is grouped. Preserve the complete original
+      // scope and list identities alongside the aggregated canvas contract.
+      expect(state.visibleExecution.nodes.map(({ id }) => id).sort()).toEqual(expected.nodes);
+      expect(state.visibleExecution.edges.map(({ from, to, kind }) => ({ from, to, kind, synthetic: false }))
+        .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))).toEqual(expected.edges);
+      const display = buildGraphReading(state.execution, state.evidence, { visibleExecution: state.visibleExecution }).execution;
+      await expect.poll(() => graphState(page)).toEqual({ nodes: display.nodes.map(({ id }) => id).sort(),
+        edges: display.edges.map(({ from, to, kind }) => ({ from, to, kind, synthetic: false }))
+          .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))) });
+    } else await expect.poll(() => graphState(page)).toEqual(expected);
     const steps = await page.locator("[data-inspection-node]").evaluateAll((nodes) => nodes.map((node) => node.dataset.inspectionNode).sort());
     expect(steps).toEqual(expected.nodes);
   }
@@ -369,7 +382,7 @@ test("declared nested Workflow draws only its own subtree and maps clicks to the
   expect(await canonicalState(page)).toEqual(before);
 });
 
-test("flat Graph loop visits stay separate and graph clicks retain canonical identities", { tag: "@P0" }, async ({ page }) => {
+test("legacy Graph loop visits without confirmed invocation identity remain separate in graph, list and detail", { tag: "@P0" }, async ({ page }) => {
   const record = fixture("graph-step-limit");
   await openRecord(page, record);
   const before = await canonicalState(page);
@@ -379,13 +392,28 @@ test("flat Graph loop visits stay separate and graph clicks retain canonical ide
   const visits = await page.evaluate(() => window.playground.scopeReading.execution.nodes.filter(({ component }) => component === "Lambda"));
   expect(visits).toHaveLength(3);
   expect(new Set(visits.map(({ id }) => id)).size).toBe(3);
+  const canvasVisits = await page.locator("#dag").evaluate((host, ids) => {
+    const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
+    const id = (node) => node.data("path")?.at(-1) || node.id();
+    return cy.nodes().filter((node) => ids.includes(id(node))).map((node) => ({ id: id(node), members: node.data("metadata")?.graphReading?.memberIds }));
+  }, visits.map(({ id }) => id));
+  for (const visit of visits) {
+    const callbacks = visit.evidence.map(({ envelopeIndex }) => record.evidence[envelopeIndex])
+      .filter(({ kind }) => kind === "callback.event");
+    expect(callbacks.map(({ payload }) => payload.phase)).toEqual(["start", "end"]);
+    for (const callback of callbacks) expect(Object.hasOwn(callback.correlation, "invocationId")).toBe(false);
+  }
+  expect(canvasVisits).toEqual(visits.map(({ id }) => ({ id, members: [id] })));
   for (const node of visits) {
+    await page.locator(`[data-inspection-node=${JSON.stringify(node.id)}]`).click();
+    await expect(page.locator("[data-graph-visit]")).toHaveCount(0);
     await page.locator("#dag").evaluate((host, id) => {
       const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
       cy.getElementById(id).emit("tap");
     }, node.id);
     await expect.poll(() => page.evaluate(() => window.playground.selectedNodeDetail?.executionNode.id)).toBe(node.id);
     expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode.evidence)).toEqual(node.evidence);
+    await expect(page.locator(`[data-inspection-node=${JSON.stringify(node.id)}]`)).toHaveAttribute("aria-current", "true");
   }
   expect(await canonicalState(page)).toEqual(before);
 });
