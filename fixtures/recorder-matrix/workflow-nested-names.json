@@ -1,0 +1,571 @@
+{
+  "schemaVersion": 1,
+  "runId": "matrix-workflow-nested-same-name",
+  "source": "workflow",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "workflow.snapshot",
+      "kindVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "workflow": {
+          "name": "Distinct nested shared steps",
+          "nodes": [
+            {
+              "id": "left",
+              "component": "Workflow",
+              "kind": "graph",
+              "workflow": {
+                "nodes": [
+                  {
+                    "id": "shared",
+                    "name": "Shared step",
+                    "component": "Lambda"
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "shared",
+                    "to": "end",
+                    "channels": [
+                      "control",
+                      "data"
+                    ]
+                  },
+                  {
+                    "from": "start",
+                    "to": "shared",
+                    "channels": [
+                      "control",
+                      "data"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "id": "right",
+              "component": "Workflow",
+              "kind": "graph",
+              "workflow": {
+                "nodes": [
+                  {
+                    "id": "shared",
+                    "name": "Shared step",
+                    "component": "Lambda"
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "shared",
+                    "to": "end",
+                    "channels": [
+                      "control",
+                      "data"
+                    ]
+                  },
+                  {
+                    "from": "start",
+                    "to": "shared",
+                    "channels": [
+                      "control",
+                      "data"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "edges": [
+            {
+              "from": "left",
+              "to": "right",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "right",
+              "to": "end",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "start",
+              "to": "left",
+              "channels": [
+                "control",
+                "data"
+              ]
+            }
+          ]
+        },
+        "execution": {
+          "id": "matrix-workflow-nested-same-name",
+          "startedAtMs": 1789500000000,
+          "finishedAtMs": 1789500000000,
+          "durationMs": 0,
+          "nodes": [
+            {
+              "path": [
+                "left",
+                "shared"
+              ],
+              "status": "success",
+              "startedAtMs": 1789500000000,
+              "finishedAtMs": 1789500000000,
+              "durationMs": 0
+            },
+            {
+              "path": [
+                "left"
+              ],
+              "status": "success",
+              "startedAtMs": 1789500000000,
+              "finishedAtMs": 1789500000000,
+              "durationMs": 0
+            },
+            {
+              "path": [
+                "right",
+                "shared"
+              ],
+              "status": "success",
+              "startedAtMs": 1789500000000,
+              "finishedAtMs": 1789500000000,
+              "durationMs": 0
+            },
+            {
+              "path": [
+                "right"
+              ],
+              "status": "success",
+              "startedAtMs": 1789500000000,
+              "finishedAtMs": 1789500000000,
+              "durationMs": 0
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "EinoWorkflowSnapshot",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Workflow",
+        "type": "Workflow[string,string]",
+        "format": "Workflow.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "left"
+          }
+        ],
+        "nodePath": [
+          "left"
+        ],
+        "body": "request"
+      },
+      "source": {
+        "format": "Workflow.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:left",
+        "parentEntityId": "runnable:Distinct nested shared steps",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Shared step",
+        "format": "Lambda.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "left"
+          },
+          {
+            "type": "node",
+            "id": "shared"
+          }
+        ],
+        "nodePath": [
+          "left",
+          "shared"
+        ],
+        "body": "request"
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:left/node:shared",
+        "parentEntityId": "runnable:Distinct nested shared steps/node:left",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Shared step",
+        "format": "Lambda.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "left"
+          },
+          {
+            "type": "node",
+            "id": "shared"
+          }
+        ],
+        "nodePath": [
+          "left",
+          "shared"
+        ],
+        "body": "request/left"
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:left/node:shared",
+        "parentEntityId": "runnable:Distinct nested shared steps/node:left",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Workflow",
+        "type": "Workflow[string,string]",
+        "format": "Workflow.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "left"
+          }
+        ],
+        "nodePath": [
+          "left"
+        ],
+        "body": "request/left"
+      },
+      "source": {
+        "format": "Workflow.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:left",
+        "parentEntityId": "runnable:Distinct nested shared steps",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Workflow",
+        "type": "Workflow[string,string]",
+        "format": "Workflow.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "right"
+          }
+        ],
+        "nodePath": [
+          "right"
+        ],
+        "body": "request/left"
+      },
+      "source": {
+        "format": "Workflow.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:right",
+        "parentEntityId": "runnable:Distinct nested shared steps",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Shared step",
+        "format": "Lambda.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "right"
+          },
+          {
+            "type": "node",
+            "id": "shared"
+          }
+        ],
+        "nodePath": [
+          "right",
+          "shared"
+        ],
+        "body": "request/left"
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:right/node:shared",
+        "parentEntityId": "runnable:Distinct nested shared steps/node:right",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Shared step",
+        "format": "Lambda.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "right"
+          },
+          {
+            "type": "node",
+            "id": "shared"
+          }
+        ],
+        "nodePath": [
+          "right",
+          "shared"
+        ],
+        "body": "request/left/right"
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:right/node:shared",
+        "parentEntityId": "runnable:Distinct nested shared steps/node:right",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Workflow",
+        "type": "Workflow[string,string]",
+        "format": "Workflow.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Distinct nested shared steps"
+          },
+          {
+            "type": "node",
+            "id": "right"
+          }
+        ],
+        "nodePath": [
+          "right"
+        ],
+        "body": "request/left/right"
+      },
+      "source": {
+        "format": "Workflow.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:Distinct nested shared steps/node:right",
+        "parentEntityId": "runnable:Distinct nested shared steps",
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "success",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "matrix-workflow-nested-same-name"
+      },
+      "observedAtMs": 1789500000000
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    }
+  ],
+  "metadata": {
+    "executionMode": "deterministic-local",
+    "fixtureScenario": "workflow-nested-names"
+  }
+}

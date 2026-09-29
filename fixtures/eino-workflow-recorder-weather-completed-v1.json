@@ -1,0 +1,557 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-weather-workflow-1",
+  "source": "workflow",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "workflow.snapshot",
+      "kindVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "workflow": {
+          "name": "weather-query-workflow",
+          "nodes": [
+            {
+              "id": "build-context",
+              "name": "Build model context",
+              "component": "Lambda",
+              "kind": "cpu"
+            },
+            {
+              "id": "generate-answer",
+              "name": "Generate answer",
+              "component": "ChatModel",
+              "kind": "llm"
+            },
+            {
+              "id": "get-weather",
+              "name": "Get weather",
+              "component": "Lambda",
+              "kind": "cpu"
+            },
+            {
+              "id": "parse-city",
+              "name": "Parse city",
+              "component": "Lambda",
+              "kind": "io"
+            }
+          ],
+          "edges": [
+            {
+              "from": "build-context",
+              "to": "generate-answer",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "generate-answer",
+              "to": "end",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "get-weather",
+              "to": "build-context",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "parse-city",
+              "to": "get-weather",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "start",
+              "to": "parse-city",
+              "channels": [
+                "control",
+                "data"
+              ]
+            }
+          ]
+        },
+        "execution": {
+          "id": "run-weather-workflow-1",
+          "nodes": [
+            {
+              "path": [
+                "build-context"
+              ],
+              "status": "success",
+              "durationMs": null
+            },
+            {
+              "path": [
+                "generate-answer"
+              ],
+              "status": "success",
+              "durationMs": null
+            },
+            {
+              "path": [
+                "get-weather"
+              ],
+              "status": "success",
+              "durationMs": null
+            },
+            {
+              "path": [
+                "parse-city"
+              ],
+              "status": "success",
+              "durationMs": null
+            }
+          ]
+        },
+        "metadata": {
+          "fixture": "real-eino-workflow",
+          "input": "新加坡现在天气怎么样？",
+          "output": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。"
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Parse city",
+        "format": "Lambda.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "parse-city"
+          }
+        ],
+        "nodePath": [
+          "parse-city"
+        ],
+        "body": "新加坡现在天气怎么样？"
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:parse-city",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Parse city",
+        "format": "Lambda.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "parse-city"
+          }
+        ],
+        "nodePath": [
+          "parse-city"
+        ],
+        "body": {
+          "City": "新加坡"
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:parse-city",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Get weather",
+        "format": "Lambda.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "get-weather"
+          }
+        ],
+        "nodePath": [
+          "get-weather"
+        ],
+        "body": {
+          "City": "新加坡"
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:get-weather",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Get weather",
+        "format": "Lambda.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "get-weather"
+          }
+        ],
+        "nodePath": [
+          "get-weather"
+        ],
+        "body": {
+          "City": "新加坡",
+          "Condition": "晴",
+          "TemperatureC": 31,
+          "HumidityPercent": 68
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:get-weather",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Build model context",
+        "format": "Lambda.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "build-context"
+          }
+        ],
+        "nodePath": [
+          "build-context"
+        ],
+        "body": {
+          "City": "新加坡",
+          "Condition": "晴",
+          "TemperatureC": 31,
+          "HumidityPercent": 68
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:build-context",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "Lambda",
+        "name": "Build model context",
+        "format": "Lambda.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "build-context"
+          }
+        ],
+        "nodePath": [
+          "build-context"
+        ],
+        "body": [
+          {
+            "role": "system",
+            "content": "请根据天气工具结果回答用户。"
+          },
+          {
+            "role": "user",
+            "content": "新加坡现在天气怎么样？"
+          },
+          {
+            "role": "tool",
+            "content": "{\"city\":\"新加坡\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}",
+            "tool_call_id": "call-weather-workflow"
+          }
+        ]
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:build-context",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "Generate answer",
+        "type": "DeterministicWeather",
+        "format": "model.CallbackInput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "generate-answer"
+          }
+        ],
+        "nodePath": [
+          "generate-answer"
+        ],
+        "body": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "请根据天气工具结果回答用户。"
+            },
+            {
+              "role": "user",
+              "content": "新加坡现在天气怎么样？"
+            },
+            {
+              "role": "tool",
+              "content": "{\"city\":\"新加坡\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}",
+              "tool_call_id": "call-weather-workflow"
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:generate-answer",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "Generate answer",
+        "type": "DeterministicWeather",
+        "format": "model.CallbackOutput",
+        "address": [
+          {
+            "type": "runnable",
+            "id": "weather-query-workflow"
+          },
+          {
+            "type": "node",
+            "id": "generate-answer"
+          }
+        ],
+        "nodePath": [
+          "generate-answer"
+        ],
+        "body": {
+          "message": {
+            "role": "assistant",
+            "content": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。"
+          }
+        }
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "entityId": "runnable:weather-query-workflow/node:generate-answer",
+        "parentEntityId": "runnable:weather-query-workflow",
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "success",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "Eino runtime callbacks",
+        "module": "weather-workflow-example"
+      },
+      "correlation": {
+        "runId": "run-weather-workflow-1"
+      },
+      "observedAtMs": 1789000000000
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.custom_component",
+      "path": "/payload/body",
+      "message": "Custom component body was preserved as JSON without official field normalization."
+    }
+  ],
+  "metadata": {
+    "scenario": "weather"
+  }
+}

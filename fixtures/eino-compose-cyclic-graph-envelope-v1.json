@@ -1,0 +1,67 @@
+{
+  "protocol": "eino-dag",
+  "protocolVersion": 1,
+  "kind": "compose.graph",
+  "kindVersion": 1,
+  "payload": {
+    "name": "react-tool-loop",
+    "nodes": [
+      {
+        "id": "model",
+        "name": "Chat model",
+        "component": "ChatModel"
+      },
+      {
+        "id": "tools",
+        "name": "Run tools",
+        "component": "ToolsNode"
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "model",
+        "channels": ["control", "data"]
+      },
+      {
+        "from": "model",
+        "to": "tools",
+        "channels": ["control", "data"]
+      },
+      {
+        "from": "tools",
+        "to": "model",
+        "channels": ["control", "data"],
+        "metadata": {
+          "relation": "next-iteration"
+        }
+      },
+      {
+        "from": "model",
+        "to": "end",
+        "channels": ["control", "data"]
+      }
+    ],
+    "branches": [
+      {
+        "from": "model",
+        "targets": ["tools", "end"]
+      }
+    ],
+    "metadata": {
+      "executionMode": "pregel",
+      "cyclic": true
+    }
+  },
+  "source": {
+    "module": "compose",
+    "format": "GraphInfo",
+    "einoVersion": "0.9.19"
+  },
+  "correlation": {
+    "runId": "run-cyclic-graph-1"
+  },
+  "metadata": {
+    "scenario": "cyclic-graph-definition-v1"
+  }
+}

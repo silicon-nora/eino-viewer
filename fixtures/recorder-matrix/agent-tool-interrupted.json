@@ -1,0 +1,581 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-static-agent-tool-interrupted",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "user",
+        "content": "提交预订前，先请求人工批准。"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-interrupted"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-interrupted"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Follow the requested synthetic acceptance scenario."
+            },
+            {
+              "role": "user",
+              "content": "提交预订前，先请求人工批准。"
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-interrupted/runnable:static-matrix-tool-interrupted/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-tool-interrupted/runnable:static-matrix-tool-interrupted/node:node_1",
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackOutput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-interrupted"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-interrupted"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "message": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "id": "call-tool-interrupted",
+                "type": "function",
+                "function": {
+                  "name": "lookup_profile",
+                  "arguments": "{\"customer\":\"Ada\"}"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-interrupted/runnable:static-matrix-tool-interrupted/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-tool-interrupted/runnable:static-matrix-tool-interrupted/node:node_1",
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Tool",
+        "name": "lookup_profile",
+        "type": "staticAgentMatrixTool",
+        "format": "tool.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-interrupted"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-interrupted"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ToolNode"
+          },
+          {
+            "type": "tool",
+            "id": "lookup_profile",
+            "subId": "call-tool-interrupted"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "body": {
+          "argumentsJson": "{\"customer\":\"Ada\"}"
+        }
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-interrupted/runnable:static-matrix-tool-interrupted/node:node_1/node:ToolNode/tool:lookup_profile:call-tool-interrupted",
+        "parentEntityId": "agent:static-matrix-tool-interrupted/runnable:static-matrix-tool-interrupted/node:node_1/node:ToolNode",
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-tool-interrupted",
+        "runPath": [
+          "static-matrix-tool-interrupted"
+        ],
+        "output": {
+          "message": {
+            "format": "Message",
+            "streaming": false,
+            "role": "assistant",
+            "value": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-tool-interrupted",
+                  "type": "function",
+                  "function": {
+                    "name": "lookup_profile",
+                    "arguments": "{\"customer\":\"Ada\"}"
+                  }
+                }
+              ],
+              "extra": {
+                "_eino_msg_id": "90b878ed-2840-41e3-8360-32ed5e78c05b"
+              }
+            }
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-tool-interrupted",
+        "runPath": [
+          "static-matrix-tool-interrupted"
+        ],
+        "action": {
+          "exit": false,
+          "interrupted": {
+            "data": {
+              "Info": {
+                "State": null,
+                "BeforeNodes": null,
+                "AfterNodes": null,
+                "RerunNodes": null,
+                "RerunNodesExtra": {},
+                "SubGraphs": {
+                  "node_1": {
+                    "State": {
+                      "Messages": [
+                        {
+                          "role": "system",
+                          "content": "Follow the requested synthetic acceptance scenario."
+                        },
+                        {
+                          "role": "user",
+                          "content": "提交预订前，先请求人工批准。"
+                        },
+                        {
+                          "role": "assistant",
+                          "content": "",
+                          "tool_calls": [
+                            {
+                              "id": "call-tool-interrupted",
+                              "type": "function",
+                              "function": {
+                                "name": "lookup_profile",
+                                "arguments": "{\"customer\":\"Ada\"}"
+                              }
+                            }
+                          ],
+                          "extra": {
+                            "_eino_msg_id": "90b878ed-2840-41e3-8360-32ed5e78c05b"
+                          }
+                        }
+                      ],
+                      "Extra": null,
+                      "ToolInfos": [
+                        {
+                          "name": "lookup_profile",
+                          "desc": "Look up a synthetic customer profile for recorder acceptance tests."
+                        }
+                      ],
+                      "DeferredToolInfos": null,
+                      "HasReturnDirectly": false,
+                      "ReturnDirectlyToolCallID": "",
+                      "ToolGenActions": null,
+                      "AgentName": "static-matrix-tool-interrupted",
+                      "RemainingIterations": 19,
+                      "ReturnDirectlyEvent": null,
+                      "RetryAttempt": 0,
+                      "ToolMsgIDs": null
+                    },
+                    "BeforeNodes": null,
+                    "AfterNodes": null,
+                    "RerunNodes": [
+                      "ToolNode"
+                    ],
+                    "RerunNodesExtra": {
+                      "ToolNode": {
+                        "ToolCalls": [
+                          {
+                            "id": "call-tool-interrupted",
+                            "type": "function",
+                            "function": {
+                              "name": "lookup_profile",
+                              "arguments": "{\"customer\":\"Ada\"}"
+                            }
+                          }
+                        ],
+                        "ExecutedTools": {},
+                        "ExecutedEnhancedTools": {},
+                        "RerunTools": [
+                          "call-tool-interrupted"
+                        ],
+                        "RerunExtraMap": {
+                          "call-tool-interrupted": "approval required for booking"
+                        }
+                      }
+                    },
+                    "SubGraphs": {},
+                    "InterruptContexts": null
+                  }
+                },
+                "InterruptContexts": [
+                  {
+                    "ID": "54694d93-88e2-46be-b577-2811c14282ff",
+                    "Address": [
+                      {
+                        "ID": "static-matrix-tool-interrupted",
+                        "Type": "agent",
+                        "SubID": ""
+                      },
+                      {
+                        "ID": "static-matrix-tool-interrupted",
+                        "Type": "runnable",
+                        "SubID": ""
+                      },
+                      {
+                        "ID": "node_1",
+                        "Type": "node",
+                        "SubID": ""
+                      },
+                      {
+                        "ID": "ToolNode",
+                        "Type": "node",
+                        "SubID": ""
+                      },
+                      {
+                        "ID": "lookup_profile",
+                        "Type": "tool",
+                        "SubID": "call-tool-interrupted"
+                      }
+                    ],
+                    "Info": "approval required for booking",
+                    "IsRootCause": true,
+                    "Parent": {
+                      "ID": "4fcc6299-23ec-4933-89d9-cba1af636f8c",
+                      "Address": [
+                        {
+                          "ID": "static-matrix-tool-interrupted",
+                          "Type": "agent",
+                          "SubID": ""
+                        },
+                        {
+                          "ID": "static-matrix-tool-interrupted",
+                          "Type": "runnable",
+                          "SubID": ""
+                        },
+                        {
+                          "ID": "node_1",
+                          "Type": "node",
+                          "SubID": ""
+                        },
+                        {
+                          "ID": "ToolNode",
+                          "Type": "node",
+                          "SubID": ""
+                        }
+                      ],
+                      "Info": {
+                        "ToolCalls": [
+                          {
+                            "id": "call-tool-interrupted",
+                            "type": "function",
+                            "function": {
+                              "name": "lookup_profile",
+                              "arguments": "{\"customer\":\"Ada\"}"
+                            }
+                          }
+                        ],
+                        "ExecutedTools": {},
+                        "ExecutedEnhancedTools": {},
+                        "RerunTools": [
+                          "call-tool-interrupted"
+                        ],
+                        "RerunExtraMap": {
+                          "call-tool-interrupted": "approval required for booking"
+                        }
+                      },
+                      "IsRootCause": false,
+                      "Parent": {
+                        "ID": "efc56de1-98a3-432b-9679-71e74173d165",
+                        "Address": [
+                          {
+                            "ID": "static-matrix-tool-interrupted",
+                            "Type": "agent",
+                            "SubID": ""
+                          },
+                          {
+                            "ID": "static-matrix-tool-interrupted",
+                            "Type": "runnable",
+                            "SubID": ""
+                          },
+                          {
+                            "ID": "node_1",
+                            "Type": "node",
+                            "SubID": ""
+                          }
+                        ],
+                        "Info": {
+                          "Messages": [
+                            {
+                              "role": "system",
+                              "content": "Follow the requested synthetic acceptance scenario."
+                            },
+                            {
+                              "role": "user",
+                              "content": "提交预订前，先请求人工批准。"
+                            },
+                            {
+                              "role": "assistant",
+                              "content": "",
+                              "tool_calls": [
+                                {
+                                  "id": "call-tool-interrupted",
+                                  "type": "function",
+                                  "function": {
+                                    "name": "lookup_profile",
+                                    "arguments": "{\"customer\":\"Ada\"}"
+                                  }
+                                }
+                              ],
+                              "extra": {
+                                "_eino_msg_id": "90b878ed-2840-41e3-8360-32ed5e78c05b"
+                              }
+                            }
+                          ],
+                          "Extra": null,
+                          "ToolInfos": [
+                            {
+                              "name": "lookup_profile",
+                              "desc": "Look up a synthetic customer profile for recorder acceptance tests."
+                            }
+                          ],
+                          "DeferredToolInfos": null,
+                          "HasReturnDirectly": false,
+                          "ReturnDirectlyToolCallID": "",
+                          "ToolGenActions": null,
+                          "AgentName": "static-matrix-tool-interrupted",
+                          "RemainingIterations": 19,
+                          "ReturnDirectlyEvent": null,
+                          "RetryAttempt": 0,
+                          "ToolMsgIDs": null
+                        },
+                        "IsRootCause": false,
+                        "Parent": {
+                          "ID": "248a9b4c-4ace-4a0b-9aea-ab177b7178e1",
+                          "Address": [
+                            {
+                              "ID": "static-matrix-tool-interrupted",
+                              "Type": "agent",
+                              "SubID": ""
+                            },
+                            {
+                              "ID": "static-matrix-tool-interrupted",
+                              "Type": "runnable",
+                              "SubID": ""
+                            }
+                          ],
+                          "Info": null,
+                          "IsRootCause": false,
+                          "Parent": null
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Data": "/5t/AwEBCmNoZWNrcG9pbnQB/4AAAQgBCENoYW5uZWxzAf+CAAEGSW5wdXRzAf+EAAEFU3RhdGUBEAABDlNraXBQcmVIYW5kbGVyAf+GAAEKUmVydW5Ob2RlcwH/iAABCVN1YkdyYXBocwH/igABEEludGVycnVwdElEMkFkZHIB/5AAARFJbnRlcnJ1cHRJRDJTdGF0ZQH/lAAAACr/gQQBARptYXBbc3RyaW5nXWNvbXBvc2UuY2hhbm5lbAH/ggABDAEQAAAn/4MEAQEXbWFwW3N0cmluZ11pbnRlcmZhY2Uge30B/4QAAQwBEAAAH/+FBAEBD21hcFtzdHJpbmddYm9vbAH/hgABDAECAAAW/4cCAQEIW11zdHJpbmcB/4gAAQwAAC//iQQBAR5tYXBbc3RyaW5nXSpjb21wb3NlLmNoZWNrcG9pbnQB/4oAAQwB/4AAACj/jwQBARdtYXBbc3RyaW5nXWNvcmUuQWRkcmVzcwH/kAABDAH/jgAADf+NAgEC/44AAf+MAAA2/4sDAQEOQWRkcmVzc1NlZ21lbnQB/4wAAQMBAklEAQwAAQRUeXBlAQwAAQVTdWJJRAEMAAAAL/+TBAEBHm1hcFtzdHJpbmddY29yZS5JbnRlcnJ1cHRTdGF0ZQH/lAABDAH/kgAAL/+RAwEC/5IAAQIBBVN0YXRlARAAARRMYXllclNwZWNpZmljUGF5bG9hZAEQAAAAR/+AAQMGbm9kZV8wFF9laW5vX3ByZWdlbF9jaGFubmVs/5UDAQENcHJlZ2VsQ2hhbm5lbAH/lgABAQEGVmFsdWVzAf+EAAAA/gK4/5YDAQAABm5vZGVfMRRfZWlub19wcmVnZWxfY2hhbm5lbP+WAwEAAANlbmQUX2Vpbm9fcHJlZ2VsX2NoYW5uZWz/lgMBAAABAAIBBm5vZGVfMQEBAQZub2RlXzEBAQZub2RlXzEBBwNlbmQUX2Vpbm9fcHJlZ2VsX2NoYW5uZWz/lgMBAAAJQ2hhdE1vZGVsFF9laW5vX3ByZWdlbF9jaGFubmVs/5YDAQAAC0NhbmNlbENoZWNrFF9laW5vX3ByZWdlbF9jaGFubmVs/5YDAQAACFRvb2xOb2RlFF9laW5vX3ByZWdlbF9jaGFubmVs/5YDAQAADkFmdGVyVG9vbENhbGxzFF9laW5vX3ByZWdlbF9jaGFubmVs/5YDAQAAGUFmdGVyVG9vbENhbGxzQ2FuY2VsQ2hlY2sUX2Vpbm9fcHJlZ2VsX2NoYW5uZWz/lgMBAAAESW5pdBRfZWlub19wcmVnZWxfY2hhbm5lbP+WAwEAAAEAARVfZWlub19hZGtfcmVhY3Rfc3RhdGX/5QMBATV0eXBlZFN0YXRlWypnaXRodWIuY29tL2Nsb3Vkd2Vnby9laW5vL3NjaGVtYS5NZXNzYWdlXQH/5gABDAEITWVzc2FnZXMB/+gAAQVFeHRyYQH/hAABCVRvb2xJbmZvcwH/tgABEURlZmVycmVkVG9vbEluZm9zAf+2AAERSGFzUmV0dXJuRGlyZWN0bHkBAgABGFJldHVybkRpcmVjdGx5VG9vbENhbGxJRAEMAAEOVG9vbEdlbkFjdGlvbnMB//YAAQlBZ2VudE5hbWUBDAABE1JlbWFpbmluZ0l0ZXJhdGlvbnMBBAABE1JldHVybkRpcmVjdGx5RXZlbnQB//gAAQxSZXRyeUF0dGVtcHQBBAABClRvb2xNc2dJRHMB/gEEAAAAIP/nAgEBEVtdKnNjaGVtYS5NZXNzYWdlAf/oAAH/mAAA/9v/lwMBAQdNZXNzYWdlAf+YAAEMAQRSb2xlAQwAAQdDb250ZW50AQwAAQxNdWx0aUNvbnRlbnQB/6QAARVVc2VySW5wdXRNdWx0aUNvbnRlbnQB/7gAARhBc3Npc3RhbnRHZW5NdWx0aUNvbnRlbnQB/8YAAQROYW1lAQwAAQlUb29sQ2FsbHMB/8wAAQpUb29sQ2FsbElEAQwAAQhUb29sTmFtZQEMAAEMUmVzcG9uc2VNZXRhAf/OAAEQUmVhc29uaW5nQ29udGVudAEMAAEFRXh0cmEB/4QAAAAn/6MCAQEYW11zY2hlbWEuQ2hhdE1lc3NhZ2VQYXJ0Af+kAAH/mgAAZv+ZAwEBD0NoYXRNZXNzYWdlUGFydAH/mgABBgEEVHlwZQEMAAEEVGV4dAEMAAEISW1hZ2VVUkwB/5wAAQhBdWRpb1VSTAH/ngABCFZpZGVvVVJMAf+gAAEHRmlsZVVSTAH/ogAAAFT/mwMBARNDaGF0TWVzc2FnZUltYWdlVVJMAf+cAAEFAQNVUkwBDAABA1VSSQEMAAEGRGV0YWlsAQwAAQhNSU1FVHlwZQEMAAEFRXh0cmEB/4QAAABJ/50DAQETQ2hhdE1lc3NhZ2VBdWRpb1VSTAH/ngABBAEDVVJMAQwAAQNVUkkBDAABCE1JTUVUeXBlAQwAAQVFeHRyYQH/hAAAAEn/nwMBARNDaGF0TWVzc2FnZVZpZGVvVVJMAf+gAAEEAQNVUkwBDAABA1VSSQEMAAEITUlNRVR5cGUBDAABBUV4dHJhAf+EAAAAUf+hAwEBEkNoYXRNZXNzYWdlRmlsZVVSTAH/ogABBQEDVVJMAQwAAQNVUkkBDAABCE1JTUVUeXBlAQwAAQROYW1lAQwAAQVFeHRyYQH/hAAAACj/twIBARlbXXNjaGVtYS5NZXNzYWdlSW5wdXRQYXJ0Af+4AAH/pgAAfP+lAwEBEE1lc3NhZ2VJbnB1dFBhcnQB/6YAAQgBBFR5cGUBDAABBFRleHQBDAABBUltYWdlAf+oAAEFQXVkaW8B/6wAAQVWaWRlbwH/rgABBEZpbGUB/7AAARBUb29sU2VhcmNoUmVzdWx0Af+yAAEFRXh0cmEB/4QAAABB/6cDAQERTWVzc2FnZUlucHV0SW1hZ2UB/6gAAQIBEU1lc3NhZ2VQYXJ0Q29tbW9uAf+qAAEGRGV0YWlsAQwAAABO/6kDAQERTWVzc2FnZVBhcnRDb21tb24B/6oAAQQBA1VSTAEMAAEKQmFzZTY0RGF0YQEMAAEITUlNRVR5cGUBDAABBUV4dHJhAf+EAAAANv+rAwEBEU1lc3NhZ2VJbnB1dEF1ZGlvAf+sAAEBARFNZXNzYWdlUGFydENvbW1vbgH/qgAAADb/rQMBARFNZXNzYWdlSW5wdXRWaWRlbwH/rgABAQERTWVzc2FnZVBhcnRDb21tb24B/6oAAAA+/68DAQEQTWVzc2FnZUlucHV0RmlsZQH/sAABAgERTWVzc2FnZVBhcnRDb21tb24B/6oAAQROYW1lAQwAAAAp/7EDAQEQVG9vbFNlYXJjaFJlc3VsdAH/sgABAQEFVG9vbHMB/7YAAAAh/7UCAQESW10qc2NoZW1hLlRvb2xJbmZvAf+2AAH/tAAACv+zBQEC/+IAAAAX/+MDAQELUGFyYW1zT25lT2YB/+QAAAAp/8UCAQEaW11zY2hlbWEuTWVzc2FnZU91dHB1dFBhcnQB/8YAAf+6AAB//7kDAQERTWVzc2FnZU91dHB1dFBhcnQB/7oAAQgBBFR5cGUBDAABBFRleHQBDAABBUltYWdlAf+8AAEFQXVkaW8B/74AAQVWaWRlbwH/wAABCVJlYXNvbmluZwH/wgABBUV4dHJhAf+EAAENU3RyZWFtaW5nTWV0YQH/xAAAADf/uwMBARJNZXNzYWdlT3V0cHV0SW1hZ2UB/7wAAQEBEU1lc3NhZ2VQYXJ0Q29tbW9uAf+qAAAAN/+9AwEBEk1lc3NhZ2VPdXRwdXRBdWRpbwH/vgABAQERTWVzc2FnZVBhcnRDb21tb24B/6oAAAA3/78DAQESTWVzc2FnZU91dHB1dFZpZGVvAf/AAAEBARFNZXNzYWdlUGFydENvbW1vbgH/qgAAADv/wQMBARZNZXNzYWdlT3V0cHV0UmVhc29uaW5nAf/CAAECAQRUZXh0AQwAAQlTaWduYXR1cmUBDAAAACz/wwMBARRNZXNzYWdlU3RyZWFtaW5nTWV0YQH/xAABAQEFSW5kZXgBBAAAACD/ywIBARFbXXNjaGVtYS5Ub29sQ2FsbAH/zAAB/8gAAEn/xwMBAQhUb29sQ2FsbAH/yAABBQEFSW5kZXgBBAABAklEAQwAAQRUeXBlAQwAAQhGdW5jdGlvbgH/ygABBUV4dHJhAf+EAAAAMf/JAwEBDEZ1bmN0aW9uQ2FsbAH/ygABAgEETmFtZQEMAAEJQXJndW1lbnRzAQwAAABE/80DAQEMUmVzcG9uc2VNZXRhAf/OAAEDAQxGaW5pc2hSZWFzb24BDAABBVVzYWdlAf/QAAEITG9nUHJvYnMB/9YAAAD/g//PAwEBClRva2VuVXNhZ2UB/9AAAQUBDFByb21wdFRva2VucwEEAAESUHJvbXB0VG9rZW5EZXRhaWxzAf/SAAEQQ29tcGxldGlvblRva2VucwEEAAELVG90YWxUb2tlbnMBBAABF0NvbXBsZXRpb25Ub2tlbnNEZXRhaWxzAf/UAAAAMf/RAwEBElByb21wdFRva2VuRGV0YWlscwH/0gABAQEMQ2FjaGVkVG9rZW5zAQQAAAA5/9MDAQEXQ29tcGxldGlvblRva2Vuc0RldGFpbHMB/9QAAQEBD1JlYXNvbmluZ1Rva2VucwEEAAAAI//VAwEBCExvZ1Byb2JzAf/WAAEBAQdDb250ZW50Af/gAAAAH//fAgEBEFtdc2NoZW1hLkxvZ1Byb2IB/+AAAf/YAABH/9cDAQEHTG9nUHJvYgH/2AABBAEFVG9rZW4BDAABB0xvZ1Byb2IBCAABBUJ5dGVzAf/aAAELVG9wTG9nUHJvYnMB/94AAAAV/9kCAQEHW11pbnQ2NAH/2gABBAAAIv/dAgEBE1tdc2NoZW1hLlRvcExvZ1Byb2IB/94AAf/cAAA5/9sDAQEKVG9wTG9nUHJvYgH/3AABAwEFVG9rZW4BDAABB0xvZ1Byb2IBCAABBUJ5dGVzAf/aAAAALP/1BAEBG21hcFtzdHJpbmddKmFkay5BZ2VudEFjdGlvbgH/9gABDAH/6gAAX//pAwEC/+oAAQUBBEV4aXQBAgABC0ludGVycnVwdGVkAf/sAAEPVHJhbnNmZXJUb0FnZW50Af/yAAEJQnJlYWtMb29wAf/0AAEQQ3VzdG9taXplZEFjdGlvbgEQAAAAO//rAwEBDUludGVycnVwdEluZm8B/+wAAQIBBERhdGEBEAABEUludGVycnVwdENvbnRleHRzAf/wAAAAI//vAgEBFFtdKmNvcmUuSW50ZXJydXB0Q3R4Af/wAAH/7gAARf/tAwEC/+4AAQUBAklEAQwAAQdBZGRyZXNzAf+OAAEESW5mbwEQAAELSXNSb290Q2F1c2UBAgABBlBhcmVudAH/7gAAADX/8QMBARVUcmFuc2ZlclRvQWdlbnRBY3Rpb24B//IAAQEBDURlc3RBZ2VudE5hbWUBDAAAAEX/8wMBAQ9CcmVha0xvb3BBY3Rpb24B//QAAQMBBEZyb20BDAABBERvbmUBAgABEUN1cnJlbnRJdGVyYXRpb25zAQQAAAD/g//3AwEBOlR5cGVkQWdlbnRFdmVudFsqZ2l0aHViLmNvbS9jbG91ZHdlZ28vZWluby9zY2hlbWEuTWVzc2FnZV0B//gAAQUBCUFnZW50TmFtZQEMAAEHUnVuUGF0aAH//AABBk91dHB1dAH//gABBkFjdGlvbgH/6gABA0VycgEQAAAAHP/7AgEBDVtdYWRrLlJ1blN0ZXAB//wAAf/6AAAT//kFAQEHUnVuU3RlcAH/+gAAAHL//QMBATtUeXBlZEFnZW50T3V0cHV0WypnaXRodWIuY29tL2Nsb3Vkd2Vnby9laW5vL3NjaGVtYS5NZXNzYWdlXQH//gABAgENTWVzc2FnZU91dHB1dAH+AQAAARBDdXN0b21pemVkT3V0cHV0ARAAAAAL//8FAQL+AQYAAABF/gEHAwEBN1N0cmVhbVJlYWRlclsqZ2l0aHViLmNvbS9jbG91ZHdlZ28vZWluby9zY2hlbWEuTWVzc2FnZV0B/gEIAAAAMP4BAwQBARxtYXBbc3RyaW5nXW1hcFtzdHJpbmddc3RyaW5nAf4BBAABDAH+AQIAABD+AQEEAQL+AQIAAQwBDAAA/gWv/+b+Ar8BAwEGc3lzdGVtATNGb2xsb3cgdGhlIHJlcXVlc3RlZCBzeW50aGV0aWMgYWNjZXB0YW5jZSBzY2VuYXJpby4AAQR1c2VyASrmj5DkuqTpooTorqLliY3vvIzlhYjor7fmsYLkurrlt6Xmibnlh4bjgIIAAQlhc3Npc3RhbnQGAQIVY2FsbC10b29sLWludGVycnVwdGVkAQhmdW5jdGlvbgEBDmxvb2t1cF9wcm9maWxlARJ7ImN1c3RvbWVyIjoiQWRhIn0AAAUBDF9laW5vX21zZ19pZAZzdHJpbmcMJgAkOTBiODc4ZWQtMjg0MC00MWUzLTgzNjAtMzJlZDVlNzhjMDViAAIB/gGQav4BCQMBAQ50b29sSW5mb0ZvckdvYgH+AQoAAQYBBE5hbWUBDAABBERlc2MBDAABBUV4dHJhAf+EAAEOSGFzUGFyYW1zT25lT2YBAgABBlBhcmFtcwH+AQ4AAQpKU09OU2NoZW1hAQwAAAAn/4MEAQEXbWFwW3N0cmluZ11pbnRlcmZhY2Uge30B/4QAAQwBEAAANP4BDQQBASBtYXBbc3RyaW5nXSpzY2hlbWEuUGFyYW1ldGVySW5mbwH+AQ4AAQwB/gEMAABW/gELAwEC/gEMAAEGAQRUeXBlAQwAAQhFbGVtSW5mbwH+AQwAAQlTdWJQYXJhbXMB/gEOAAEERGVzYwEMAAEERW51bQH/iAABCFJlcXVpcmVkAQIAAAAW/4cCAQEIW11zdHJpbmcB/4gAAQwAAFn+AQoBDmxvb2t1cF9wcm9maWxlAUNMb29rIHVwIGEgc3ludGhldGljIGN1c3RvbWVyIHByb2ZpbGUgZm9yIHJlY29yZGVyIGFjY2VwdGFuY2UgdGVzdHMuAAUec3RhdGljLW1hdHJpeC10b29sLWludGVycnVwdGVkASYAAQABAQhUb29sTm9kZQEAAQMkZWZjNTZkZTEtOThhMy00MzJiLTk2NzktNzFlNzQxNzNkMTY1AwEec3RhdGljLW1hdHJpeC10b29sLWludGVycnVwdGVkAQVhZ2VudAABHnN0YXRpYy1tYXRyaXgtdG9vbC1pbnRlcnJ1cHRlZAEIcnVubmFibGUAAQZub2RlXzEBBG5vZGUAJDRmY2M2Mjk5LTIzZWMtNDkzMy04OWQ5LWNiYTFhZjYzNmY4YwQBHnN0YXRpYy1tYXRyaXgtdG9vbC1pbnRlcnJ1cHRlZAEFYWdlbnQAAR5zdGF0aWMtbWF0cml4LXRvb2wtaW50ZXJydXB0ZWQBCHJ1bm5hYmxlAAEGbm9kZV8xAQRub2RlAAEIVG9vbE5vZGUBBG5vZGUAJDU0Njk0ZDkzLTg4ZTItNDZiZS1iNTc3LTI4MTFjMTQyODJmZgUBHnN0YXRpYy1tYXRyaXgtdG9vbC1pbnRlcnJ1cHRlZAEFYWdlbnQAAR5zdGF0aWMtbWF0cml4LXRvb2wtaW50ZXJydXB0ZWQBCHJ1bm5hYmxlAAEGbm9kZV8xAQRub2RlAAEIVG9vbE5vZGUBBG5vZGUAAQ5sb29rdXBfcHJvZmlsZQEEdG9vbAEVY2FsbC10b29sLWludGVycnVwdGVkAAEDJGVmYzU2ZGUxLTk4YTMtNDMyYi05Njc5LTcxZTc0MTczZDE2NQAkNGZjYzYyOTktMjNlYy00OTMzLTg5ZDktY2JhMWFmNjM2ZjhjAS1fZWlub19jb21wb3NlX3Rvb2xzX2ludGVycnVwdF9hbmRfcmVydW5fc3RhdGX+AQ8DAQEbdG9vbHNJbnRlcnJ1cHRBbmRSZXJ1blN0YXRlAf4BEAABBAEFSW5wdXQB/5gAAQ1FeGVjdXRlZFRvb2xzAf4BAgABFUV4ZWN1dGVkRW5oYW5jZWRUb29scwH+ASAAAQpSZXJ1blRvb2xzAf+IAAAAMf4BHwQBAR1tYXBbc3RyaW5nXSpzY2hlbWEuVG9vbFJlc3VsdAH+ASAAAQwB/gESAAAa/gERAwEC/gESAAEBAQVQYXJ0cwH+AR4AAAAp/gEdAgEBF1tdc2NoZW1hLlRvb2xPdXRwdXRQYXJ0Af4BHgAB/gEUAAD/gP4BEwMBAQ5Ub29sT3V0cHV0UGFydAH+ARQAAQgBBFR5cGUBDAABBFRleHQBDAABBUltYWdlAf4BFgABBUF1ZGlvAf4BGAABBVZpZGVvAf4BGgABBEZpbGUB/gEcAAEQVG9vbFNlYXJjaFJlc3VsdAH/sgABBUV4dHJhAf+EAAAANv4BFQMBAQ9Ub29sT3V0cHV0SW1hZ2UB/gEWAAEBARFNZXNzYWdlUGFydENvbW1vbgH/qgAAADb+ARcDAQEPVG9vbE91dHB1dEF1ZGlvAf4BGAABAQERTWVzc2FnZVBhcnRDb21tb24B/6oAAAA2/gEZAwEBD1Rvb2xPdXRwdXRWaWRlbwH+ARoAAQEBEU1lc3NhZ2VQYXJ0Q29tbW9uAf+qAAAANf4BGwMBAQ5Ub29sT3V0cHV0RmlsZQH+ARwAAQEBEU1lc3NhZ2VQYXJ0Q29tbW9uAf+qAAAA/gTD/gEQ/7IBAQlhc3Npc3RhbnQGAQIVY2FsbC10b29sLWludGVycnVwdGVkAQhmdW5jdGlvbgEBDmxvb2t1cF9wcm9maWxlARJ7ImN1c3RvbWVyIjoiQWRhIn0AAAUBDF9laW5vX21zZ19pZAZzdHJpbmcMJgAkOTBiODc4ZWQtMjg0MC00MWUzLTgzNjAtMzJlZDVlNzhjMDViAAEAAQABARVjYWxsLXRvb2wtaW50ZXJydXB0ZWQAACQ1NDY5NGQ5My04OGUyLTQ2YmUtYjU3Ny0yODExYzE0MjgyZmYAAAEEJGVmYzU2ZGUxLTk4YTMtNDMyYi05Njc5LTcxZTc0MTczZDE2NQMBHnN0YXRpYy1tYXRyaXgtdG9vbC1pbnRlcnJ1cHRlZAEFYWdlbnQAAR5zdGF0aWMtbWF0cml4LXRvb2wtaW50ZXJydXB0ZWQBCHJ1bm5hYmxlAAEGbm9kZV8xAQRub2RlACQ0ZmNjNjI5OS0yM2VjLTQ5MzMtODlkOS1jYmExYWY2MzZmOGMEAR5zdGF0aWMtbWF0cml4LXRvb2wtaW50ZXJydXB0ZWQBBWFnZW50AAEec3RhdGljLW1hdHJpeC10b29sLWludGVycnVwdGVkAQhydW5uYWJsZQABBm5vZGVfMQEEbm9kZQABCFRvb2xOb2RlAQRub2RlACQ1NDY5NGQ5My04OGUyLTQ2YmUtYjU3Ny0yODExYzE0MjgyZmYFAR5zdGF0aWMtbWF0cml4LXRvb2wtaW50ZXJydXB0ZWQBBWFnZW50AAEec3RhdGljLW1hdHJpeC10b29sLWludGVycnVwdGVkAQhydW5uYWJsZQABBm5vZGVfMQEEbm9kZQABCFRvb2xOb2RlAQRub2RlAAEObG9va3VwX3Byb2ZpbGUBBHRvb2wBFWNhbGwtdG9vbC1pbnRlcnJ1cHRlZAAkMjQ4YTliNGMtNGFjZS00YTBiLTlhZWEtYWIxNzdiNzE3OGUxAgEec3RhdGljLW1hdHJpeC10b29sLWludGVycnVwdGVkAQVhZ2VudAABHnN0YXRpYy1tYXRyaXgtdG9vbC1pbnRlcnJ1cHRlZAEIcnVubmFibGUAAQQkMjQ4YTliNGMtNGFjZS00YTBiLTlhZWEtYWIxNzdiNzE3OGUxACRlZmM1NmRlMS05OGEzLTQzMmItOTY3OS03MWU3NDE3M2QxNjUAJDRmY2M2Mjk5LTIzZWMtNDkzMy04OWQ5LWNiYTFhZjYzNmY4YwEtX2Vpbm9fY29tcG9zZV90b29sc19pbnRlcnJ1cHRfYW5kX3JlcnVuX3N0YXRl/gEQ/7IBAQlhc3Npc3RhbnQGAQIVY2FsbC10b29sLWludGVycnVwdGVkAQhmdW5jdGlvbgEBDmxvb2t1cF9wcm9maWxlARJ7ImN1c3RvbWVyIjoiQWRhIn0AAAUBDF9laW5vX21zZ19pZAZzdHJpbmcMJgAkOTBiODc4ZWQtMjg0MC00MWUzLTgzNjAtMzJlZDVlNzhjMDViAAEAAQABARVjYWxsLXRvb2wtaW50ZXJydXB0ZWQAACQ1NDY5NGQ5My04OGUyLTQ2YmUtYjU3Ny0yODExYzE0MjgyZmYAAA=="
+            },
+            "contexts": [
+              {
+                "id": "54694d93-88e2-46be-b577-2811c14282ff",
+                "address": [
+                  {
+                    "type": "agent",
+                    "id": "static-matrix-tool-interrupted"
+                  },
+                  {
+                    "type": "tool",
+                    "id": "lookup_profile",
+                    "subId": "call-tool-interrupted"
+                  }
+                ],
+                "info": "approval required for booking",
+                "isRootCause": true,
+                "parentId": "45cd481c-715f-4aad-9b33-07c1100cb61a"
+              }
+            ]
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000007
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "unknown",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-interrupted"
+      },
+      "observedAtMs": 1790000000008
+    }
+  ],
+  "metadata": {
+    "modelMode": "deterministic-test-double",
+    "runtime": "eino-adk-runner",
+    "scenario": "tool-interrupted",
+    "streaming": false
+  }
+}

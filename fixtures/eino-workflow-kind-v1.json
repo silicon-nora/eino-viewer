@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "workflow": {
+    "nodes": [
+      {
+        "id": "answer/flow",
+        "component": "Graph",
+        "kind": "graph",
+        "workflow": {
+          "nodes": [
+            {
+              "id": "invoke/model",
+              "component": "Lambda",
+              "kind": "llm"
+            }
+          ],
+          "edges": []
+        }
+      },
+      {
+        "id": "route/strategy",
+        "component": "Lambda",
+        "kind": "branch"
+      }
+    ],
+    "edges": []
+  }
+}

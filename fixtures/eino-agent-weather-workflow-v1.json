@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "workflow": {
+    "name": "天气 Agent · 查询新加坡",
+    "nodes": [
+      {
+        "id": "user-input",
+        "name": "schema.Message · user",
+        "component": "schema.Message",
+        "kind": "io",
+        "metadata": {
+          "role": "user"
+        }
+      },
+      {
+        "id": "tool-call-1",
+        "name": "get_weather",
+        "component": "components.Tool",
+        "kind": "cpu",
+        "metadata": {
+          "argumentsJson": "{\"city\":\"Singapore\"}",
+          "resultRole": "tool",
+          "role": "assistant",
+          "sourceEventIndexes": [
+            1,
+            2
+          ],
+          "toolCallId": "call-weather-1",
+          "toolName": "get_weather"
+        }
+      },
+      {
+        "id": "final-output",
+        "name": "schema.Message · assistant",
+        "component": "schema.Message",
+        "kind": "io",
+        "metadata": {
+          "role": "assistant",
+          "sourceEventIndexes": [
+            3
+          ]
+        }
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "user-input",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "user-input",
+        "to": "tool-call-1",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "tool-call-1",
+        "to": "final-output",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "final-output",
+        "to": "end",
+        "channels": [
+          "control",
+          "data"
+        ]
+      }
+    ],
+    "metadata": {
+      "eventCount": 3,
+      "projection": "agent-run-workflow",
+      "sourceRunId": "run-weather-agent-1"
+    }
+  },
+  "execution": {
+    "id": "run-weather-agent-1",
+    "nodes": [
+      {
+        "path": [
+          "user-input"
+        ],
+        "status": "success",
+        "durationMs": null
+      },
+      {
+        "path": [
+          "tool-call-1"
+        ],
+        "status": "success",
+        "durationMs": null
+      },
+      {
+        "path": [
+          "final-output"
+        ],
+        "status": "success",
+        "durationMs": null
+      }
+    ]
+  },
+  "metadata": {
+    "evidenceFixture": "eino-agent-weather-scenario-v1.json",
+    "projection": "agent-run-workflow",
+    "source": "adk.AgentEvent"
+  }
+}

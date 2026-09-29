@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-auto-failure",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "查询 Atlantis 天气",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-auto-failure"
+      },
+      "observedAtMs": 1789100100001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "需要实时天气时调用 get_weather。",
+              "role": "system"
+            },
+            {
+              "content": "查询 Atlantis 天气",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1",
+        "runId": "run-auto-failure"
+      },
+      "observedAtMs": 1789100100002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "我来查询天气工具。",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"city\":\"Atlantis\"}",
+                  "name": "get_weather"
+                },
+                "id": "call-weather-1",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1",
+        "runId": "run-auto-failure"
+      },
+      "observedAtMs": 1789100100003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-1",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"city\":\"Atlantis\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ToolNode/tool:get_weather:call-weather-1",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ToolNode",
+        "runId": "run-auto-failure"
+      },
+      "observedAtMs": 1789100100004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "weather-agent",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "我来查询天气工具。",
+              "extra": {},
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Atlantis\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-1",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "weather-agent"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-auto-failure"
+      },
+      "observedAtMs": 1789100100005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "weather-agent",
+        "error": {
+          "message": "[NodeRunError] failed to invoke tool[name:get_weather id:call-weather-1]: unexpected city \"Atlantis\"\n------------------------\nnode path: [node_1, ToolNode]"
+        },
+        "runPath": [
+          "weather-agent"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-auto-failure"
+      },
+      "observedAtMs": 1789100100006
+    }
+  ]
+}

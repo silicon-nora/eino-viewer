@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta name="eino-workflow-dag-asset-base" content="../node_modules/eino-workflow-dag/dist/" />
+    <meta name="eino-viewer-asset-base" content="../dist/" />
+    <meta name="eino-viewer-fixture-base" content="../fixtures/" />
+    <script type="importmap">
+      {"imports":{"eino-workflow-dag":"../node_modules/eino-workflow-dag/dist/eino-workflow-dag.js","cytoscape":"../node_modules/cytoscape/dist/cytoscape.esm.min.mjs"}}
+    </script>
+    <meta
+      name="description"
+      content="View Eino Agent, Graph, and Workflow data entirely in your browser."
+    />
+    <title>eino-viewer · Workbench</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css?v=__EINO_VIEWER_ASSET_REVISION__" />
+  </head>
+  <body>
+    <header class="masthead">
+      <a
+        class="identity"
+        href="./"
+        aria-label="eino-viewer workbench home"
+        data-i18n-aria-label="playgroundHome"
+      >
+        <span class="graph-mark" aria-hidden="true">
+          <i></i><i></i><i></i><b></b><b></b>
+        </span>
+        <span>
+          <strong>eino-viewer</strong>
+          <small data-i18n="brandSubtitle">Visual viewer</small>
+        </span>
+      </a>
+      <nav aria-label="Project links" data-i18n-aria-label="projectLinks">
+        <div class="language-switch" aria-label="Language" data-i18n-aria-label="language">
+          <button type="button" data-language="en" aria-pressed="true">EN</button>
+          <button type="button" data-language="zh" aria-pressed="false">中文</button>
+        </div>
+        <a class="project-link" href="https://github.com/silicon-nora/eino-viewer#readme" data-i18n="docs">Docs</a>
+        <a class="project-link" href="https://www.npmjs.com/package/eino-viewer">npm</a>
+        <a class="github-link project-link" href="https://github.com/silicon-nora/eino-viewer">
+          GitHub <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="playground-title">
+        <div>
+          <p class="eyebrow">Recorder → Run Record → Viewer</p>
+          <h1 id="playground-title" data-i18n-html="hero">One Eino run.<br />Made visible.</h1>
+        </div>
+        <p class="intro-copy" data-i18n="intro">
+          Choose a representative Eino workflow or paste your own JSON. Validation
+          and rendering happen locally in this browser; the page sends no snapshot data.
+        </p>
+      </section>
+
+      <section class="workbench" aria-label="Eino Viewer workbench" data-i18n-aria-label="workflowPlayground">
+        <section id="record-opening" class="record-opening">
+          <h1 data-i18n="exploreRuns">Explore an Eino run</h1>
+          <div class="example-cards" aria-label="Run examples" data-i18n-aria-label="playgroundControls">
+            <button class="example-card" type="button" data-open-example="agent-weather-workflow" data-example-kind="agent" disabled>
+              <span class="example-card-copy">
+                <span class="example-card-kind">Agent</span>
+                <strong data-i18n="exampleAgentWeather">Multi-city trip Agent</strong>
+                <span class="example-card-action" data-i18n="openTrajectory">View trajectory</span>
+              </span>
+              <span class="example-preview" aria-hidden="true">
+                <span class="preview-trajectory" data-preview-trajectory>
+                  <span class="preview-message"><span class="preview-role" data-i18n="previewQuestion">Question</span><span data-i18n="previewCities">Singapore or Tokyo?</span></span>
+                  <span class="preview-message"><span class="preview-role" data-i18n="previewWeather">Weather</span><span><span data-i18n="previewSingaporeWeather">Singapore · thunderstorms</span><span class="preview-message-line" data-i18n="previewTokyoWeather">Tokyo · sunny, 24°C</span></span></span>
+                  <span class="preview-message"><span class="preview-role" data-i18n="previewAir">Air quality</span><span data-i18n="previewTokyoAir">Tokyo · AQI 42</span></span>
+                  <span class="preview-message preview-message-result"><span class="preview-role" data-i18n="previewRecommendation">Recommendation</span><span data-i18n="previewTokyoResult">Visit Tokyo</span><span class="preview-check">✓</span></span>
+                </span>
+              </span>
+            </button>
+            <button class="example-card" type="button" data-open-example="graph-multistep-loop-success" data-example-kind="graph" disabled>
+              <span class="example-card-copy">
+                <span class="example-card-kind">Graph</span>
+                <strong data-i18n="exampleGraphMultistep">Multi-round route revision</strong>
+                <span class="example-card-action" data-i18n="openPath">View path</span>
+              </span>
+              <span class="example-preview" aria-hidden="true">
+                <svg class="preview-diagram" viewBox="0 0 560 220" focusable="false">
+                  <defs><marker id="preview-graph-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" class="preview-arrow" /></marker></defs>
+                  <g class="preview-edges" marker-end="url(#preview-graph-arrow)">
+                    <path data-preview-edge="prepare:evaluate" d="M132 64H210" />
+                    <path data-preview-edge="evaluate:finish" d="M334 64H412" />
+                    <path data-preview-edge="evaluate:revise" d="M248 86V146" />
+                    <path data-preview-edge="revise:evaluate" d="M334 168H366Q378 168 378 156V120Q378 108 366 108H308Q296 108 296 96V86" />
+                  </g>
+                  <g class="preview-node" data-preview-node="prepare"><rect x="8" y="42" width="124" height="44" rx="8" /><text x="70" y="69" data-i18n="previewPrepareRoute">Prepare</text></g>
+                  <g class="preview-node" data-preview-node="evaluate"><rect x="210" y="42" width="124" height="44" rx="8" /><text x="272" y="69" data-i18n="previewEvaluateRoute">Evaluate</text></g>
+                  <g class="preview-node preview-node-result" data-preview-node="finish"><rect x="412" y="42" width="140" height="44" rx="8" /><text x="482" y="69" data-i18n="previewFinishRoute">Finish</text></g>
+                  <g class="preview-node" data-preview-node="revise"><rect x="210" y="146" width="124" height="44" rx="8" /><text x="272" y="173" data-i18n="previewReviseRoute">Revise</text></g>
+                </svg>
+              </span>
+            </button>
+            <button class="example-card" type="button" data-open-example="workflow-parallel-join-success" data-example-kind="workflow" disabled>
+              <span class="example-card-copy">
+                <span class="example-card-kind">Workflow</span>
+                <strong data-i18n="exampleWorkflowParallel">Parallel order total</strong>
+                <span class="example-card-action" data-i18n="openPath">View path</span>
+              </span>
+              <span class="example-preview" aria-hidden="true">
+                <svg class="preview-diagram" viewBox="0 0 560 220" focusable="false">
+                  <defs><marker id="preview-workflow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9" class="preview-arrow" /></marker></defs>
+                  <g class="preview-edges" marker-end="url(#preview-workflow-arrow)">
+                    <path data-preview-edge="prepare:fast" d="M132 110H154Q166 110 166 98V50Q166 38 178 38H206" />
+                    <path data-preview-edge="prepare:slow" d="M132 110H154Q166 110 166 122V170Q166 182 178 182H206" />
+                    <path data-preview-edge="fast:join" d="M354 38H382Q394 38 394 50V98Q394 110 406 110H428" />
+                    <path data-preview-edge="slow:join" d="M354 182H382Q394 182 394 170V122Q394 110 406 110H428" />
+                  </g>
+                  <g class="preview-node" data-preview-node="prepare"><rect x="8" y="78" width="124" height="64" rx="8" /><text x="70" y="102"><tspan x="70" data-i18n="previewPrepareOrder">Prepare</tspan><tspan x="70" dy="1.1em" data-i18n="previewOrder">order</tspan></text></g>
+                  <g class="preview-node" data-preview-node="fast"><rect x="206" y="16" width="148" height="44" rx="8" /><text x="280" y="43" data-i18n="previewShipping">Shipping</text></g>
+                  <g class="preview-node" data-preview-node="slow"><rect x="206" y="160" width="148" height="44" rx="8" /><text x="280" y="187" data-i18n="previewInventory">Inventory</text></g>
+                  <g class="preview-node preview-node-result" data-preview-node="join"><rect x="428" y="78" width="124" height="64" rx="8" /><text x="490" y="102"><tspan x="490" data-i18n="previewMergeCharges">Merge</tspan><tspan x="490" dy="1.1em" data-i18n="previewCharges">charges</tspan></text></g>
+                </svg>
+              </span>
+            </button>
+          </div>
+          <small id="opening-example-status" role="status" hidden></small>
+          <a class="integration-entry" href="https://github.com/silicon-nora/eino-viewer/blob/main/integrations/go/README.md#recorder-overview" data-i18n="connectEino">Connect your Eino application</a>
+        </section>
+        <aside class="controls" aria-label="Playground controls" data-i18n-aria-label="playgroundControls">
+          <div class="record-select">
+            <label id="sample-label" for="sample" data-i18n="changeRecord">Change record</label>
+            <select id="sample" aria-label="Change record" data-i18n-aria-label="changeRecord" aria-describedby="sample-status import-status" disabled></select>
+            <small id="sample-status" role="status" hidden></small>
+          </div>
+          <small id="import-status" class="record-status" role="status"></small>
+          <div class="mode-switch" id="test-mode" role="group" aria-labelledby="mode-label" hidden>
+            <button type="button" data-mode="domain" aria-pressed="true" data-i18n="singleDomain">Single domain</button>
+            <button type="button" data-mode="scenario" aria-pressed="false" data-i18n="combinedScenario">Combined scenario</button>
+          </div>
+          <div id="domain-field" hidden>
+            <label class="field-label" for="domain" data-i18n="domain">Protocol domain</label>
+            <select id="domain">
+              <option value="workflow.snapshot">workflow.snapshot</option>
+              <option value="compose.graph">compose.graph</option>
+              <option value="callback.event">callback.event</option>
+              <option value="agent.event">agent.event</option>
+              <option value="schema.message">schema.message</option>
+              <option value="schema.agentic_message">schema.agentic_message</option>
+              <option value="schema.tool">schema.tool</option>
+              <option value="schema.document">schema.document</option>
+              <option value="component.io">component.io</option>
+              <option value="custom.envelope">custom envelope</option>
+            </select>
+          </div>
+          <label class="field-label" for="view-select" data-i18n="view" hidden>View</label>
+          <select id="view-select" hidden>
+            <option value="auto" data-i18n="viewAuto">Automatic standard view</option>
+            <option value="generic.inspector-v1" data-i18n="viewGeneric">Generic envelope inspector</option>
+          </select>
+          <div class="example-summary">
+            <strong id="sample-title"></strong><span id="record-kind" class="record-kind"></span>
+            <p class="sample-note" id="sample-note" hidden></p>
+          </div>
+          <div id="agent-run-meta" class="agent-run-meta" hidden></div>
+
+          <div class="coverage" aria-label="Supported Eino domains" data-i18n-aria-label="supportedDomains" hidden>
+            <p><span data-i18n="coverage">Built-in + extension</span><strong id="coverage-count">9 + EXT</strong></p>
+            <div id="domain-matrix"></div>
+          </div>
+
+          <details class="workflow-controls" id="workflow-controls">
+          <summary data-i18n="viewSettings">View settings</summary>
+          <div class="view-settings-body">
+          <div class="rail-heading section-heading">
+            <span class="rail-index">02</span>
+            <div><p data-i18n="geometry">Geometry</p><h2 data-i18n="layoutDirection">Layout direction</h2></div>
+          </div>
+          <div class="direction-grid" id="direction-controls">
+            <button type="button" data-direction="RIGHT" aria-pressed="true">
+              <span aria-hidden="true">→</span><em data-i18n="right">Right</em>
+            </button>
+            <button type="button" data-direction="DOWN" aria-pressed="false">
+              <span aria-hidden="true">↓</span><em data-i18n="down">Down</em>
+            </button>
+            <button type="button" data-direction="LEFT" aria-pressed="false">
+              <span aria-hidden="true">←</span><em data-i18n="left">Left</em>
+            </button>
+            <button type="button" data-direction="UP" aria-pressed="false">
+              <span aria-hidden="true">↑</span><em data-i18n="up">Up</em>
+            </button>
+          </div>
+
+          <div class="rail-heading section-heading">
+            <span class="rail-index">03</span>
+            <div><p data-i18n="appearance">Appearance</p><h2 data-i18n="rendererTheme">Renderer theme</h2></div>
+          </div>
+          <div class="theme-list" id="theme-controls"></div>
+
+          <div class="canvas-actions">
+            <button type="button" id="expand-all" data-i18n="expandAll">Expand all</button>
+            <button type="button" id="collapse-all" data-i18n="collapseAll">Collapse all</button>
+            <button type="button" id="fit" data-i18n="fitCanvas">Fit canvas</button>
+          </div>
+          </div>
+          </details>
+        </aside>
+
+        <details id="global-summary" class="global-summary" open hidden>
+          <summary id="global-summary-title"></summary>
+        </details>
+        <section class="canvas-stage" aria-label="Rendered workflow" data-i18n-aria-label="renderedWorkflow" hidden>
+          <details id="reading-sidebar" class="reading-sidebar" open>
+            <summary data-i18n="readingDirectory">Calls and steps</summary>
+          </details>
+          <section id="reading-main" class="reading-main"></section>
+          <div class="signal-bus" id="signal-bus" aria-label="Envelope correlation path">
+            <span id="signal-protocol">EINO-DAG / V1</span><i></i><b id="signal-kind">workflow.snapshot@1</b><i></i><strong id="signal-correlation">LOCAL</strong>
+          </div>
+          <div class="canvas-status">
+            <div>
+              <span class="status-light" id="status-light"></span>
+              <strong id="render-status" data-i18n="loadingRenderer">Loading renderer</strong>
+            </div>
+            <span id="render-summary">—</span>
+          </div>
+          <section id="run-result-summary" class="run-result-summary" aria-label="Run result" data-i18n-aria-label="runResultTitle" tabindex="-1" hidden></section>
+          <div class="reader-tools">
+            <div class="run-view-tabs" id="run-view-tabs" role="tablist" aria-label="Run view" data-i18n-aria-label="runView" hidden>
+              <button type="button" role="tab" aria-selected="true" data-run-view="path" data-i18n="pathView">Path</button>
+              <button type="button" role="tab" aria-selected="false" data-run-view="trajectory" data-i18n="trajectoryView">Trajectory</button>
+            </div>
+            <div class="diagram-tools" id="diagram-tools" role="group" aria-label="Path view controls" data-i18n-aria-label="pathControls">
+              <button type="button" id="zoom-out" aria-label="Zoom out" data-i18n-aria-label="zoomOut">−</button>
+              <button type="button" id="zoom-in" aria-label="Zoom in" data-i18n-aria-label="zoomIn">+</button>
+              <button type="button" id="fit-reading" data-i18n="fitCanvas">Fit canvas</button>
+            </div>
+            <div class="reader-detail-actions">
+              <button type="button" id="open-details" aria-expanded="false" aria-controls="inspector-panel" data-i18n="openDetails">Details</button>
+              <button type="button" id="open-raw" aria-expanded="false" aria-controls="inspector-panel" data-i18n="rawRecords">Raw records</button>
+            </div>
+          </div>
+            <section id="inspection-hierarchy" class="inspection-hierarchy" hidden>
+              <nav id="hierarchy-breadcrumbs" class="hierarchy-breadcrumbs" aria-label="Call scope" data-i18n-aria-label="hierarchyScope"></nav>
+              <p id="hierarchy-context" class="hierarchy-context" role="status"></p>
+              <details id="hierarchy-directory">
+                <summary id="hierarchy-title"></summary>
+                <ol id="hierarchy-groups" class="hierarchy-groups"></ol>
+                <nav id="hierarchy-pagination" class="inspection-pagination" aria-label="Call directory pages" data-i18n-aria-label="hierarchyPages">
+                  <button type="button" id="hierarchy-previous" data-i18n="inspectionPrevious">Previous</button>
+                  <span id="hierarchy-count"></span>
+                  <button type="button" id="hierarchy-next" data-i18n="inspectionNext">Next</button>
+                </nav>
+                <button type="button" id="hierarchy-ungrouped" data-hierarchy-ungrouped data-i18n="hierarchyUngrouped">Without a confirmed scope</button>
+              </details>
+            </section>
+          <section id="scope-result-summary" class="scope-result-summary" aria-label="Selected call" data-i18n-aria-label="scopeResultTitle" hidden></section>
+          <details id="run-inspection" class="run-inspection" open hidden>
+            <summary data-i18n="inspectionTitle">Find steps and evidence</summary>
+            <div class="inspection-controls">
+              <label><span data-i18n="inspectionSearch">Search names, IDs or status</span><input id="inspection-search" type="search" autocomplete="off" data-i18n-aria-label="inspectionSearch" aria-label="Search names, IDs or status"></label>
+              <label><span data-i18n="inspectionScope">Show</span><select id="inspection-scope" data-i18n-aria-label="inspectionScope" aria-label="Show">
+                <option value="steps" data-i18n="inspectionSteps">Steps</option>
+                <option value="issues" data-i18n="inspectionIssues">Problem steps</option>
+                <option value="evidence" data-i18n="inspectionEvidence">All evidence</option>
+                <option value="unassigned" data-i18n="inspectionUnassigned">Unassigned evidence</option>
+              </select></label>
+              <button type="button" id="inspection-next-issue" data-i18n="inspectionNextIssue">Next error / interruption</button>
+            </div>
+            <ol id="inspection-results" class="inspection-results"></ol>
+            <button type="button" id="clear-step-search" data-i18n="clearSearch" hidden>Clear search</button>
+            <nav class="inspection-pagination" aria-label="Search pages" data-i18n-aria-label="inspectionPages">
+              <button type="button" id="inspection-previous" data-i18n="inspectionPrevious">Previous</button>
+              <span id="inspection-count" role="status"></span>
+              <button type="button" id="inspection-next" data-i18n="inspectionNext">Next</button>
+            </nav>
+          </details>
+          <div class="eino-workflow-dag-flow canvas-host">
+            <div id="dag"></div>
+            <div id="domain-view" class="domain-view" hidden></div>
+          </div>
+          <footer class="canvas-footer">
+            <div>
+              <span data-i18n="selectedNode">Selected entity</span>
+              <strong id="selected-path" data-i18n="selectNodePrompt">Click a node to view its source data</strong>
+            </div>
+            <dl class="diagnostics">
+              <div><dt data-i18n="layouts">layouts</dt><dd id="metric-layouts">—</dd></div>
+              <div><dt data-i18n="patches">patches</dt><dd id="metric-patches">—</dd></div>
+              <div><dt data-i18n="cacheHits">cache hits</dt><dd id="metric-cache">—</dd></div>
+            </dl>
+          </footer>
+        </section>
+
+        <aside class="protocol-panel" id="inspector-panel" aria-label="Eino envelope editor" data-i18n-aria-label="snapshotEditor" hidden>
+          <div class="inspector-content">
+            <header>
+              <div>
+                <h2 id="editor-title" data-i18n="inspectorTitle">Run details</h2>
+              </div>
+              <div class="inspector-actions">
+                <button type="button" id="format-json" data-i18n="format">Format</button>
+              </div>
+            </header>
+            <div class="inspector-tabs" id="inspector-tabs" role="tablist" aria-label="Inspector view" data-i18n-aria-label="inspectorView">
+              <button type="button" id="node-detail-tab" role="tab" aria-selected="true" aria-controls="node-detail" data-inspector-panel="node" data-i18n="nodeDetails">Node details</button>
+              <button type="button" id="raw-records-tab" role="tab" aria-selected="false" aria-controls="raw-records" tabindex="-1" data-inspector-panel="raw" data-i18n="rawRecords">Raw records</button>
+            </div>
+            <section class="node-detail" id="node-detail" role="tabpanel" aria-labelledby="node-detail-tab" hidden>
+              <div class="node-detail-empty">
+                <span aria-hidden="true">◇</span>
+                <strong data-i18n="noNodeSelected">No node selected</strong>
+                <p data-i18n="noNodeSelectedHint">Choose a node in the DAG to inspect its execution evidence.</p>
+              </div>
+            </section>
+            <div class="editor-wrap" id="raw-records" role="tabpanel" aria-labelledby="raw-records-tab" hidden>
+              <textarea
+                id="snapshot-json"
+                aria-label="Eino protocol JSON"
+                data-i18n-aria-label="snapshotJson"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                readonly
+              ></textarea>
+            </div>
+            <div class="validation-result" id="validation-result" role="status" data-i18n="waitingRenderer">
+              Waiting for the renderer.
+            </div>
+            <ol class="issue-list" id="issue-list" aria-label="Validation issues" data-i18n-aria-label="validationIssues"></ol>
+            <div class="editor-actions">
+              <button type="button" id="paste-record" data-i18n="pasteRecord" disabled>Paste record</button>
+              <button type="button" id="restore-draft" data-i18n="restoreDraft" hidden>Restore unapplied draft</button>
+              <button type="button" id="copy-json" data-i18n="copyJson">Copy JSON</button>
+              <button type="button" id="edit-json" data-i18n="editCopy">Edit copy</button>
+              <button class="primary-action" type="button" id="apply-json" data-i18n="applySnapshot">Apply document</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <span data-i18n="footerProduct">Apache-2.0 · Read-only Eino viewer</span>
+    </footer>
+
+    <script type="module" src="./app.js?v=__EINO_VIEWER_ASSET_REVISION__"></script>
+  </body>
+</html>

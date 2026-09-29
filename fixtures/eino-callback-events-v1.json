@@ -1,0 +1,183 @@
+[
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "callback.event",
+    "kindVersion": 1,
+    "payload": {
+      "sequence": 1,
+      "phase": "start",
+      "streaming": false,
+      "timestampMs": 1000,
+      "address": [
+        {
+          "type": "runnable",
+          "id": "support-assistant"
+        },
+        {
+          "type": "node",
+          "id": "prepare"
+        }
+      ],
+      "nodePath": [
+        "prepare"
+      ],
+      "run": {
+        "name": "Prepare",
+        "type": "fixtureLambda",
+        "component": "Lambda"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "RunInfo",
+      "module": "callbacks"
+    },
+    "correlation": {
+      "entityId": "runnable:support-assistant/node:prepare",
+      "eventId": "run-1:1",
+      "parentEntityId": "runnable:support-assistant",
+      "runId": "run-1"
+    },
+    "observedAtMs": 1000
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "callback.event",
+    "kindVersion": 1,
+    "payload": {
+      "sequence": 2,
+      "phase": "end",
+      "streaming": false,
+      "timestampMs": 1010,
+      "address": [
+        {
+          "type": "runnable",
+          "id": "support-assistant"
+        },
+        {
+          "type": "node",
+          "id": "prepare"
+        }
+      ],
+      "nodePath": [
+        "prepare"
+      ],
+      "run": {
+        "name": "Prepare",
+        "type": "fixtureLambda",
+        "component": "Lambda"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "RunInfo",
+      "module": "callbacks"
+    },
+    "correlation": {
+      "entityId": "runnable:support-assistant/node:prepare",
+      "eventId": "run-1:2",
+      "parentEntityId": "runnable:support-assistant",
+      "runId": "run-1"
+    },
+    "observedAtMs": 1010
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "callback.event",
+    "kindVersion": 1,
+    "payload": {
+      "sequence": 3,
+      "phase": "start",
+      "streaming": true,
+      "timestampMs": 1020,
+      "address": [
+        {
+          "type": "runnable",
+          "id": "support-assistant"
+        },
+        {
+          "type": "node",
+          "id": "answer"
+        },
+        {
+          "type": "node",
+          "id": "invoke"
+        }
+      ],
+      "nodePath": [
+        "answer",
+        "invoke"
+      ],
+      "run": {
+        "name": "Invoke",
+        "type": "fixtureModel",
+        "component": "ChatModel"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "RunInfo",
+      "module": "callbacks"
+    },
+    "correlation": {
+      "entityId": "runnable:support-assistant/node:answer/node:invoke",
+      "eventId": "run-1:3",
+      "parentEntityId": "runnable:support-assistant/node:answer",
+      "runId": "run-1"
+    },
+    "observedAtMs": 1020
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "callback.event",
+    "kindVersion": 1,
+    "payload": {
+      "sequence": 4,
+      "phase": "error",
+      "streaming": false,
+      "timestampMs": 1030,
+      "address": [
+        {
+          "type": "runnable",
+          "id": "support-assistant"
+        },
+        {
+          "type": "node",
+          "id": "answer"
+        },
+        {
+          "type": "node",
+          "id": "invoke"
+        }
+      ],
+      "nodePath": [
+        "answer",
+        "invoke"
+      ],
+      "run": {
+        "name": "Invoke",
+        "type": "fixtureModel",
+        "component": "ChatModel"
+      },
+      "error": {
+        "message": "model unavailable"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "RunInfo",
+      "module": "callbacks"
+    },
+    "correlation": {
+      "entityId": "runnable:support-assistant/node:answer/node:invoke",
+      "eventId": "run-1:4",
+      "parentEntityId": "runnable:support-assistant/node:answer",
+      "runId": "run-1"
+    },
+    "observedAtMs": 1030
+  }
+]

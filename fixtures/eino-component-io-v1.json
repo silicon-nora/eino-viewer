@@ -1,0 +1,926 @@
+[
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "ChatModel",
+      "name": "ChatModel",
+      "type": "FixtureChatModel",
+      "format": "model.CallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "chatmodel"
+        }
+      ],
+      "nodePath": [
+        "chatmodel"
+      ],
+      "body": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hello"
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "model.CallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:chatmodel",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "ChatModel",
+      "name": "ChatModel",
+      "type": "FixtureChatModel",
+      "format": "model.CallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "chatmodel"
+        }
+      ],
+      "nodePath": [
+        "chatmodel"
+      ],
+      "body": {
+        "message": {
+          "role": "user",
+          "content": "hello"
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "model.CallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:chatmodel",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "AgenticModel",
+      "name": "AgenticModel",
+      "type": "FixtureAgenticModel",
+      "format": "model.AgenticCallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "agenticmodel"
+        }
+      ],
+      "nodePath": [
+        "agenticmodel"
+      ],
+      "body": {
+        "messages": [
+          {
+            "role": "user"
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "model.AgenticCallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:agenticmodel",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "AgenticModel",
+      "name": "AgenticModel",
+      "type": "FixtureAgenticModel",
+      "format": "model.AgenticCallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "agenticmodel"
+        }
+      ],
+      "nodePath": [
+        "agenticmodel"
+      ],
+      "body": {
+        "message": {
+          "role": "user"
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "model.AgenticCallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:agenticmodel",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "ChatTemplate",
+      "name": "ChatTemplate",
+      "type": "FixtureChatTemplate",
+      "format": "prompt.CallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "chattemplate"
+        }
+      ],
+      "nodePath": [
+        "chattemplate"
+      ],
+      "body": {
+        "variables": {
+          "name": "Ada"
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "prompt.CallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:chattemplate",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "ChatTemplate",
+      "name": "ChatTemplate",
+      "type": "FixtureChatTemplate",
+      "format": "prompt.CallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "chattemplate"
+        }
+      ],
+      "nodePath": [
+        "chattemplate"
+      ],
+      "body": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "hello"
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "prompt.CallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:chattemplate",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "AgenticChatTemplate",
+      "name": "AgenticChatTemplate",
+      "type": "FixtureAgenticChatTemplate",
+      "format": "prompt.AgenticCallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "agenticchattemplate"
+        }
+      ],
+      "nodePath": [
+        "agenticchattemplate"
+      ],
+      "body": {
+        "variables": {
+          "name": "Ada"
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "prompt.AgenticCallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:agenticchattemplate",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "AgenticChatTemplate",
+      "name": "AgenticChatTemplate",
+      "type": "FixtureAgenticChatTemplate",
+      "format": "prompt.AgenticCallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "agenticchattemplate"
+        }
+      ],
+      "nodePath": [
+        "agenticchattemplate"
+      ],
+      "body": {
+        "messages": [
+          {
+            "role": "user"
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "prompt.AgenticCallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:agenticchattemplate",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Embedding",
+      "name": "Embedding",
+      "type": "FixtureEmbedding",
+      "format": "embedding.CallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "embedding"
+        }
+      ],
+      "nodePath": [
+        "embedding"
+      ],
+      "body": {
+        "texts": [
+          "hello"
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "embedding.CallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:embedding",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Embedding",
+      "name": "Embedding",
+      "type": "FixtureEmbedding",
+      "format": "embedding.CallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "embedding"
+        }
+      ],
+      "nodePath": [
+        "embedding"
+      ],
+      "body": {
+        "embeddings": [
+          [
+            0.1,
+            0.2
+          ]
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "embedding.CallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:embedding",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Indexer",
+      "name": "Indexer",
+      "type": "FixtureIndexer",
+      "format": "indexer.CallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "indexer"
+        }
+      ],
+      "nodePath": [
+        "indexer"
+      ],
+      "body": {
+        "documents": [
+          {
+            "id": "doc-1",
+            "content": "content",
+            "meta_data": null
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "indexer.CallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:indexer",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Indexer",
+      "name": "Indexer",
+      "type": "FixtureIndexer",
+      "format": "indexer.CallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "indexer"
+        }
+      ],
+      "nodePath": [
+        "indexer"
+      ],
+      "body": {
+        "ids": [
+          "doc-1"
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "indexer.CallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:indexer",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Retriever",
+      "name": "Retriever",
+      "type": "FixtureRetriever",
+      "format": "retriever.CallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "retriever"
+        }
+      ],
+      "nodePath": [
+        "retriever"
+      ],
+      "body": {
+        "query": "weather"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "retriever.CallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:retriever",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Retriever",
+      "name": "Retriever",
+      "type": "FixtureRetriever",
+      "format": "retriever.CallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "retriever"
+        }
+      ],
+      "nodePath": [
+        "retriever"
+      ],
+      "body": {
+        "documents": [
+          {
+            "id": "doc-1",
+            "content": "content",
+            "meta_data": null
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "retriever.CallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:retriever",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Loader",
+      "name": "Loader",
+      "type": "FixtureLoader",
+      "format": "document.LoaderCallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "loader"
+        }
+      ],
+      "nodePath": [
+        "loader"
+      ],
+      "body": {
+        "uri": "memory://fixture"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "document.LoaderCallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:loader",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Loader",
+      "name": "Loader",
+      "type": "FixtureLoader",
+      "format": "document.LoaderCallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "loader"
+        }
+      ],
+      "nodePath": [
+        "loader"
+      ],
+      "body": {
+        "documents": [
+          {
+            "id": "doc-1",
+            "content": "content",
+            "meta_data": null
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "document.LoaderCallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:loader",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "DocumentTransformer",
+      "name": "DocumentTransformer",
+      "type": "FixtureDocumentTransformer",
+      "format": "document.TransformerCallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "documenttransformer"
+        }
+      ],
+      "nodePath": [
+        "documenttransformer"
+      ],
+      "body": {
+        "documents": [
+          {
+            "id": "doc-1",
+            "content": "content",
+            "meta_data": null
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "document.TransformerCallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:documenttransformer",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "DocumentTransformer",
+      "name": "DocumentTransformer",
+      "type": "FixtureDocumentTransformer",
+      "format": "document.TransformerCallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "documenttransformer"
+        }
+      ],
+      "nodePath": [
+        "documenttransformer"
+      ],
+      "body": {
+        "documents": [
+          {
+            "id": "doc-1",
+            "content": "content",
+            "meta_data": null
+          }
+        ]
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "document.TransformerCallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:documenttransformer",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Tool",
+      "name": "Tool",
+      "type": "FixtureTool",
+      "format": "tool.CallbackInput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "tool"
+        }
+      ],
+      "nodePath": [
+        "tool"
+      ],
+      "body": {
+        "argumentsJson": "{\"city\":\"Singapore\"}"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "tool.CallbackInput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:tool",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Tool",
+      "name": "Tool",
+      "type": "FixtureTool",
+      "format": "tool.CallbackOutput",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "tool"
+        }
+      ],
+      "nodePath": [
+        "tool"
+      ],
+      "body": {
+        "response": "sunny"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "tool.CallbackOutput",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:tool",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": true,
+      "component": "Embedding",
+      "name": "Embedding stream",
+      "type": "FixtureEmbedding",
+      "format": "Embedding.CallbackOutputStream",
+      "address": [
+        {
+          "type": "runnable",
+          "id": "component-catalog"
+        },
+        {
+          "type": "node",
+          "id": "embedding-stream"
+        }
+      ],
+      "nodePath": [
+        "embedding-stream"
+      ]
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "Embedding.CallbackOutputStream",
+      "module": "components"
+    },
+    "correlation": {
+      "entityId": "runnable:component-catalog/node:embedding-stream",
+      "parentEntityId": "runnable:component-catalog",
+      "runId": "run-component-catalog"
+    },
+    "observedAtMs": 1789000000200
+  }
+]

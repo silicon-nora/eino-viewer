@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-cyclic-graph",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "cyclic-agent-graph",
+        "nodes": [
+          {
+            "id": "model",
+            "name": "Model",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "start",
+            "to": "model",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ],
+        "branches": [
+          {
+            "from": "model",
+            "targets": [
+              "end",
+              "model"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789200000002,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "cyclic-agent-graph"
+          }
+        ],
+        "run": {
+          "name": "cyclic-agent-graph",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:cyclic-agent-graph",
+        "eventId": "run-cyclic-graph:1",
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789200000003,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "cyclic-agent-graph"
+          },
+          {
+            "type": "node",
+            "id": "model"
+          }
+        ],
+        "nodePath": [
+          "model"
+        ],
+        "run": {
+          "name": "Model",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:cyclic-agent-graph/node:model",
+        "eventId": "run-cyclic-graph:2",
+        "parentEntityId": "runnable:cyclic-agent-graph",
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1789200000004,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "cyclic-agent-graph"
+          },
+          {
+            "type": "node",
+            "id": "model"
+          }
+        ],
+        "nodePath": [
+          "model"
+        ],
+        "run": {
+          "name": "Model",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:cyclic-agent-graph/node:model",
+        "eventId": "run-cyclic-graph:3",
+        "parentEntityId": "runnable:cyclic-agent-graph",
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789200000005,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "cyclic-agent-graph"
+          },
+          {
+            "type": "node",
+            "id": "model"
+          }
+        ],
+        "nodePath": [
+          "model"
+        ],
+        "run": {
+          "name": "Model",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:cyclic-agent-graph/node:model",
+        "eventId": "run-cyclic-graph:4",
+        "parentEntityId": "runnable:cyclic-agent-graph",
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 5,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1789200000006,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "cyclic-agent-graph"
+          },
+          {
+            "type": "node",
+            "id": "model"
+          }
+        ],
+        "nodePath": [
+          "model"
+        ],
+        "run": {
+          "name": "Model",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:cyclic-agent-graph/node:model",
+        "eventId": "run-cyclic-graph:5",
+        "parentEntityId": "runnable:cyclic-agent-graph",
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 6,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1789200000007,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "cyclic-agent-graph"
+          }
+        ],
+        "run": {
+          "name": "cyclic-agent-graph",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:cyclic-agent-graph",
+        "eventId": "run-cyclic-graph:6",
+        "runId": "run-cyclic-graph"
+      },
+      "observedAtMs": 1789200000007
+    }
+  ]
+}

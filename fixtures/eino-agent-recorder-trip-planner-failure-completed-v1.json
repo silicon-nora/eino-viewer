@@ -1,0 +1,867 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-realistic-trip-agent-late-failure-1",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "比较新加坡和东京，并检查最佳城市的空气质量。",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "Compare both cities with tools. Check air quality for the better outdoor option before answering.",
+              "role": "system"
+            },
+            {
+              "content": "比较新加坡和东京，并检查最佳城市的空气质量。",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "TripPlanningTestModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "response_meta": {
+              "finish_reason": "tool_calls",
+              "usage": {
+                "completion_token_details": {},
+                "completion_tokens": 22,
+                "prompt_token_details": {
+                  "cached_tokens": 0
+                },
+                "prompt_tokens": 89,
+                "total_tokens": 111
+              }
+            },
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"city\":\"Singapore\"}",
+                  "name": "get_weather"
+                },
+                "id": "call-weather-singapore",
+                "type": "function"
+              },
+              {
+                "function": {
+                  "arguments": "{\"city\":\"Tokyo\"}",
+                  "name": "get_weather"
+                },
+                "id": "call-weather-tokyo",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "TripPlanningTestModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-singapore",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"city\":\"Singapore\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "GetWeather"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode/tool:get_weather:call-weather-singapore",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "trip-planner",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {},
+              "response_meta": {
+                "finish_reason": "tool_calls",
+                "usage": {
+                  "completion_token_details": {},
+                  "completion_tokens": 22,
+                  "prompt_token_details": {
+                    "cached_tokens": 0
+                  },
+                  "prompt_tokens": 89,
+                  "total_tokens": 111
+                }
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Singapore\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-singapore",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Tokyo\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-tokyo",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "trip-planner"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-singapore",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "{\"city\":\"Singapore\",\"condition\":\"thunderstorms\",\"temperatureC\":31,\"rainProbability\":80}"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "GetWeather"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode/tool:get_weather:call-weather-singapore",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100007
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-tokyo",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"city\":\"Tokyo\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "GetWeather"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode/tool:get_weather:call-weather-tokyo",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100008
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-tokyo",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "{\"city\":\"Tokyo\",\"condition\":\"clear\",\"temperatureC\":24,\"rainProbability\":10}"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "GetWeather"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode/tool:get_weather:call-weather-tokyo",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100009
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "trip-planner",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "get_weather",
+            "value": {
+              "content": "{\"city\":\"Singapore\",\"condition\":\"thunderstorms\",\"temperatureC\":31,\"rainProbability\":80}",
+              "extra": {},
+              "role": "tool",
+              "tool_call_id": "call-weather-singapore",
+              "tool_name": "get_weather"
+            }
+          }
+        },
+        "runPath": [
+          "trip-planner"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100010
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "trip-planner",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "get_weather",
+            "value": {
+              "content": "{\"city\":\"Tokyo\",\"condition\":\"clear\",\"temperatureC\":24,\"rainProbability\":10}",
+              "extra": {},
+              "role": "tool",
+              "tool_call_id": "call-weather-tokyo",
+              "tool_name": "get_weather"
+            }
+          }
+        },
+        "runPath": [
+          "trip-planner"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100011
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "Compare both cities with tools. Check air quality for the better outdoor option before answering.",
+              "role": "system"
+            },
+            {
+              "content": "比较新加坡和东京，并检查最佳城市的空气质量。",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {},
+              "response_meta": {
+                "finish_reason": "tool_calls",
+                "usage": {
+                  "completion_token_details": {},
+                  "completion_tokens": 22,
+                  "prompt_token_details": {
+                    "cached_tokens": 0
+                  },
+                  "prompt_tokens": 89,
+                  "total_tokens": 111
+                }
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Singapore\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-singapore",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Tokyo\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-tokyo",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"city\":\"Singapore\",\"condition\":\"thunderstorms\",\"temperatureC\":31,\"rainProbability\":80}",
+              "extra": {},
+              "role": "tool",
+              "tool_call_id": "call-weather-singapore",
+              "tool_name": "get_weather"
+            },
+            {
+              "content": "{\"city\":\"Tokyo\",\"condition\":\"clear\",\"temperatureC\":24,\"rainProbability\":10}",
+              "extra": {},
+              "role": "tool",
+              "tool_call_id": "call-weather-tokyo",
+              "tool_name": "get_weather"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "TripPlanningTestModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100012
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "response_meta": {
+              "finish_reason": "tool_calls",
+              "usage": {
+                "completion_token_details": {},
+                "completion_tokens": 17,
+                "prompt_token_details": {
+                  "cached_tokens": 0
+                },
+                "prompt_tokens": 174,
+                "total_tokens": 191
+              }
+            },
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"city\":\"Tokyo\"}",
+                  "name": "get_air_quality"
+                },
+                "id": "call-air-quality-tokyo",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "TripPlanningTestModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100013
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "trip-planner",
+            "type": "agent"
+          },
+          {
+            "id": "trip-planner",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_air_quality",
+            "subId": "call-air-quality-tokyo",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"city\":\"Tokyo\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "get_air_quality",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "GetAirQuality"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode/tool:get_air_quality:call-air-quality-tokyo",
+        "parentEntityId": "agent:trip-planner/runnable:trip-planner/node:node_1/node:ToolNode",
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100014
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "trip-planner",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {},
+              "response_meta": {
+                "finish_reason": "tool_calls",
+                "usage": {
+                  "completion_token_details": {},
+                  "completion_tokens": 17,
+                  "prompt_token_details": {
+                    "cached_tokens": 0
+                  },
+                  "prompt_tokens": 174,
+                  "total_tokens": 191
+                }
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Tokyo\"}",
+                    "name": "get_air_quality"
+                  },
+                  "id": "call-air-quality-tokyo",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "trip-planner"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100015
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "trip-planner",
+        "error": {
+          "message": "[NodeRunError] failed to invoke tool[name:get_air_quality id:call-air-quality-tokyo]: [LocalFunc] failed to invoke tool, toolName=get_air_quality, err=air quality provider timed out\n------------------------\nnode path: [node_1, ToolNode]"
+        },
+        "runPath": [
+          "trip-planner"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100016
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "failed",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-realistic-trip-agent-late-failure-1"
+      },
+      "observedAtMs": 1789200100017
+    }
+  ],
+  "metadata": {
+    "modelMode": "deterministic-test-double",
+    "runtime": "eino-adk-runner",
+    "scenario": "multi-city-outdoor-trip-late-failure",
+    "toolExecution": "sequential-for-reproducible-fixture"
+  }
+}

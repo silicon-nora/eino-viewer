@@ -1,0 +1,513 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-static-agent-tool-recovered",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "user",
+        "content": "查询报价；供应商失败时使用缓存报价。"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Follow the requested synthetic acceptance scenario."
+            },
+            {
+              "role": "user",
+              "content": "查询报价；供应商失败时使用缓存报价。"
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1",
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackOutput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "message": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "id": "call-tool-recovered",
+                "type": "function",
+                "function": {
+                  "name": "lookup_profile",
+                  "arguments": "{\"customer\":\"Ada\"}"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1",
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-tool-recovered",
+        "runPath": [
+          "static-matrix-tool-recovered"
+        ],
+        "output": {
+          "message": {
+            "format": "Message",
+            "streaming": false,
+            "role": "assistant",
+            "value": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-tool-recovered",
+                  "type": "function",
+                  "function": {
+                    "name": "lookup_profile",
+                    "arguments": "{\"customer\":\"Ada\"}"
+                  }
+                }
+              ],
+              "extra": {
+                "_eino_msg_id": "3e9d998b-96bb-4847-8c88-cff96dec040e"
+              }
+            }
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "Tool",
+        "name": "lookup_profile",
+        "type": "staticAgentMatrixTool",
+        "format": "tool.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ToolNode"
+          },
+          {
+            "type": "tool",
+            "id": "lookup_profile",
+            "subId": "call-tool-recovered"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "body": {
+          "argumentsJson": "{\"customer\":\"Ada\"}"
+        }
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1/node:ToolNode/tool:lookup_profile:call-tool-recovered",
+        "parentEntityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1/node:ToolNode",
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-tool-recovered",
+        "runPath": [
+          "static-matrix-tool-recovered"
+        ],
+        "output": {
+          "message": {
+            "format": "Message",
+            "streaming": false,
+            "role": "tool",
+            "toolName": "lookup_profile",
+            "value": {
+              "role": "tool",
+              "content": "{\"recovered\":true,\"error\":\"quote provider unavailable\",\"price\":120}",
+              "tool_call_id": "call-tool-recovered",
+              "tool_name": "lookup_profile",
+              "extra": {
+                "_eino_msg_id": "9742e6af-ef4e-49ab-8cb9-7a2ce40d9313"
+              }
+            }
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000007
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Follow the requested synthetic acceptance scenario."
+            },
+            {
+              "role": "user",
+              "content": "查询报价；供应商失败时使用缓存报价。"
+            },
+            {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-tool-recovered",
+                  "type": "function",
+                  "function": {
+                    "name": "lookup_profile",
+                    "arguments": "{\"customer\":\"Ada\"}"
+                  }
+                }
+              ],
+              "extra": {
+                "_eino_msg_id": "3e9d998b-96bb-4847-8c88-cff96dec040e"
+              }
+            },
+            {
+              "role": "tool",
+              "content": "{\"recovered\":true,\"error\":\"quote provider unavailable\",\"price\":120}",
+              "tool_call_id": "call-tool-recovered",
+              "tool_name": "lookup_profile",
+              "extra": {
+                "_eino_msg_id": "9742e6af-ef4e-49ab-8cb9-7a2ce40d9313"
+              }
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1",
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000008
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackOutput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-tool-recovered"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "message": {
+            "role": "assistant",
+            "content": "已恢复：使用缓存报价 120 元。"
+          }
+        }
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-tool-recovered/runnable:static-matrix-tool-recovered/node:node_1",
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000009
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-tool-recovered",
+        "runPath": [
+          "static-matrix-tool-recovered"
+        ],
+        "output": {
+          "message": {
+            "format": "Message",
+            "streaming": false,
+            "role": "assistant",
+            "value": {
+              "role": "assistant",
+              "content": "已恢复：使用缓存报价 120 元。",
+              "extra": {
+                "_eino_msg_id": "d102a842-dd95-4adb-9d21-7341aeaa4c98"
+              }
+            }
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000010
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "assistant",
+        "content": "已恢复：使用缓存报价 120 元。",
+        "extra": {
+          "_eino_msg_id": "d102a842-dd95-4adb-9d21-7341aeaa4c98"
+        }
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000011
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "success",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-tool-recovered"
+      },
+      "observedAtMs": 1790000000012
+    }
+  ],
+  "metadata": {
+    "modelMode": "deterministic-test-double",
+    "runtime": "eino-adk-runner",
+    "scenario": "tool-recovered",
+    "streaming": false
+  }
+}

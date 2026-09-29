@@ -1,0 +1,1615 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-graph-multistep-loop-success",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "graph-multistep-loop-success",
+        "nodes": [
+          {
+            "id": "evaluate",
+            "name": "evaluate",
+            "component": "Lambda"
+          },
+          {
+            "id": "fallback",
+            "name": "fallback",
+            "component": "Lambda"
+          },
+          {
+            "id": "finish",
+            "name": "finish",
+            "component": "Lambda"
+          },
+          {
+            "id": "prepare",
+            "name": "prepare",
+            "component": "Lambda"
+          },
+          {
+            "id": "revise",
+            "name": "revise",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "fallback",
+            "to": "end",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "finish",
+            "to": "end",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "prepare",
+            "to": "evaluate",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "revise",
+            "to": "evaluate",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "start",
+            "to": "prepare",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ],
+        "branches": [
+          {
+            "from": "evaluate",
+            "targets": [
+              "fallback",
+              "finish",
+              "revise"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          }
+        ],
+        "run": {
+          "name": "graph-multistep-loop-success",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success",
+        "eventId": "run-graph-multistep-loop-success:1",
+        "invocationId": "run-graph-multistep-loop-success:1",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 0,
+          "route": "",
+          "score": 0,
+          "status": "queued"
+        },
+        "component": "Graph",
+        "direction": "input",
+        "format": "Graph.CallbackInput",
+        "name": "graph-multistep-loop-success",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success",
+        "eventId": "run-graph-multistep-loop-success:1",
+        "invocationId": "run-graph-multistep-loop-success:1",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "prepare"
+          }
+        ],
+        "nodePath": [
+          "prepare"
+        ],
+        "run": {
+          "name": "prepare",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:prepare",
+        "eventId": "run-graph-multistep-loop-success:2",
+        "invocationId": "run-graph-multistep-loop-success:2",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "prepare",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 0,
+          "route": "",
+          "score": 0,
+          "status": "queued"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "prepare",
+        "nodePath": [
+          "prepare"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:prepare",
+        "eventId": "run-graph-multistep-loop-success:2",
+        "invocationId": "run-graph-multistep-loop-success:2",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "prepare"
+          }
+        ],
+        "nodePath": [
+          "prepare"
+        ],
+        "run": {
+          "name": "prepare",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:prepare",
+        "eventId": "run-graph-multistep-loop-success:3",
+        "invocationId": "run-graph-multistep-loop-success:2",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "prepare",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 1,
+          "route": "西湖",
+          "score": 0,
+          "status": "draft"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "prepare",
+        "nodePath": [
+          "prepare"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:prepare",
+        "eventId": "run-graph-multistep-loop-success:3",
+        "invocationId": "run-graph-multistep-loop-success:2",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "evaluate"
+          }
+        ],
+        "nodePath": [
+          "evaluate"
+        ],
+        "run": {
+          "name": "evaluate",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:4",
+        "invocationId": "run-graph-multistep-loop-success:4",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "evaluate",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 1,
+          "route": "西湖",
+          "score": 0,
+          "status": "draft"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "evaluate",
+        "nodePath": [
+          "evaluate"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:4",
+        "invocationId": "run-graph-multistep-loop-success:4",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 5,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "evaluate"
+          }
+        ],
+        "nodePath": [
+          "evaluate"
+        ],
+        "run": {
+          "name": "evaluate",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:5",
+        "invocationId": "run-graph-multistep-loop-success:4",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "evaluate",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 1,
+          "route": "西湖",
+          "score": 60,
+          "status": "revise"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "evaluate",
+        "nodePath": [
+          "evaluate"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:5",
+        "invocationId": "run-graph-multistep-loop-success:4",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 6,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "revise"
+          }
+        ],
+        "nodePath": [
+          "revise"
+        ],
+        "run": {
+          "name": "revise",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:6",
+        "invocationId": "run-graph-multistep-loop-success:6",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "revise",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 1,
+          "route": "西湖",
+          "score": 60,
+          "status": "revise"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "revise",
+        "nodePath": [
+          "revise"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:6",
+        "invocationId": "run-graph-multistep-loop-success:6",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 7,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "revise"
+          }
+        ],
+        "nodePath": [
+          "revise"
+        ],
+        "run": {
+          "name": "revise",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:7",
+        "invocationId": "run-graph-multistep-loop-success:6",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "revise",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 2,
+          "route": "西湖 → 灵隐寺",
+          "score": 0,
+          "status": "draft"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "revise",
+        "nodePath": [
+          "revise"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:7",
+        "invocationId": "run-graph-multistep-loop-success:6",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 8,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "evaluate"
+          }
+        ],
+        "nodePath": [
+          "evaluate"
+        ],
+        "run": {
+          "name": "evaluate",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:8",
+        "invocationId": "run-graph-multistep-loop-success:8",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "evaluate",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 2,
+          "route": "西湖 → 灵隐寺",
+          "score": 0,
+          "status": "draft"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "evaluate",
+        "nodePath": [
+          "evaluate"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:8",
+        "invocationId": "run-graph-multistep-loop-success:8",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 9,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "evaluate"
+          }
+        ],
+        "nodePath": [
+          "evaluate"
+        ],
+        "run": {
+          "name": "evaluate",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:9",
+        "invocationId": "run-graph-multistep-loop-success:8",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "evaluate",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 2,
+          "route": "西湖 → 灵隐寺",
+          "score": 80,
+          "status": "revise"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "evaluate",
+        "nodePath": [
+          "evaluate"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:9",
+        "invocationId": "run-graph-multistep-loop-success:8",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 10,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "revise"
+          }
+        ],
+        "nodePath": [
+          "revise"
+        ],
+        "run": {
+          "name": "revise",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:10",
+        "invocationId": "run-graph-multistep-loop-success:10",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "revise",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 2,
+          "route": "西湖 → 灵隐寺",
+          "score": 80,
+          "status": "revise"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "revise",
+        "nodePath": [
+          "revise"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:10",
+        "invocationId": "run-graph-multistep-loop-success:10",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 11,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "revise"
+          }
+        ],
+        "nodePath": [
+          "revise"
+        ],
+        "run": {
+          "name": "revise",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:11",
+        "invocationId": "run-graph-multistep-loop-success:10",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "revise",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 3,
+          "route": "西湖 → 灵隐寺 → 钱塘江",
+          "score": 0,
+          "status": "draft"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "revise",
+        "nodePath": [
+          "revise"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:revise",
+        "eventId": "run-graph-multistep-loop-success:11",
+        "invocationId": "run-graph-multistep-loop-success:10",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 12,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "evaluate"
+          }
+        ],
+        "nodePath": [
+          "evaluate"
+        ],
+        "run": {
+          "name": "evaluate",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:12",
+        "invocationId": "run-graph-multistep-loop-success:12",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "evaluate",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 3,
+          "route": "西湖 → 灵隐寺 → 钱塘江",
+          "score": 0,
+          "status": "draft"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "evaluate",
+        "nodePath": [
+          "evaluate"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:12",
+        "invocationId": "run-graph-multistep-loop-success:12",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 13,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "evaluate"
+          }
+        ],
+        "nodePath": [
+          "evaluate"
+        ],
+        "run": {
+          "name": "evaluate",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:13",
+        "invocationId": "run-graph-multistep-loop-success:12",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "evaluate",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 3,
+          "route": "西湖 → 灵隐寺 → 钱塘江",
+          "score": 100,
+          "status": "accept"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "evaluate",
+        "nodePath": [
+          "evaluate"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:evaluate",
+        "eventId": "run-graph-multistep-loop-success:13",
+        "invocationId": "run-graph-multistep-loop-success:12",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 14,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "finish"
+          }
+        ],
+        "nodePath": [
+          "finish"
+        ],
+        "run": {
+          "name": "finish",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:finish",
+        "eventId": "run-graph-multistep-loop-success:14",
+        "invocationId": "run-graph-multistep-loop-success:14",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "finish",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 3,
+          "route": "西湖 → 灵隐寺 → 钱塘江",
+          "score": 100,
+          "status": "accept"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "name": "finish",
+        "nodePath": [
+          "finish"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:finish",
+        "eventId": "run-graph-multistep-loop-success:14",
+        "invocationId": "run-graph-multistep-loop-success:14",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 15,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          },
+          {
+            "type": "node",
+            "id": "finish"
+          }
+        ],
+        "nodePath": [
+          "finish"
+        ],
+        "run": {
+          "name": "finish",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:finish",
+        "eventId": "run-graph-multistep-loop-success:15",
+        "invocationId": "run-graph-multistep-loop-success:14",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          },
+          {
+            "id": "finish",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 3,
+          "route": "西湖 → 灵隐寺 → 钱塘江",
+          "score": 100,
+          "status": "completed"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "name": "finish",
+        "nodePath": [
+          "finish"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success/node:finish",
+        "eventId": "run-graph-multistep-loop-success:15",
+        "invocationId": "run-graph-multistep-loop-success:14",
+        "parentEntityId": "runnable:graph-multistep-loop-success",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 16,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-multistep-loop-success"
+          }
+        ],
+        "run": {
+          "name": "graph-multistep-loop-success",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success",
+        "eventId": "run-graph-multistep-loop-success:16",
+        "invocationId": "run-graph-multistep-loop-success:1",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-multistep-loop-success",
+            "type": "runnable"
+          }
+        ],
+        "body": {
+          "request": "杭州一日路线",
+          "round": 3,
+          "route": "西湖 → 灵隐寺 → 钱塘江",
+          "score": 100,
+          "status": "completed"
+        },
+        "component": "Graph",
+        "direction": "output",
+        "format": "Graph.CallbackOutput",
+        "name": "graph-multistep-loop-success",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-multistep-loop-success",
+        "eventId": "run-graph-multistep-loop-success:16",
+        "invocationId": "run-graph-multistep-loop-success:1",
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "success",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-multistep-loop-success"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ],
+  "metadata": {
+    "executionMode": "deterministic-local",
+    "fixtureScenario": "graph-multistep-loop-success"
+  }
+}

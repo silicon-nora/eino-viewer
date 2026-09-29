@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-graph-io-oversized",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "graph-io-oversized",
+        "nodes": [
+          {
+            "id": "process",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "process",
+            "to": "end",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "start",
+            "to": "process",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-oversized"
+          }
+        ],
+        "run": {
+          "name": "graph-io-oversized",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized",
+        "eventId": "run-graph-io-oversized:1",
+        "invocationId": "run-graph-io-oversized:1",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-oversized",
+            "type": "runnable"
+          }
+        ],
+        "body": "请生成大结果",
+        "component": "Graph",
+        "direction": "input",
+        "format": "Graph.CallbackInput",
+        "name": "graph-io-oversized",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized",
+        "eventId": "run-graph-io-oversized:1",
+        "invocationId": "run-graph-io-oversized:1",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-oversized"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "nodePath": [
+          "process"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized/node:process",
+        "eventId": "run-graph-io-oversized:2",
+        "invocationId": "run-graph-io-oversized:2",
+        "parentEntityId": "runnable:graph-io-oversized",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-oversized",
+            "type": "runnable"
+          },
+          {
+            "id": "process",
+            "type": "node"
+          }
+        ],
+        "body": "请生成大结果",
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "nodePath": [
+          "process"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized/node:process",
+        "eventId": "run-graph-io-oversized:2",
+        "invocationId": "run-graph-io-oversized:2",
+        "parentEntityId": "runnable:graph-io-oversized",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-oversized"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "nodePath": [
+          "process"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized/node:process",
+        "eventId": "run-graph-io-oversized:3",
+        "invocationId": "run-graph-io-oversized:2",
+        "parentEntityId": "runnable:graph-io-oversized",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-oversized"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "nodePath": [
+          "process"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized/node:process",
+        "eventId": "run-graph-io-oversized:3",
+        "invocationId": "run-graph-io-oversized:2",
+        "parentEntityId": "runnable:graph-io-oversized",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "reason": "size_limit",
+          "status": "omitted"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-oversized"
+          }
+        ],
+        "run": {
+          "name": "graph-io-oversized",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized",
+        "eventId": "run-graph-io-oversized:4",
+        "invocationId": "run-graph-io-oversized:1",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-oversized"
+          }
+        ],
+        "component": "Graph",
+        "direction": "output",
+        "format": "Graph.CallbackOutput",
+        "name": "graph-io-oversized",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-oversized",
+        "eventId": "run-graph-io-oversized:4",
+        "invocationId": "run-graph-io-oversized:1",
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "reason": "size_limit",
+          "status": "omitted"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "success",
+        "capture": "partial"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-io-oversized"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "projection.body_omitted",
+      "path": "/payload/body",
+      "message": "Component body omitted: size_limit."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.body_omitted",
+      "path": "/payload/body",
+      "message": "Component body omitted: size_limit."
+    }
+  ]
+}

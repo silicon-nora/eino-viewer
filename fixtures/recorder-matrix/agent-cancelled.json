@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-static-agent-adk-cancelled",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "user",
+        "content": "查询客户资料，但在模型完成后取消。"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-adk-cancelled"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-adk-cancelled"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Follow the requested synthetic acceptance scenario."
+            },
+            {
+              "role": "user",
+              "content": "查询客户资料，但在模型完成后取消。"
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-adk-cancelled/runnable:static-matrix-adk-cancelled/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-adk-cancelled/runnable:static-matrix-adk-cancelled/node:node_1",
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "ChatModel",
+        "name": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackOutput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-adk-cancelled"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-adk-cancelled"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          },
+          {
+            "type": "node",
+            "id": "ChatModel"
+          }
+        ],
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "body": {
+          "message": {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "id": "call-adk-cancelled",
+                "type": "function",
+                "function": {
+                  "name": "lookup_profile",
+                  "arguments": "{\"customer\":\"Ada\"}"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-adk-cancelled/runnable:static-matrix-adk-cancelled/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-adk-cancelled/runnable:static-matrix-adk-cancelled/node:node_1",
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-adk-cancelled",
+        "runPath": [
+          "static-matrix-adk-cancelled"
+        ],
+        "output": {
+          "message": {
+            "format": "Message",
+            "streaming": false,
+            "role": "assistant",
+            "value": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-adk-cancelled",
+                  "type": "function",
+                  "function": {
+                    "name": "lookup_profile",
+                    "arguments": "{\"customer\":\"Ada\"}"
+                  }
+                }
+              ],
+              "extra": {
+                "_eino_msg_id": "f98db493-51d1-46b8-809c-b89b799805bd"
+              }
+            }
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "error": {
+          "message": "agent canceled: mode=2, escalated=false"
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "cancelled",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-adk-cancelled"
+      },
+      "observedAtMs": 1790000000007
+    }
+  ],
+  "metadata": {
+    "modelMode": "deterministic-test-double",
+    "runtime": "eino-adk-runner",
+    "scenario": "adk-cancelled",
+    "streaming": false
+  }
+}

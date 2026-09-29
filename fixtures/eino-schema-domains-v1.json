@@ -1,0 +1,111 @@
+[
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "schema.message",
+    "kindVersion": 1,
+    "payload": {
+      "role": "assistant",
+      "content": "I will check the weather.",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call-1",
+          "type": "function",
+          "function": {
+            "name": "weather",
+            "arguments": "{\"city\":\"Singapore\"}"
+          }
+        }
+      ]
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "Message",
+      "module": "schema"
+    },
+    "correlation": {
+      "runId": "run-schema-1"
+    },
+    "observedAtMs": 1789000000000
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "schema.agentic_message",
+    "kindVersion": 1,
+    "payload": {
+      "role": "assistant",
+      "content_blocks": [
+        {
+          "type": "assistant_gen_text",
+          "assistant_gen_text": {
+            "text": "It is sunny."
+          }
+        }
+      ]
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "AgenticMessage",
+      "module": "schema"
+    },
+    "correlation": {
+      "runId": "run-schema-1"
+    },
+    "observedAtMs": 1789000000000
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "schema.tool",
+    "kindVersion": 1,
+    "payload": {
+      "name": "weather",
+      "desc": "Look up the current weather.",
+      "has_params_one_of": true,
+      "params": {
+        "city": {
+          "Type": "string",
+          "ElemInfo": null,
+          "SubParams": null,
+          "Desc": "City name",
+          "Enum": null,
+          "Required": true
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "ToolInfo",
+      "module": "schema"
+    },
+    "correlation": {
+      "runId": "run-schema-1"
+    },
+    "observedAtMs": 1789000000000
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "schema.document",
+    "kindVersion": 1,
+    "payload": {
+      "id": "doc-1",
+      "content": "Singapore weather report",
+      "meta_data": {
+        "score": 0.98,
+        "source": "fixture"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "Document",
+      "module": "schema"
+    },
+    "correlation": {
+      "runId": "run-schema-1"
+    },
+    "observedAtMs": 1789000000000
+  }
+]

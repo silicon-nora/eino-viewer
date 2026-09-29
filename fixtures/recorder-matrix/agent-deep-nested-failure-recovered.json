@@ -1,0 +1,1739 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-agent-deep-nested-failure-recovered",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "failure",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"request\":\"failure\"}",
+                  "name": "worker"
+                },
+                "id": "shared-depth-call",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"request\":\"failure\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "bd95fd8d-540b-49f0-a21c-820bdb5cc6bd"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"failure\"}",
+                    "name": "worker"
+                  },
+                  "id": "shared-depth-call",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"request\":\"failure\"}",
+                  "name": "worker"
+                },
+                "id": "shared-depth-call",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"request\":\"failure\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "482490f4-1e4c-42fc-a948-4cbcd408dcc8"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"failure\"}",
+                    "name": "worker"
+                  },
+                  "id": "shared-depth-call",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"failure\"}",
+                  "name": "lookup_item"
+                },
+                "id": "shared-depth-call",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"key\":\"failure\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "deepNestedRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-depth-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          }
+        ],
+        "error": {
+          "message": "deep lookup rejected: failure"
+        },
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "phase": "error",
+        "run": {
+          "component": "Tool",
+          "name": "lookup_item",
+          "type": "deepNestedRecorderTool"
+        },
+        "sequence": 1,
+        "streaming": false,
+        "timestampMs": 1790000000000
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-depth-call",
+        "eventId": "run-agent-deep-nested-failure-recovered:nested-error:1",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "fe34b64e-5d60-488b-bd00-2d986c1b9054"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"failure\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-depth-call",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          }
+        ],
+        "error": {
+          "message": "[NodeRunError] failed to invoke tool[name:lookup_item id:shared-depth-call]: deep lookup rejected: failure\n------------------------\nnode path: [node_1, ToolNode]"
+        },
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "phase": "error",
+        "run": {
+          "component": "Tool",
+          "name": "worker",
+          "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+        },
+        "sequence": 2,
+        "streaming": false,
+        "timestampMs": 1790000000000
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:worker:shared-depth-call",
+        "eventId": "run-agent-deep-nested-failure-recovered:nested-error:2",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "482490f4-1e4c-42fc-a948-4cbcd408dcc8"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"failure\"}",
+                    "name": "worker"
+                  },
+                  "id": "shared-depth-call",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "handled leaf failure: deep lookup rejected: failure",
+              "extra": {
+                "_eino_msg_id": "4b22ffa9-a0a0-4279-b65d-40e488af8cab"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-depth-call",
+              "tool_name": "worker"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "middle result: recovered with local fallback",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "worker",
+            "value": {
+              "content": "handled leaf failure: deep lookup rejected: failure",
+              "extra": {
+                "_eino_msg_id": "4b22ffa9-a0a0-4279-b65d-40e488af8cab"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-depth-call",
+              "tool_name": "worker"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "middle result: recovered with local fallback",
+              "extra": {
+                "_eino_msg_id": "6ee3db24-f851-4b3d-800a-f32fd1a9dd9d"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "shared-depth-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "middle result: recovered with local fallback"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:shared-depth-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "worker",
+            "value": {
+              "content": "middle result: recovered with local fallback",
+              "extra": {
+                "_eino_msg_id": "a5f726ee-d222-453c-9cff-5270a7d399b3"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-depth-call",
+              "tool_name": "worker"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "bd95fd8d-540b-49f0-a21c-820bdb5cc6bd"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"failure\"}",
+                    "name": "worker"
+                  },
+                  "id": "shared-depth-call",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "middle result: recovered with local fallback",
+              "extra": {
+                "_eino_msg_id": "a5f726ee-d222-453c-9cff-5270a7d399b3"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-depth-call",
+              "tool_name": "worker"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "parent final: accepted middle fallback",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeepNestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "parent final: accepted middle fallback",
+              "extra": {
+                "_eino_msg_id": "b6ba64e7-8031-49ce-acce-69d52f86a1ac"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "parent final: accepted middle fallback",
+        "extra": {
+          "_eino_msg_id": "b6ba64e7-8031-49ce-acce-69d52f86a1ac"
+        },
+        "role": "assistant"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "success",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-deep-nested-failure-recovered"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ]
+}

@@ -1,0 +1,711 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-agent-nested-failure-propagated",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "failure",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"request\":\"failure\"}",
+                  "name": "worker"
+                },
+                "id": "call-child-one",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-one",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"request\":\"failure\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "78a84cda-a843-4e72-b577-72c1feac007f"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"failure\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-one",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-one",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "failure",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-one",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"failure\"}",
+                  "name": "lookup_item"
+                },
+                "id": "shared-inner-call",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-one",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-inner-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"key\":\"failure\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "nestedRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-inner-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-one",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-inner-call",
+            "type": "tool"
+          }
+        ],
+        "error": {
+          "message": "lookup rejected: failure"
+        },
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "phase": "error",
+        "run": {
+          "component": "Tool",
+          "name": "lookup_item",
+          "type": "nestedRecorderTool"
+        },
+        "sequence": 1,
+        "streaming": false,
+        "timestampMs": 1790000000000
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-inner-call",
+        "eventId": "run-agent-nested-failure-propagated:nested-error:1",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-one/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "746ee9a7-8103-4d08-b90f-f38c3c133560"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"failure\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "error": {
+          "message": "[NodeRunError] failed to invoke tool[name:lookup_item id:shared-inner-call]: lookup rejected: failure\n------------------------\nnode path: [node_1, ToolNode, node_1, ToolNode]"
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "failed",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-failure-propagated"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ]
+}

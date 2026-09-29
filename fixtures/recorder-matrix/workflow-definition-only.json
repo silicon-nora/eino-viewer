@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "runId": "matrix-workflow-definition-only",
+  "source": "workflow",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "workflow.snapshot",
+      "kindVersion": 1,
+      "payload": {
+        "schemaVersion": 1,
+        "workflow": {
+          "name": "Compiled but not invoked",
+          "nodes": [
+            {
+              "id": "never-invoked",
+              "component": "Lambda"
+            }
+          ],
+          "edges": [
+            {
+              "from": "never-invoked",
+              "to": "end",
+              "channels": [
+                "control",
+                "data"
+              ]
+            },
+            {
+              "from": "start",
+              "to": "never-invoked",
+              "channels": [
+                "control",
+                "data"
+              ]
+            }
+          ]
+        },
+        "execution": {
+          "id": "matrix-workflow-definition-only"
+        }
+      },
+      "source": {
+        "format": "EinoWorkflowSnapshot",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "matrix-workflow-definition-only"
+      },
+      "observedAtMs": 1789500000000
+    }
+  ],
+  "metadata": {
+    "executionMode": "deterministic-local",
+    "fixtureScenario": "workflow-definition-only"
+  }
+}

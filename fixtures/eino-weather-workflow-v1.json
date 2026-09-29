@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "workflow": {
+    "name": "weather-query-workflow",
+    "nodes": [
+      {
+        "id": "build-context",
+        "name": "Build model context",
+        "component": "Lambda",
+        "kind": "cpu"
+      },
+      {
+        "id": "generate-answer",
+        "name": "Generate answer",
+        "component": "ChatModel",
+        "kind": "llm"
+      },
+      {
+        "id": "get-weather",
+        "name": "Get weather",
+        "component": "Lambda",
+        "kind": "cpu"
+      },
+      {
+        "id": "parse-city",
+        "name": "Parse city",
+        "component": "Lambda",
+        "kind": "io"
+      }
+    ],
+    "edges": [
+      {
+        "from": "build-context",
+        "to": "generate-answer",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "generate-answer",
+        "to": "end",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "get-weather",
+        "to": "build-context",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "parse-city",
+        "to": "get-weather",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "start",
+        "to": "parse-city",
+        "channels": [
+          "control",
+          "data"
+        ]
+      }
+    ]
+  },
+  "execution": {
+    "id": "run-weather-workflow-1",
+    "nodes": [
+      {
+        "path": [
+          "build-context"
+        ],
+        "status": "success",
+        "durationMs": null
+      },
+      {
+        "path": [
+          "generate-answer"
+        ],
+        "status": "success",
+        "durationMs": null
+      },
+      {
+        "path": [
+          "get-weather"
+        ],
+        "status": "success",
+        "durationMs": null
+      },
+      {
+        "path": [
+          "parse-city"
+        ],
+        "status": "success",
+        "durationMs": null
+      }
+    ]
+  },
+  "metadata": {
+    "fixture": "real-eino-workflow",
+    "input": "新加坡现在天气怎么样？",
+    "output": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。"
+  }
+}

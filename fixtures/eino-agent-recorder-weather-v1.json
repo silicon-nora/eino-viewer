@@ -1,0 +1,513 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-auto-weather",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "新加坡天气怎么样？",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "需要实时天气时调用 get_weather。",
+              "role": "system"
+            },
+            {
+              "content": "新加坡天气怎么样？",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1",
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "我来查询天气工具。",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"city\":\"Singapore\"}",
+                  "name": "get_weather"
+                },
+                "id": "call-weather-1",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1",
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "weather-agent",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "我来查询天气工具。",
+              "extra": {},
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Singapore\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-1",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "weather-agent"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-1",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"city\":\"Singapore\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ToolNode/tool:get_weather:call-weather-1",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ToolNode",
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "get_weather",
+            "subId": "call-weather-1",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "{\"city\":\"Singapore\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "get_weather",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ToolNode/tool:get_weather:call-weather-1",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ToolNode",
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "需要实时天气时调用 get_weather。",
+              "role": "system"
+            },
+            {
+              "content": "新加坡天气怎么样？",
+              "role": "user"
+            },
+            {
+              "content": "我来查询天气工具。",
+              "extra": {},
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"city\":\"Singapore\"}",
+                    "name": "get_weather"
+                  },
+                  "id": "call-weather-1",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"city\":\"Singapore\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}",
+              "extra": {},
+              "role": "tool",
+              "tool_call_id": "call-weather-1",
+              "tool_name": "get_weather"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1",
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000007
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "weather-agent",
+            "type": "agent"
+          },
+          {
+            "id": "weather-agent",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "DeterministicWeather"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:weather-agent/runnable:weather-agent/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:weather-agent/runnable:weather-agent/node:node_1",
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000008
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "weather-agent",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "get_weather",
+            "value": {
+              "content": "{\"city\":\"Singapore\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}",
+              "extra": {},
+              "role": "tool",
+              "tool_call_id": "call-weather-1",
+              "tool_name": "get_weather"
+            }
+          }
+        },
+        "runPath": [
+          "weather-agent"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000009
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "weather-agent",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。",
+              "extra": {},
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "weather-agent"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000010
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。",
+        "extra": {},
+        "role": "assistant"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-auto-weather"
+      },
+      "observedAtMs": 1789100000011
+    }
+  ]
+}

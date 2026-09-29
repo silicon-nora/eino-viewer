@@ -1,0 +1,137 @@
+{
+  "protocol": "eino-dag",
+  "protocolVersion": 1,
+  "kind": "compose.graph",
+  "kindVersion": 1,
+  "payload": {
+    "name": "support-assistant",
+    "nodes": [
+      {
+        "id": "answer",
+        "name": "Answer",
+        "component": "Graph",
+        "workflow": {
+          "nodes": [
+            {
+              "id": "invoke",
+              "name": "Invoke",
+              "component": "Lambda"
+            }
+          ],
+          "edges": [
+            {
+              "from": "invoke",
+              "to": "end",
+              "channels": [
+                "control",
+                "data"
+              ]
+            }
+          ],
+          "branches": [
+            {
+              "from": "start",
+              "targets": [
+                "end",
+                "invoke"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "fallback",
+        "name": "Fallback",
+        "component": "Lambda"
+      },
+      {
+        "id": "prepare",
+        "name": "Prepare",
+        "component": "Lambda"
+      },
+      {
+        "id": "route",
+        "name": "Route",
+        "component": "Lambda"
+      }
+    ],
+    "edges": [
+      {
+        "from": "answer",
+        "to": "end",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "fallback",
+        "to": "end",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "prepare",
+        "to": "route",
+        "channels": [
+          "control",
+          "data"
+        ]
+      },
+      {
+        "from": "route",
+        "to": "answer",
+        "channels": [
+          "data"
+        ],
+        "mappings": [
+          {
+            "fromPath": [
+              "Text"
+            ],
+            "toPath": []
+          }
+        ]
+      },
+      {
+        "from": "route",
+        "to": "fallback",
+        "channels": [
+          "data"
+        ],
+        "mappings": [
+          {
+            "fromPath": [
+              "Text"
+            ],
+            "toPath": []
+          }
+        ]
+      },
+      {
+        "from": "start",
+        "to": "prepare",
+        "channels": [
+          "control",
+          "data"
+        ]
+      }
+    ],
+    "branches": [
+      {
+        "from": "route",
+        "targets": [
+          "answer",
+          "fallback"
+        ]
+      }
+    ]
+  },
+  "source": {
+    "einoVersion": "0.9.19",
+    "format": "GraphInfo",
+    "module": "compose"
+  }
+}

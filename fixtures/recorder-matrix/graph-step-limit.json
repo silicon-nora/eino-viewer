@@ -1,0 +1,397 @@
+{
+  "schemaVersion": 1,
+  "runId": "matrix-graph-max-steps",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "Retry loop reaches maximum steps",
+        "nodes": [
+          {
+            "id": "retry",
+            "name": "Retry forever",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "start",
+            "to": "retry",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ],
+        "branches": [
+          {
+            "from": "retry",
+            "targets": [
+              "end",
+              "retry"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          }
+        ],
+        "run": {
+          "name": "Retry loop reaches maximum steps",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps",
+        "eventId": "matrix-graph-max-steps:1",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          },
+          {
+            "type": "node",
+            "id": "retry"
+          }
+        ],
+        "nodePath": [
+          "retry"
+        ],
+        "run": {
+          "name": "Retry forever",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps/node:retry",
+        "eventId": "matrix-graph-max-steps:2",
+        "parentEntityId": "runnable:Retry loop reaches maximum steps",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          },
+          {
+            "type": "node",
+            "id": "retry"
+          }
+        ],
+        "nodePath": [
+          "retry"
+        ],
+        "run": {
+          "name": "Retry forever",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps/node:retry",
+        "eventId": "matrix-graph-max-steps:3",
+        "parentEntityId": "runnable:Retry loop reaches maximum steps",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          },
+          {
+            "type": "node",
+            "id": "retry"
+          }
+        ],
+        "nodePath": [
+          "retry"
+        ],
+        "run": {
+          "name": "Retry forever",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps/node:retry",
+        "eventId": "matrix-graph-max-steps:4",
+        "parentEntityId": "runnable:Retry loop reaches maximum steps",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 5,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          },
+          {
+            "type": "node",
+            "id": "retry"
+          }
+        ],
+        "nodePath": [
+          "retry"
+        ],
+        "run": {
+          "name": "Retry forever",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps/node:retry",
+        "eventId": "matrix-graph-max-steps:5",
+        "parentEntityId": "runnable:Retry loop reaches maximum steps",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 6,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          },
+          {
+            "type": "node",
+            "id": "retry"
+          }
+        ],
+        "nodePath": [
+          "retry"
+        ],
+        "run": {
+          "name": "Retry forever",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps/node:retry",
+        "eventId": "matrix-graph-max-steps:6",
+        "parentEntityId": "runnable:Retry loop reaches maximum steps",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 7,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          },
+          {
+            "type": "node",
+            "id": "retry"
+          }
+        ],
+        "nodePath": [
+          "retry"
+        ],
+        "run": {
+          "name": "Retry forever",
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps/node:retry",
+        "eventId": "matrix-graph-max-steps:7",
+        "parentEntityId": "runnable:Retry loop reaches maximum steps",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 8,
+        "phase": "error",
+        "streaming": false,
+        "timestampMs": 1789500000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "Retry loop reaches maximum steps"
+          }
+        ],
+        "run": {
+          "name": "Retry loop reaches maximum steps",
+          "component": "Graph"
+        },
+        "error": {
+          "message": "[GraphRunError] exceeds max steps"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:Retry loop reaches maximum steps",
+        "eventId": "matrix-graph-max-steps:8",
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "failed",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "matrix-graph-max-steps"
+      },
+      "observedAtMs": 1789500000000
+    }
+  ],
+  "metadata": {
+    "executionMode": "deterministic-local",
+    "fixtureScenario": "graph-step-limit"
+  }
+}

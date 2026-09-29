@@ -1,0 +1,605 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-static-agent-redacted-tool",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "读取客户资料，不在记录里保留邮箱。",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "agent"
+          },
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "Follow the requested synthetic acceptance scenario.",
+              "role": "system"
+            },
+            {
+              "content": "读取客户资料，不在记录里保留邮箱。",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "StaticAgentMatrixModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1",
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "agent"
+          },
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"customer\":\"Ada\"}",
+                  "name": "lookup_profile"
+                },
+                "id": "call-redacted-tool",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "StaticAgentMatrixModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1",
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "agent"
+          },
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_profile",
+            "subId": "call-redacted-tool",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"customer\":\"Ada\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_profile",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "staticAgentMatrixTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ToolNode/tool:lookup_profile:call-redacted-tool",
+        "parentEntityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ToolNode",
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "agent"
+          },
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_profile",
+            "subId": "call-redacted-tool",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "{\"customer\":\"Ada\",\"email\":\"[REDACTED]\"}"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "lookup_profile",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "staticAgentMatrixTool"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ToolNode/tool:lookup_profile:call-redacted-tool",
+        "parentEntityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ToolNode",
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-redacted-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "d94b66d4-be0f-44ed-8fbb-c37a53f4d357"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"customer\":\"Ada\"}",
+                    "name": "lookup_profile"
+                  },
+                  "id": "call-redacted-tool",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "static-matrix-redacted-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000007
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-redacted-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "lookup_profile",
+            "value": {
+              "content": "{\"customer\":\"Ada\",\"email\":\"[REDACTED]\"}",
+              "extra": {
+                "_eino_msg_id": "01e1c53d-c75f-4343-af0c-8ab0650c4f5d"
+              },
+              "role": "tool",
+              "tool_call_id": "call-redacted-tool",
+              "tool_name": "lookup_profile"
+            }
+          }
+        },
+        "runPath": [
+          "static-matrix-redacted-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000008
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "agent"
+          },
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "Follow the requested synthetic acceptance scenario.",
+              "role": "system"
+            },
+            {
+              "content": "读取客户资料，不在记录里保留邮箱。",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "d94b66d4-be0f-44ed-8fbb-c37a53f4d357"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"customer\":\"Ada\"}",
+                    "name": "lookup_profile"
+                  },
+                  "id": "call-redacted-tool",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "{\"customer\":\"Ada\",\"email\":\"[REDACTED]\"}",
+              "extra": {
+                "_eino_msg_id": "01e1c53d-c75f-4343-af0c-8ab0650c4f5d"
+              },
+              "role": "tool",
+              "tool_call_id": "call-redacted-tool",
+              "tool_name": "lookup_profile"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "StaticAgentMatrixModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1",
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000009
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "agent"
+          },
+          {
+            "id": "static-matrix-redacted-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "已读取资料：[REDACTED]，欢迎 Ada。",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "StaticAgentMatrixModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:static-matrix-redacted-tool/runnable:static-matrix-redacted-tool/node:node_1",
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000010
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-redacted-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "已读取资料：[REDACTED]，欢迎 Ada。",
+              "extra": {
+                "_eino_msg_id": "b90a955d-a5c1-40e7-99f8-16d09d4da4f9"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "static-matrix-redacted-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000011
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "已读取资料：[REDACTED]，欢迎 Ada。",
+        "extra": {
+          "_eino_msg_id": "b90a955d-a5c1-40e7-99f8-16d09d4da4f9"
+        },
+        "role": "assistant"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000012
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "partial",
+        "outcome": "success",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-redacted-tool"
+      },
+      "observedAtMs": 1790000000013
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/response",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/output/message/value/content",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/messages/3/content",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/message/content",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/output/message/value/content",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/content",
+      "message": "Value was replaced by the configured redaction policy."
+    }
+  ],
+  "metadata": {
+    "modelMode": "deterministic-test-double",
+    "runtime": "eino-adk-runner",
+    "scenario": "redacted-tool",
+    "streaming": false
+  }
+}

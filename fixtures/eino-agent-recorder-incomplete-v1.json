@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-auto-incomplete",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "user",
+        "content": "新加坡天气怎么样？"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-auto-incomplete"
+      },
+      "observedAtMs": 1789100200001
+    }
+  ]
+}

@@ -1,0 +1,990 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-agent-repeated-tool",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "分别查询每次工具调用，并汇总最终结果。",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "分别查询每次工具调用，并汇总最终结果。",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "ComplexRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"first\"}",
+                  "name": "lookup_item"
+                },
+                "id": "call-repeat-1",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "ComplexRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "call-repeat-1",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"key\":\"first\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "complexRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode/tool:lookup_item:call-repeat-1",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "call-repeat-1",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "result:first"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "complexRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode/tool:lookup_item:call-repeat-1",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "agent-repeated-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "abf6d1f8-587b-4c11-875e-675ec1f2e5c0"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"first\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "call-repeat-1",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "agent-repeated-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "agent-repeated-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "lookup_item",
+            "value": {
+              "content": "result:first",
+              "extra": {
+                "_eino_msg_id": "df826bee-d324-4b82-a44a-ef1b8acaac61"
+              },
+              "role": "tool",
+              "tool_call_id": "call-repeat-1",
+              "tool_name": "lookup_item"
+            }
+          }
+        },
+        "runPath": [
+          "agent-repeated-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "分别查询每次工具调用，并汇总最终结果。",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "abf6d1f8-587b-4c11-875e-675ec1f2e5c0"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"first\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "call-repeat-1",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "result:first",
+              "extra": {
+                "_eino_msg_id": "df826bee-d324-4b82-a44a-ef1b8acaac61"
+              },
+              "role": "tool",
+              "tool_call_id": "call-repeat-1",
+              "tool_name": "lookup_item"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "ComplexRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"second\"}",
+                  "name": "lookup_item"
+                },
+                "id": "call-repeat-2",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "ComplexRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "call-repeat-2",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"key\":\"second\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "complexRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode/tool:lookup_item:call-repeat-2",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "call-repeat-2",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "result:second"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "complexRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode/tool:lookup_item:call-repeat-2",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ToolNode",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "agent-repeated-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "d6d72fe8-d035-4af1-86a3-3e5a45a3057c"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"second\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "call-repeat-2",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "agent-repeated-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "agent-repeated-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "lookup_item",
+            "value": {
+              "content": "result:second",
+              "extra": {
+                "_eino_msg_id": "5e3e412c-ed02-4938-ab56-9027cf9a6b93"
+              },
+              "role": "tool",
+              "tool_call_id": "call-repeat-2",
+              "tool_name": "lookup_item"
+            }
+          }
+        },
+        "runPath": [
+          "agent-repeated-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "分别查询每次工具调用，并汇总最终结果。",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "abf6d1f8-587b-4c11-875e-675ec1f2e5c0"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"first\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "call-repeat-1",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "result:first",
+              "extra": {
+                "_eino_msg_id": "df826bee-d324-4b82-a44a-ef1b8acaac61"
+              },
+              "role": "tool",
+              "tool_call_id": "call-repeat-1",
+              "tool_name": "lookup_item"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "d6d72fe8-d035-4af1-86a3-3e5a45a3057c"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"second\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "call-repeat-2",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "result:second",
+              "extra": {
+                "_eino_msg_id": "5e3e412c-ed02-4938-ab56-9027cf9a6b93"
+              },
+              "role": "tool",
+              "tool_call_id": "call-repeat-2",
+              "tool_name": "lookup_item"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "ComplexRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "agent-repeated-tool",
+            "type": "agent"
+          },
+          {
+            "id": "agent-repeated-tool",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "同名工具两次调用已分别完成：first、second。",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "ComplexRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:agent-repeated-tool/runnable:agent-repeated-tool/node:node_1",
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "agent-repeated-tool",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "同名工具两次调用已分别完成：first、second。",
+              "extra": {
+                "_eino_msg_id": "ea1f156b-1302-4c81-95e7-c7c5a5a3d02d"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "agent-repeated-tool"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "同名工具两次调用已分别完成：first、second。",
+        "extra": {
+          "_eino_msg_id": "ea1f156b-1302-4c81-95e7-c7c5a5a3d02d"
+        },
+        "role": "assistant"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "success",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-repeated-tool"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ]
+}

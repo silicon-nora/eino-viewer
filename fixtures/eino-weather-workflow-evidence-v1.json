@@ -1,0 +1,173 @@
+[
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Lambda",
+      "name": "Parse city",
+      "format": "Lambda.CallbackInput",
+      "address": [],
+      "nodePath": ["parse-city"],
+      "body": "新加坡现在天气怎么样？"
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Lambda",
+      "name": "Parse city",
+      "format": "Lambda.CallbackOutput",
+      "address": [],
+      "nodePath": ["parse-city"],
+      "body": { "City": "新加坡" }
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Lambda",
+      "name": "Get weather",
+      "format": "Lambda.CallbackInput",
+      "address": [],
+      "nodePath": ["get-weather"],
+      "body": { "City": "新加坡" }
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Lambda",
+      "name": "Get weather",
+      "format": "Lambda.CallbackOutput",
+      "address": [],
+      "nodePath": ["get-weather"],
+      "body": {
+        "City": "新加坡",
+        "Condition": "晴",
+        "TemperatureC": 31,
+        "HumidityPercent": 68
+      }
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "Lambda",
+      "name": "Build model context",
+      "format": "Lambda.CallbackInput",
+      "address": [],
+      "nodePath": ["build-context"],
+      "body": {
+        "City": "新加坡",
+        "Condition": "晴",
+        "TemperatureC": 31,
+        "HumidityPercent": 68
+      }
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "Lambda",
+      "name": "Build model context",
+      "format": "Lambda.CallbackOutput",
+      "address": [],
+      "nodePath": ["build-context"],
+      "body": [
+        { "role": "system", "content": "请根据天气工具结果回答用户。" },
+        { "role": "user", "content": "新加坡现在天气怎么样？" },
+        {
+          "role": "tool",
+          "content": "{\"city\":\"新加坡\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}",
+          "tool_call_id": "call-weather-workflow"
+        }
+      ]
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "input",
+      "streaming": false,
+      "component": "ChatModel",
+      "name": "Generate answer",
+      "type": "DeterministicWeather",
+      "format": "model.CallbackInput",
+      "address": [],
+      "nodePath": ["generate-answer"],
+      "body": {
+        "messages": [
+          { "role": "system", "content": "请根据天气工具结果回答用户。" },
+          { "role": "user", "content": "新加坡现在天气怎么样？" },
+          {
+            "role": "tool",
+            "content": "{\"city\":\"新加坡\",\"condition\":\"晴\",\"temperatureC\":31,\"humidityPercent\":68}",
+            "tool_call_id": "call-weather-workflow"
+          }
+        ]
+      }
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "component.io",
+    "kindVersion": 1,
+    "payload": {
+      "direction": "output",
+      "streaming": false,
+      "component": "ChatModel",
+      "name": "Generate answer",
+      "type": "DeterministicWeather",
+      "format": "model.CallbackOutput",
+      "address": [],
+      "nodePath": ["generate-answer"],
+      "body": {
+        "message": {
+          "role": "assistant",
+          "content": "新加坡当前晴，31°C，湿度 68%。适合出行，注意防晒。"
+        }
+      }
+    },
+    "correlation": { "runId": "run-weather-workflow-1" }
+  }
+]

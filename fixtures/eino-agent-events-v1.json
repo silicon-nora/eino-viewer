@@ -1,0 +1,87 @@
+[
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "agent.event",
+    "kindVersion": 1,
+    "payload": {
+      "agentName": "planner",
+      "runPath": [
+        "planner"
+      ],
+      "output": {
+        "message": {
+          "format": "Message",
+          "streaming": false,
+          "role": "assistant",
+          "value": {
+            "role": "assistant",
+            "content": "Calling the weather agent."
+          }
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "AgentEvent",
+      "module": "adk"
+    },
+    "correlation": {
+      "runId": "run-agent-1"
+    },
+    "observedAtMs": 1789000000100
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "agent.event",
+    "kindVersion": 1,
+    "payload": {
+      "agentName": "planner",
+      "action": {
+        "exit": false,
+        "transfer": {
+          "destinationAgent": "weather-agent"
+        },
+        "breakLoop": {
+          "from": "planner",
+          "done": true,
+          "currentIterations": 2
+        },
+        "customized": {
+          "reason": "fixture"
+        }
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "AgentEvent",
+      "module": "adk"
+    },
+    "correlation": {
+      "runId": "run-agent-1"
+    },
+    "observedAtMs": 1789000000100
+  },
+  {
+    "protocol": "eino-dag",
+    "protocolVersion": 1,
+    "kind": "agent.event",
+    "kindVersion": 1,
+    "payload": {
+      "agentName": "weather-agent",
+      "error": {
+        "message": "weather backend unavailable"
+      }
+    },
+    "source": {
+      "einoVersion": "0.9.19",
+      "format": "AgentEvent",
+      "module": "adk"
+    },
+    "correlation": {
+      "runId": "run-agent-1"
+    },
+    "observedAtMs": 1789000000100
+  }
+]

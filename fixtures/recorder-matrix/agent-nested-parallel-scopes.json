@@ -1,0 +1,2115 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-agent-nested-parallel-scopes",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "single",
+        "role": "user"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "single",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"request\":\"slow\"}",
+                  "name": "worker"
+                },
+                "id": "call-child-slow",
+                "type": "function"
+              },
+              {
+                "function": {
+                  "arguments": "{\"request\":\"fast\"}",
+                  "name": "worker"
+                },
+                "id": "call-child-fast",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "afacbe25-405d-4e31-812f-ae7cfc56e8b8"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"slow\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-slow",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"fast\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-fast",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"request\":\"slow\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"request\":\"fast\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"slow\"}",
+                  "name": "lookup_item"
+                },
+                "id": "shared-inner-call",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"fast\"}",
+                  "name": "lookup_item"
+                },
+                "id": "shared-inner-call",
+                "type": "function"
+              }
+            ]
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-inner-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"key\":\"slow\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "nestedRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-inner-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "ddda1b70-593b-4dc6-9f5a-91212410188e"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"slow\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "1b764976-825d-4fbd-9cc5-f81cd7b14d9a"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"fast\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-inner-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "argumentsJson": "{\"key\":\"fast\"}"
+        },
+        "component": "Tool",
+        "direction": "input",
+        "format": "tool.CallbackInput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "nestedRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-inner-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-inner-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "lookup:fast"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "nestedRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-inner-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "lookup_item",
+            "value": {
+              "content": "lookup:fast",
+              "extra": {
+                "_eino_msg_id": "8e6f6c0b-fe92-4214-9437-d1bd7b3d947e"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-inner-call",
+              "tool_name": "lookup_item"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "1b764976-825d-4fbd-9cc5-f81cd7b14d9a"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"fast\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "lookup:fast",
+              "extra": {
+                "_eino_msg_id": "8e6f6c0b-fe92-4214-9437-d1bd7b3d947e"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-inner-call",
+              "tool_name": "lookup_item"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "child result:fast",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-fast",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "child result:fast"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-fast",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "child result:fast",
+              "extra": {
+                "_eino_msg_id": "ff948ca4-4f69-4aa0-b24f-0c490a65f157"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "worker",
+            "value": {
+              "content": "child result:fast",
+              "extra": {
+                "_eino_msg_id": "0cde7a82-7b72-4965-af4d-9c6c567d1176"
+              },
+              "role": "tool",
+              "tool_call_id": "call-child-fast",
+              "tool_name": "worker"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "lookup_item",
+            "subId": "shared-inner-call",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "lookup:slow"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "lookup_item",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "nestedRecorderTool"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ToolNode/tool:lookup_item:shared-inner-call",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "ddda1b70-593b-4dc6-9f5a-91212410188e"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"slow\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "lookup:slow",
+              "extra": {
+                "_eino_msg_id": "33ec9b25-cb3a-4423-9786-0fb54dcc06a3"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-inner-call",
+              "tool_name": "lookup_item"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          },
+          {
+            "id": "worker",
+            "type": "agent"
+          },
+          {
+            "id": "worker",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "child result:slow",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ToolNode",
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow/agent:worker/runnable:worker/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "lookup_item",
+            "value": {
+              "content": "lookup:slow",
+              "extra": {
+                "_eino_msg_id": "33ec9b25-cb3a-4423-9786-0fb54dcc06a3"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-inner-call",
+              "tool_name": "lookup_item"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "worker",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "child result:slow",
+              "extra": {
+                "_eino_msg_id": "93e139c1-d07c-43d8-b381-058eb138eabd"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator",
+          "worker"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ToolNode",
+            "type": "node"
+          },
+          {
+            "id": "worker",
+            "subId": "call-child-slow",
+            "type": "tool"
+          }
+        ],
+        "body": {
+          "response": "child result:slow"
+        },
+        "component": "Tool",
+        "direction": "output",
+        "format": "tool.CallbackOutput",
+        "name": "worker",
+        "nodePath": [
+          "node_1",
+          "ToolNode"
+        ],
+        "streaming": false,
+        "type": "typedAgentTool[*github.com/cloudwego/eino/schema.Message]"
+      },
+      "source": {
+        "format": "tool.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode/tool:worker:call-child-slow",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ToolNode",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "messages": [
+            {
+              "content": "single",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "afacbe25-405d-4e31-812f-ae7cfc56e8b8"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"slow\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-slow",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"fast\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-fast",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "child result:slow",
+              "extra": {
+                "_eino_msg_id": "d3b4257e-809a-4cb9-9c8a-45e8af737094"
+              },
+              "role": "tool",
+              "tool_call_id": "call-child-slow",
+              "tool_name": "worker"
+            },
+            {
+              "content": "child result:fast",
+              "extra": {
+                "_eino_msg_id": "0cde7a82-7b72-4965-af4d-9c6c567d1176"
+              },
+              "role": "tool",
+              "tool_call_id": "call-child-fast",
+              "tool_name": "worker"
+            }
+          ]
+        },
+        "component": "ChatModel",
+        "direction": "input",
+        "format": "model.CallbackInput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "coordinator",
+            "type": "agent"
+          },
+          {
+            "id": "coordinator",
+            "type": "runnable"
+          },
+          {
+            "id": "node_1",
+            "type": "node"
+          },
+          {
+            "id": "ChatModel",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "message": {
+            "content": "parent final: combined slow and fast",
+            "role": "assistant"
+          }
+        },
+        "component": "ChatModel",
+        "direction": "output",
+        "format": "model.CallbackOutput",
+        "name": "ChatModel",
+        "nodePath": [
+          "node_1",
+          "ChatModel"
+        ],
+        "streaming": false,
+        "type": "NestedRecorderModel"
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:coordinator/runnable:coordinator/node:node_1/node:ChatModel",
+        "parentEntityId": "agent:coordinator/runnable:coordinator/node:node_1",
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "tool",
+            "streaming": false,
+            "toolName": "worker",
+            "value": {
+              "content": "child result:slow",
+              "extra": {
+                "_eino_msg_id": "d3b4257e-809a-4cb9-9c8a-45e8af737094"
+              },
+              "role": "tool",
+              "tool_call_id": "call-child-slow",
+              "tool_name": "worker"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "coordinator",
+        "output": {
+          "message": {
+            "format": "Message",
+            "role": "assistant",
+            "streaming": false,
+            "value": {
+              "content": "parent final: combined slow and fast",
+              "extra": {
+                "_eino_msg_id": "64b55d5a-5f24-4c93-ba7e-4da37e922c8f"
+              },
+              "role": "assistant"
+            }
+          }
+        },
+        "runPath": [
+          "coordinator"
+        ]
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "content": "parent final: combined slow and fast",
+        "extra": {
+          "_eino_msg_id": "64b55d5a-5f24-4c93-ba7e-4da37e922c8f"
+        },
+        "role": "assistant"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "success",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-agent-nested-parallel-scopes"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ]
+}

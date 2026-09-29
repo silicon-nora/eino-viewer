@@ -1,0 +1,103 @@
+name: Publish eino-viewer
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  go-projection:
+    name: Go projection / Eino ${{ matrix.eino }}
+    if: startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        eino: [v0.9.0, v0.9.19]
+    defaults:
+      run:
+        working-directory: integrations/go
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: 1.18.x
+          cache-dependency-path: integrations/go/go.sum
+      - run: go mod edit -require=github.com/cloudwego/eino@${{ matrix.eino }}
+      - run: go mod tidy
+      - run: go test ./...
+      - run: go vet ./...
+
+  npm:
+    name: npm / eino-viewer
+    if: startsWith(github.event.release.tag_name, 'v')
+    needs: go-projection
+    runs-on: ubuntu-latest
+    environment: npm-release
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify release commit belongs to the default branch
+        run: >-
+          git merge-base --is-ancestor
+          "$GITHUB_SHA"
+          "origin/${{ github.event.repository.default_branch }}"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm ci
+      - id: release
+        name: Verify eino-viewer release identity
+        run: >-
+          node scripts/eino-viewer-release-metadata.js
+          "${{ github.event.release.tag_name }}"
+          "${{ github.repository }}"
+          "${{ github.event.release.prerelease }}"
+          >> "$GITHUB_OUTPUT"
+      - name: Verify compatible workflow base is published
+        run: npm view eino-workflow-dag@1.3.1 version --json
+      - run: npm run prepublishOnly
+      - run: node scripts/check-eino-viewer-release.js
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser -- --project=chromium
+      - id: artifact
+        name: Create immutable eino-viewer artifact
+        run: >-
+          node scripts/create-release-artifact.js
+          "$RUNNER_TEMP/eino-viewer-release"
+          >> "$GITHUB_OUTPUT"
+      - name: Record release artifact
+        run: |
+          echo "### eino-viewer npm artifact" >> "$GITHUB_STEP_SUMMARY"
+          echo '- File: `${{ steps.artifact.outputs.filename }}`' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Size: `${{ steps.artifact.outputs.size }} bytes`' >> "$GITHUB_STEP_SUMMARY"
+          echo '- SHA-1: `${{ steps.artifact.outputs.shasum }}`' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Integrity: `${{ steps.artifact.outputs.integrity }}`' >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish eino-viewer to npm
+        run: >-
+          npm publish "${{ steps.artifact.outputs.tarball }}"
+          --ignore-scripts --access public
+          --tag "${{ steps.release.outputs.dist_tag }}"
+          --provenance
+
+  published-consumer:
+    needs: npm
+    uses: ./.github/workflows/published-smoke.yml
+    with:
+      version: ${{ needs.npm.outputs.version }}

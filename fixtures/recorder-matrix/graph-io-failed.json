@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-graph-io-failed",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "graph-io-failed",
+        "nodes": [
+          {
+            "id": "process",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "process",
+            "to": "end",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "start",
+            "to": "process",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-failed"
+          }
+        ],
+        "run": {
+          "name": "graph-io-failed",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-failed",
+        "eventId": "run-graph-io-failed:1",
+        "invocationId": "run-graph-io-failed:1",
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-failed",
+            "type": "runnable"
+          }
+        ],
+        "body": "失败测试输入",
+        "component": "Graph",
+        "direction": "input",
+        "format": "Graph.CallbackInput",
+        "name": "graph-io-failed",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-failed",
+        "eventId": "run-graph-io-failed:1",
+        "invocationId": "run-graph-io-failed:1",
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-failed"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "nodePath": [
+          "process"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-failed/node:process",
+        "eventId": "run-graph-io-failed:2",
+        "invocationId": "run-graph-io-failed:2",
+        "parentEntityId": "runnable:graph-io-failed",
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-failed",
+            "type": "runnable"
+          },
+          {
+            "id": "process",
+            "type": "node"
+          }
+        ],
+        "body": "失败测试输入",
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "nodePath": [
+          "process"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-failed/node:process",
+        "eventId": "run-graph-io-failed:2",
+        "invocationId": "run-graph-io-failed:2",
+        "parentEntityId": "runnable:graph-io-failed",
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "error",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-failed"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "nodePath": [
+          "process"
+        ],
+        "run": {
+          "component": "Lambda"
+        },
+        "error": {
+          "message": "upstream service unavailable"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-failed/node:process",
+        "eventId": "run-graph-io-failed:3",
+        "invocationId": "run-graph-io-failed:2",
+        "parentEntityId": "runnable:graph-io-failed",
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "error",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-failed"
+          }
+        ],
+        "run": {
+          "name": "graph-io-failed",
+          "component": "Graph"
+        },
+        "error": {
+          "message": "[NodeRunError] upstream service unavailable\n------------------------\nnode path: [process]"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-failed",
+        "eventId": "run-graph-io-failed:4",
+        "invocationId": "run-graph-io-failed:1",
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "failed",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-io-failed"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ]
+}

@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-graph-io-redacted",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "graph-io-redacted",
+        "nodes": [
+          {
+            "id": "process",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "process",
+            "to": "end",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "start",
+            "to": "process",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-redacted"
+          }
+        ],
+        "run": {
+          "name": "graph-io-redacted",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted",
+        "eventId": "run-graph-io-redacted:1",
+        "invocationId": "run-graph-io-redacted:1",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-redacted",
+            "type": "runnable"
+          }
+        ],
+        "body": {
+          "query": "账户概览",
+          "secret": "[REDACTED]"
+        },
+        "component": "Graph",
+        "direction": "input",
+        "format": "Graph.CallbackInput",
+        "name": "graph-io-redacted",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted",
+        "eventId": "run-graph-io-redacted:1",
+        "invocationId": "run-graph-io-redacted:1",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "redacted": true,
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-redacted"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "nodePath": [
+          "process"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted/node:process",
+        "eventId": "run-graph-io-redacted:2",
+        "invocationId": "run-graph-io-redacted:2",
+        "parentEntityId": "runnable:graph-io-redacted",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-redacted",
+            "type": "runnable"
+          },
+          {
+            "id": "process",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "query": "账户概览",
+          "secret": "[REDACTED]"
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "nodePath": [
+          "process"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted/node:process",
+        "eventId": "run-graph-io-redacted:2",
+        "invocationId": "run-graph-io-redacted:2",
+        "parentEntityId": "runnable:graph-io-redacted",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "redacted": true,
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-redacted"
+          },
+          {
+            "type": "node",
+            "id": "process"
+          }
+        ],
+        "nodePath": [
+          "process"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted/node:process",
+        "eventId": "run-graph-io-redacted:3",
+        "invocationId": "run-graph-io-redacted:2",
+        "parentEntityId": "runnable:graph-io-redacted",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-redacted",
+            "type": "runnable"
+          },
+          {
+            "id": "process",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "answer": "已生成账户概览",
+          "secret": "[REDACTED]"
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "nodePath": [
+          "process"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted/node:process",
+        "eventId": "run-graph-io-redacted:3",
+        "invocationId": "run-graph-io-redacted:2",
+        "parentEntityId": "runnable:graph-io-redacted",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "redacted": true,
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-io-redacted"
+          }
+        ],
+        "run": {
+          "name": "graph-io-redacted",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted",
+        "eventId": "run-graph-io-redacted:4",
+        "invocationId": "run-graph-io-redacted:1",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-io-redacted",
+            "type": "runnable"
+          }
+        ],
+        "body": {
+          "answer": "已生成账户概览",
+          "secret": "[REDACTED]"
+        },
+        "component": "Graph",
+        "direction": "output",
+        "format": "Graph.CallbackOutput",
+        "name": "graph-io-redacted",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-io-redacted",
+        "eventId": "run-graph-io-redacted:4",
+        "invocationId": "run-graph-io-redacted:1",
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "redacted": true,
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "success",
+        "capture": "partial"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-io-redacted"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/secret",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/secret",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/secret",
+      "message": "Value was replaced by the configured redaction policy."
+    },
+    {
+      "severity": "warning",
+      "code": "projection.redacted",
+      "path": "/payload/body/secret",
+      "message": "Value was replaced by the configured redaction policy."
+    }
+  ]
+}

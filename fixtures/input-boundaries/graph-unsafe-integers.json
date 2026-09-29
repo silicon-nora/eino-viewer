@@ -1,0 +1,456 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-graph-unsafe-integers",
+  "source": "graph",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "compose.graph",
+      "kindVersion": 1,
+      "payload": {
+        "name": "graph-unsafe-integers",
+        "nodes": [
+          {
+            "id": "echo",
+            "component": "Lambda"
+          }
+        ],
+        "edges": [
+          {
+            "from": "echo",
+            "to": "end",
+            "channels": [
+              "control",
+              "data"
+            ]
+          },
+          {
+            "from": "start",
+            "to": "echo",
+            "channels": [
+              "control",
+              "data"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "format": "GraphInfo",
+        "module": "compose"
+      },
+      "correlation": {
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 1,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-unsafe-integers"
+          }
+        ],
+        "run": {
+          "name": "graph-unsafe-integers",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers",
+        "eventId": "run-graph-unsafe-integers:1",
+        "invocationId": "run-graph-unsafe-integers:1",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-unsafe-integers",
+            "type": "runnable"
+          }
+        ],
+        "body": {
+          "firstUnsafeNegative": -9007199254740992,
+          "firstUnsafePositive": 9007199254740992,
+          "firstUnsafeUnsigned": 9007199254740992,
+          "negativeUnsafe": -9007199254740993,
+          "positiveUnsafe": 9007199254740993,
+          "signedMax": 9223372036854775807,
+          "signedMaxText": "9223372036854775807",
+          "signedMin": -9223372036854775808,
+          "signedMinText": "-9223372036854775808",
+          "unsignedMax": 18446744073709551615,
+          "unsignedText": "18446744073709551615",
+          "unsignedUnsafe": 9007199254740993,
+          "zero": 0
+        },
+        "component": "Graph",
+        "direction": "input",
+        "format": "Graph.CallbackInput",
+        "name": "graph-unsafe-integers",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers",
+        "eventId": "run-graph-unsafe-integers:1",
+        "invocationId": "run-graph-unsafe-integers:1",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 2,
+        "phase": "start",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-unsafe-integers"
+          },
+          {
+            "type": "node",
+            "id": "echo"
+          }
+        ],
+        "nodePath": [
+          "echo"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers/node:echo",
+        "eventId": "run-graph-unsafe-integers:2",
+        "invocationId": "run-graph-unsafe-integers:2",
+        "parentEntityId": "runnable:graph-unsafe-integers",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-unsafe-integers",
+            "type": "runnable"
+          },
+          {
+            "id": "echo",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "firstUnsafeNegative": -9007199254740992,
+          "firstUnsafePositive": 9007199254740992,
+          "firstUnsafeUnsigned": 9007199254740992,
+          "negativeUnsafe": -9007199254740993,
+          "positiveUnsafe": 9007199254740993,
+          "signedMax": 9223372036854775807,
+          "signedMaxText": "9223372036854775807",
+          "signedMin": -9223372036854775808,
+          "signedMinText": "-9223372036854775808",
+          "unsignedMax": 18446744073709551615,
+          "unsignedText": "18446744073709551615",
+          "unsignedUnsafe": 9007199254740993,
+          "zero": 0
+        },
+        "component": "Lambda",
+        "direction": "input",
+        "format": "Lambda.CallbackInput",
+        "nodePath": [
+          "echo"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers/node:echo",
+        "eventId": "run-graph-unsafe-integers:2",
+        "invocationId": "run-graph-unsafe-integers:2",
+        "parentEntityId": "runnable:graph-unsafe-integers",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 3,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-unsafe-integers"
+          },
+          {
+            "type": "node",
+            "id": "echo"
+          }
+        ],
+        "nodePath": [
+          "echo"
+        ],
+        "run": {
+          "component": "Lambda"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers/node:echo",
+        "eventId": "run-graph-unsafe-integers:3",
+        "invocationId": "run-graph-unsafe-integers:2",
+        "parentEntityId": "runnable:graph-unsafe-integers",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-unsafe-integers",
+            "type": "runnable"
+          },
+          {
+            "id": "echo",
+            "type": "node"
+          }
+        ],
+        "body": {
+          "firstUnsafeNegative": -9007199254740992,
+          "firstUnsafePositive": 9007199254740992,
+          "firstUnsafeUnsigned": 9007199254740992,
+          "negativeUnsafe": -9007199254740993,
+          "positiveUnsafe": 9007199254740993,
+          "signedMax": 9223372036854775807,
+          "signedMaxText": "9223372036854775807",
+          "signedMin": -9223372036854775808,
+          "signedMinText": "-9223372036854775808",
+          "unsignedMax": 18446744073709551615,
+          "unsignedText": "18446744073709551615",
+          "unsignedUnsafe": 9007199254740993,
+          "zero": 0
+        },
+        "component": "Lambda",
+        "direction": "output",
+        "format": "Lambda.CallbackOutput",
+        "nodePath": [
+          "echo"
+        ],
+        "streaming": false
+      },
+      "source": {
+        "format": "Lambda.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers/node:echo",
+        "eventId": "run-graph-unsafe-integers:3",
+        "invocationId": "run-graph-unsafe-integers:2",
+        "parentEntityId": "runnable:graph-unsafe-integers",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "node"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "callback.event",
+      "kindVersion": 1,
+      "payload": {
+        "sequence": 4,
+        "phase": "end",
+        "streaming": false,
+        "timestampMs": 1790000000000,
+        "address": [
+          {
+            "type": "runnable",
+            "id": "graph-unsafe-integers"
+          }
+        ],
+        "run": {
+          "name": "graph-unsafe-integers",
+          "component": "Graph"
+        }
+      },
+      "source": {
+        "format": "RunInfo",
+        "module": "callbacks"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers",
+        "eventId": "run-graph-unsafe-integers:4",
+        "invocationId": "run-graph-unsafe-integers:1",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "address": [
+          {
+            "id": "graph-unsafe-integers",
+            "type": "runnable"
+          }
+        ],
+        "body": {
+          "firstUnsafeNegative": -9007199254740992,
+          "firstUnsafePositive": 9007199254740992,
+          "firstUnsafeUnsigned": 9007199254740992,
+          "negativeUnsafe": -9007199254740993,
+          "positiveUnsafe": 9007199254740993,
+          "signedMax": 9223372036854775807,
+          "signedMaxText": "9223372036854775807",
+          "signedMin": -9223372036854775808,
+          "signedMinText": "-9223372036854775808",
+          "unsignedMax": 18446744073709551615,
+          "unsignedText": "18446744073709551615",
+          "unsignedUnsafe": 9007199254740993,
+          "zero": 0
+        },
+        "component": "Graph",
+        "direction": "output",
+        "format": "Graph.CallbackOutput",
+        "name": "graph-unsafe-integers",
+        "streaming": false
+      },
+      "source": {
+        "format": "Graph.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "runnable:graph-unsafe-integers",
+        "eventId": "run-graph-unsafe-integers:4",
+        "invocationId": "run-graph-unsafe-integers:1",
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000,
+      "metadata": {
+        "capture": {
+          "status": "captured"
+        },
+        "io": {
+          "scope": "root"
+        }
+      }
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "capture": "complete",
+        "outcome": "success",
+        "state": "ended"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-graph-unsafe-integers"
+      },
+      "observedAtMs": 1790000000000
+    }
+  ]
+}

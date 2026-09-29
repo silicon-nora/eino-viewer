@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-static-agent-direct-answer",
+  "source": "agent",
+  "evidence": [
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "started"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000001
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "user",
+        "content": "请直接打个招呼。"
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000002
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "input",
+        "streaming": false,
+        "component": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackInput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-direct-answer"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-direct-answer"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          }
+        ],
+        "nodePath": [
+          "node_1"
+        ],
+        "body": {
+          "messages": [
+            {
+              "role": "system",
+              "content": "Follow the requested synthetic acceptance scenario."
+            },
+            {
+              "role": "user",
+              "content": "请直接打个招呼。"
+            }
+          ]
+        }
+      },
+      "source": {
+        "format": "model.CallbackInput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-direct-answer/runnable:static-matrix-direct-answer/node:node_1",
+        "parentEntityId": "agent:static-matrix-direct-answer/runnable:static-matrix-direct-answer",
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000003
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "component.io",
+      "kindVersion": 1,
+      "payload": {
+        "direction": "output",
+        "streaming": false,
+        "component": "ChatModel",
+        "type": "StaticAgentMatrixModel",
+        "format": "model.CallbackOutput",
+        "address": [
+          {
+            "type": "agent",
+            "id": "static-matrix-direct-answer"
+          },
+          {
+            "type": "runnable",
+            "id": "static-matrix-direct-answer"
+          },
+          {
+            "type": "node",
+            "id": "node_1"
+          }
+        ],
+        "nodePath": [
+          "node_1"
+        ],
+        "body": {
+          "message": {
+            "role": "assistant",
+            "content": "你好，运行已完成。"
+          }
+        }
+      },
+      "source": {
+        "format": "model.CallbackOutput",
+        "module": "components"
+      },
+      "correlation": {
+        "entityId": "agent:static-matrix-direct-answer/runnable:static-matrix-direct-answer/node:node_1",
+        "parentEntityId": "agent:static-matrix-direct-answer/runnable:static-matrix-direct-answer",
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000004
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "agent.event",
+      "kindVersion": 1,
+      "payload": {
+        "agentName": "static-matrix-direct-answer",
+        "runPath": [
+          "static-matrix-direct-answer"
+        ],
+        "output": {
+          "message": {
+            "format": "Message",
+            "streaming": false,
+            "role": "assistant",
+            "value": {
+              "role": "assistant",
+              "content": "你好，运行已完成。",
+              "extra": {
+                "_eino_msg_id": "1b418506-22d4-49ed-bd53-d55baf276059"
+              }
+            }
+          }
+        }
+      },
+      "source": {
+        "format": "AgentEvent",
+        "module": "adk"
+      },
+      "correlation": {
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000005
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "schema.message",
+      "kindVersion": 1,
+      "payload": {
+        "role": "assistant",
+        "content": "你好，运行已完成。",
+        "extra": {
+          "_eino_msg_id": "1b418506-22d4-49ed-bd53-d55baf276059"
+        }
+      },
+      "source": {
+        "format": "Message",
+        "module": "schema"
+      },
+      "correlation": {
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000006
+    },
+    {
+      "protocol": "eino-dag",
+      "protocolVersion": 1,
+      "kind": "run.lifecycle",
+      "kindVersion": 1,
+      "payload": {
+        "state": "ended",
+        "outcome": "success",
+        "capture": "complete"
+      },
+      "source": {
+        "format": "RunLifecycle",
+        "module": "recorder"
+      },
+      "correlation": {
+        "runId": "run-static-agent-direct-answer"
+      },
+      "observedAtMs": 1790000000007
+    }
+  ],
+  "metadata": {
+    "modelMode": "deterministic-test-double",
+    "runtime": "eino-adk-runner",
+    "scenario": "direct-answer",
+    "streaming": false
+  }
+}
