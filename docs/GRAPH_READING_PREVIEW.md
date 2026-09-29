@@ -131,3 +131,13 @@ Graph 仍待 Owner 的视觉和交互验收。嵌入／离线 Graph 尚未同步
 同一「多轮路线修订」、1280×720、默认首项：[调整前](../.artifacts/graph-topology-before.png)、[调整后](../.artifacts/graph-topology-after.png)、[完整页面](../.artifacts/graph-topology-overview.png)。另有[第三次执行](../.artifacts/graph-topology-third-visit.png)和[第二次失败](../.artifacts/graph-topology-failure.png)的走查截图。截图和日志仅保存在本地。
 
 剩余边界：Graph 视觉与交互仍待 Owner 验收；嵌入／离线 Graph 尚未同步。无法唯一对应定义的局部范围继续显示调用关系，源记录未提供的实际转移不推测。这些是明确保留的能力边界，不宣称所有 Graph 结构都经过穷尽验证。本次为内部走查与自动化验证，不冒充陌生用户研究。
+
+### 连线选择修复
+
+原画布只处理节点点击，连线没有选择行为。现为连线增加 14px 非缩放点击区、Tab／Enter／空格操作和线条／箭头的悬停、焦点及选中反馈，保留原几何。右侧只显示连接两端、连接类型及「流程定义」，不借用节点输入输出，也不声称实际经过该连接。
+
+节点与连线选中互斥；选择连线会清空旧步骤和证据关联，切语言保留连线、查询与视口，更换记录重置选择。拖动画布不触发选择，内部恢复不调用用户点击回调；自环、平行连接和多实例仍按原身份隔离。
+
+本次在原有两个 P0 中扩展验证，未新增测试案例：三浏览器专项 **9 / 9**，随后 Graph 相关回归 **190 / 190**，无失败、重试或跳过。两次结果不累加，也不等同重新运行全套 603 项。23 个 JS 测试入口、语法及类型检查通过，32 场景严格检查仍为 `passed-with-limitations`，既有四项采集限制不变。
+
+日志：`.artifacts/graph-edge-focused.log`、`.artifacts/graph-edge-regression.log`、`.artifacts/graph-edge-js.log`、`.artifacts/graph-edge-matrix.log`。真实页面鼠标点击、切语言和回到节点已走查；[循环回线选中截图](../.artifacts/graph-edge-loop-selected.png)。不改 Agent、Workflow、嵌入／离线、Recorder 或公开 API。

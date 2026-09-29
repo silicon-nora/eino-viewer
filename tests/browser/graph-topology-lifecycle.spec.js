@@ -33,10 +33,14 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     const model = { name: "Lifecycle graph", nodes: [node("a"), node("b"), node("c"), node("d"), node("start", "start"), node("end", "end")],
       edges: [edge("branch", "a", "b", "branch"), edge("return", "b", "a"),
         edge("self", "a", "a", "branch"), edge("parallel-self", "a", "a"), edge("exit", "b", "end")] };
-    const before = JSON.stringify(model), clicks = [[], []];
-    const first = createGraphTopologyView(document.querySelector("#first"), model, { locale: "en", onNodeClick: ({ id }) => clicks[0].push(id) });
-    const second = createGraphTopologyView(document.querySelector("#second"), model, { locale: "en", onNodeClick: ({ id }) => clicks[1].push(id) });
-    window.topologyLifecycle = { first, second, controls, observations, NativeObserver, model, before, clicks };
+    const before = JSON.stringify(model), clicks = [[], []], edgeClicks = [[], []];
+    const first = createGraphTopologyView(document.querySelector("#first"), model, { locale: "en",
+      onNodeClick: ({ id }) => { clicks[0].push(id); first.setActiveNodePath([id]); },
+      onEdgeClick: ({ id }) => { edgeClicks[0].push(id); first.setActiveEdge(id); } });
+    const second = createGraphTopologyView(document.querySelector("#second"), model, { locale: "en",
+      onNodeClick: ({ id }) => { clicks[1].push(id); second.setActiveNodePath([id]); },
+      onEdgeClick: ({ id }) => { edgeClicks[1].push(id); second.setActiveEdge(id); } });
+    window.topologyLifecycle = { first, second, controls, observations, NativeObserver, model, before, clicks, edgeClicks };
     return { hiddenHasViewport: Boolean(controls.captureViewerViewport(first)), visibleHasViewport: Boolean(controls.captureViewerViewport(second)) };
   }, label);
   expect(initial).toEqual({ hiddenHasViewport: false, visibleHasViewport: true });
@@ -46,6 +50,7 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
   await expect(first.locator("svg[data-graph-topology]")).toBeVisible();
   await expect(first.locator("[data-graph-node]")).toHaveCount(6);
   await expect(first.locator("[data-graph-edge]")).toHaveCount(5);
+  await expect(first.locator('[data-graph-edge-control][role="button"][tabindex="0"]')).toHaveCount(5);
   await expect(first.locator('[data-graph-node="a"]')).toHaveAttribute("aria-label", `${label} · Definition only`);
   await expect(first.locator('[data-graph-node="a"] title')).toHaveText(`${label} · Definition only`);
   await expect(first.locator("img,script,foreignObject")).toHaveCount(0);
@@ -106,7 +111,75 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
   expect(selection).toEqual({ selected: true, structural: false, clicks: [[], []] });
   await expect(first.locator('[data-graph-node="a"]')).toHaveAttribute("aria-pressed", "true");
   await expect(second.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+  const edgeSelection = await page.evaluate(() => {
+    const state = window.topologyLifecycle;
+    const selected = state.first.setActiveEdge("return");
+    const saved = state.controls.captureViewerViewport(state.first);
+    state.first.zoomIn();
+    const restored = state.controls.restoreViewerViewport(state.first, saved);
+    state.first.setActiveEdge("return");
+    state.first.setLocale("zh");
+    state.first.setLocale("en");
+    return { selected, restored, clicks: state.clicks, edgeClicks: state.edgeClicks,
+      viewport: state.controls.captureViewerViewport(state.first), saved };
+  });
+  expect(edgeSelection).toMatchObject({ selected: true, restored: true, clicks: [[], []], edgeClicks: [[], []] });
+  expect(edgeSelection.viewport).toEqual(edgeSelection.saved);
+  await expect(first.locator('[data-graph-edge-control="return"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(first.locator('[data-graph-node][aria-pressed="true"]')).toHaveCount(0);
+  await page.evaluate(() => { window.topologyLifecycle.controls.selectViewerGraphPath(window.topologyLifecycle.first, ["a"]); });
+  await expect(first.locator('[data-graph-edge-control][aria-pressed="true"]')).toHaveCount(0);
+  await expect(first.locator('[data-graph-node="a"]')).toHaveAttribute("aria-pressed", "true");
+
+  await first.locator('[data-graph-edge-control="self"]').press("Enter");
+  await expect(first.locator('[data-graph-edge-control="self"]')).toHaveAttribute("aria-pressed", "true");
+  await first.locator('[data-graph-edge-control="parallel-self"]').press("Space");
+  await expect(first.locator('[data-graph-edge-control="self"]')).toHaveAttribute("aria-pressed", "false");
+  await expect(first.locator('[data-graph-edge-control="parallel-self"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(first.locator('[data-graph-node][aria-pressed="true"]')).toHaveCount(0);
+  expect(await page.evaluate(() => window.topologyLifecycle.edgeClicks)).toEqual([["self", "parallel-self"], []]);
+  await expect(second.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+  await page.evaluate(() => window.topologyLifecycle.first.resetView());
+  const hitPoint = await first.evaluate((host) => {
+    const path = host.querySelector('[data-graph-edge="exit"]'), hit = host.querySelector('[data-graph-edge-hit="exit"]');
+    const length = path.getTotalLength(), matrix = path.getScreenCTM(), style = getComputedStyle(hit);
+    // Click four screen pixels away from the thin visible stroke. A DOM hit
+    // check chooses a real unobstructed point, not a synthesized click event.
+    for (const fraction of [0.5, 0.35, 0.65]) {
+      const point = path.getPointAtLength(length * fraction).matrixTransform(matrix);
+      const before = path.getPointAtLength(length * fraction - 1).matrixTransform(matrix);
+      const after = path.getPointAtLength(length * fraction + 1).matrixTransform(matrix);
+      const dx = after.x - before.x, dy = after.y - before.y, tangent = Math.hypot(dx, dy);
+      for (const sign of [-1, 1]) {
+        const x = point.x - sign * dy / tangent * 4, y = point.y + sign * dx / tangent * 4;
+        const target = document.elementFromPoint(x, y);
+        if (target?.closest('[data-graph-edge-control]')?.getAttribute("data-graph-edge-control") === "exit") {
+          return { x, y, hitWidth: parseFloat(style.strokeWidth), vectorEffect: style.vectorEffect };
+        }
+      }
+    }
+    return null;
+  });
+  expect(hitPoint).not.toBeNull();
+  expect(hitPoint.hitWidth).toBeGreaterThanOrEqual(12);
+  expect(hitPoint.vectorEffect).toBe("non-scaling-stroke");
+  await page.mouse.click(hitPoint.x, hitPoint.y);
+  await expect(first.locator('[data-graph-edge-control="exit"]')).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => window.topologyLifecycle.edgeClicks)).toEqual([["self", "parallel-self", "exit"], []]);
+  const beforeDrag = await page.evaluate(() => window.topologyLifecycle.controls.captureViewerViewport(window.topologyLifecycle.first));
+  await page.mouse.move(hitPoint.x, hitPoint.y);
+  await page.mouse.down();
+  await page.mouse.move(hitPoint.x + 28, hitPoint.y + 22, { steps: 6 });
+  await page.mouse.up();
+  expect(await page.evaluate(() => window.topologyLifecycle.controls.captureViewerViewport(window.topologyLifecycle.first))).not.toEqual(beforeDrag);
+  expect(await page.evaluate(() => window.topologyLifecycle.edgeClicks)).toEqual([["self", "parallel-self", "exit"], []]);
+  await expect(first.locator('[data-graph-edge-control="exit"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(second.locator('[aria-pressed="true"]')).toHaveCount(0);
   await first.locator('[data-graph-node="b"]').press("Enter");
+  await expect(first.locator('[data-graph-edge-control][aria-pressed="true"]')).toHaveCount(0);
+  await expect(first.locator('[data-graph-node="b"]')).toHaveAttribute("aria-pressed", "true");
   expect(await page.evaluate(() => window.topologyLifecycle.clicks)).toEqual([["b"], []]);
 
   const saved = await page.evaluate(() => {
@@ -125,11 +198,12 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     .toBeLessThan(saved.saved.viewBox.width);
   const resized = await page.evaluate(() => {
     const state = window.topologyLifecycle;
-    return { first: state.controls.captureViewerViewport(state.first), second: state.controls.captureViewerViewport(state.second), baseline: state.secondViewport, clicks: state.clicks };
+    return { first: state.controls.captureViewerViewport(state.first), second: state.controls.captureViewerViewport(state.second), baseline: state.secondViewport, clicks: state.clicks, edgeClicks: state.edgeClicks };
   });
   expect(resized.first.viewBox.width / resized.first.viewBox.height).toBeCloseTo(420 / 560, 5);
   expect(resized.second).toEqual(resized.baseline);
   expect(resized.clicks).toEqual([["b"], []]);
+  expect(resized.edgeClicks).toEqual([["self", "parallel-self", "exit"], []]);
 
   const disposed = await page.evaluate(async () => {
     const state = window.topologyLifecycle, host = document.querySelector("#first"), svg = host.querySelector("svg");
@@ -147,14 +221,17 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     state.first.resetView();
     state.first.setLocale("zh");
     state.controls.selectViewerGraphPath(state.first, ["b"]);
+    const edgeRejected = state.first.setActiveEdge("self") === false;
+    state.first.setActiveEdge(null);
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     mutations.disconnect();
     return { disconnected: observer.disconnected, childCount: host.childElementCount, oldUnchanged: svg.outerHTML === oldMarkup, changes,
       viewportGone: state.controls.captureViewerViewport(state.first) === undefined,
       otherViewport: state.controls.captureViewerViewport(state.second), baseline: state.secondViewport,
-      sourceUnchanged: JSON.stringify(state.model) === state.before, clicks: state.clicks };
+      sourceUnchanged: JSON.stringify(state.model) === state.before, clicks: state.clicks, edgeClicks: state.edgeClicks, edgeRejected };
   });
-  expect(disposed).toMatchObject({ disconnected: true, childCount: 0, oldUnchanged: true, changes: 0, viewportGone: true, sourceUnchanged: true, clicks: [["b"], []] });
+  expect(disposed).toMatchObject({ disconnected: true, childCount: 0, oldUnchanged: true, changes: 0, viewportGone: true, sourceUnchanged: true,
+    clicks: [["b"], []], edgeClicks: [["self", "parallel-self", "exit"], []], edgeRejected: true });
   expect(disposed.otherViewport).toEqual(disposed.baseline);
   await expect(second.locator("svg[data-graph-topology]")).toBeVisible();
   await expect(second.locator("[data-graph-node]")).toHaveCount(6);

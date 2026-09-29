@@ -11,10 +11,10 @@ const PADDING = 48;
 let instanceSequence = 0;
 
 const text = {
-  zh: { definition: "连线：流程定义", branch: "条件分支", diagram: "Graph 结构", start: "开始", end: "结束",
+  zh: { definition: "连线：流程定义", basis: "流程定义", connection: "流程连接", branch: "条件分支", diagram: "Graph 结构", start: "开始", end: "结束",
     boundary: "结构边界", declared: "仅定义", unobserved: "未观测到执行", calls: (count) => `执行 ${count} 次`,
     states: { failed: "失败", cancelled: "已取消", incomplete: "结果未记录", running: "结束未记录", skipped: "已跳过", interrupted: "已中断" } },
-  en: { definition: "Connections: flow definition", branch: "Conditional branch", diagram: "Graph structure", start: "Start", end: "End",
+  en: { definition: "Connections: flow definition", basis: "Flow definition", connection: "Flow connection", branch: "Conditional branch", diagram: "Graph structure", start: "Start", end: "End",
     boundary: "Structure boundary", declared: "Definition only", unobserved: "No execution observed", calls: (count) => `${count} ${count === 1 ? "call" : "calls"}`,
     states: { failed: "failed", cancelled: "cancelled", incomplete: "result not recorded", running: "end not recorded", skipped: "skipped", interrupted: "interrupted" } },
 };
@@ -221,7 +221,7 @@ export function createGraphTopologyView(host, model, options = {}) {
   if (!host || host.nodeType !== 1 || typeof host.replaceChildren !== "function") throw new TypeError("Expected a Graph drawing container");
   const nodeById = sourceGraph(model), layout = topologyLayout(model);
   const dom = host.ownerDocument, view = dom.defaultView;
-  let locale = language(options.locale), disposed = false, selectedId, frame, unregister;
+  let locale = language(options.locale), disposed = false, selectedId, selectedEdgeId, frame, unregister;
   let viewport, dimensions, drag, ignoreNextClick = false, pendingFit = true;
   const signature = JSON.stringify([model.nodes.map(({ id }) => id), model.edges.map(({ id, from, to, kind }) => [id, from, to, kind])]);
   const wrapper = dom.createElement("div");
@@ -235,9 +235,15 @@ export function createGraphTopologyView(host, model, options = {}) {
   branchLabel.hidden = !model.edges.some(({ kind }) => kind === "branch");
   const svg = svgElement(dom, "svg", { "data-graph-topology": "", role: "group", preserveAspectRatio: "xMidYMid meet" });
   const defs = svgElement(dom, "defs"), markerId = `eino-graph-topology-arrow-${++instanceSequence}`;
-  const marker = svgElement(dom, "marker", { id: markerId, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto" });
-  marker.append(svgElement(dom, "path", { d: "M 1 1 L 9 5 L 1 9 z", fill: "#8292a4" }));
-  defs.append(marker); svg.append(defs);
+  for (const [state, color] of [["neutral", "#8292a4"], ["active", "#2758c7"]]) {
+    const id = state === "neutral" ? markerId : `${markerId}-active`;
+    const marker = svgElement(dom, "marker", { id, "data-graph-arrow": state, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto" });
+    marker.append(svgElement(dom, "path", { d: "M 1 1 L 9 5 L 1 9 z", fill: color }));
+    defs.append(marker);
+  }
+  wrapper.style.setProperty("--graph-topology-active-arrow", `url(#${markerId}-active)`);
+  svg.append(defs);
+  const edgeElements = new Map();
   const pairs = new Map(), pairCounts = new Map();
   for (const edge of model.edges) {
     const key = JSON.stringify([edge.from, edge.to]);
@@ -247,10 +253,17 @@ export function createGraphTopologyView(host, model, options = {}) {
     const key = JSON.stringify([edge.from, edge.to]), index = pairs.get(key) || 0;
     pairs.set(key, index + 1);
     const geometry = edgeGeometry(edge, layout, index, pairCounts.get(key));
+    const group = svgElement(dom, "g", { class: "graph-topology-edge-control", "data-graph-edge-control": edge.id,
+      role: "button", tabindex: 0, "aria-pressed": "false" });
+    const title = svgElement(dom, "title");
+    const focus = svgElement(dom, "path", { d: geometry.d, class: "graph-topology-edge-focus", fill: "none", "aria-hidden": "true" });
     const path = svgElement(dom, "path", { d: geometry.d, class: "graph-topology-edge", "data-graph-edge": edge.id,
       "data-from": edge.from, "data-to": edge.to, "data-edge-kind": edge.kind, "data-edge-direction": geometry.direction,
       "marker-end": `url(#${markerId})`, fill: "none", "aria-hidden": "true" });
-    svg.append(path);
+    const hit = svgElement(dom, "path", { d: geometry.d, class: "graph-topology-edge-hit", "data-graph-edge-hit": edge.id,
+      fill: "none", "aria-hidden": "true" });
+    group.append(title, focus, path, hit); svg.append(group);
+    edgeElements.set(edge.id, { group, title, path, edge });
   }
   const elements = new Map();
   for (const node of model.nodes) {
@@ -285,6 +298,11 @@ export function createGraphTopologyView(host, model, options = {}) {
     svg.setAttribute("aria-label", model.name ? `${model.name} · ${t.diagram}` : t.diagram);
     definitionLabel.textContent = t.definition;
     branchLabel.textContent = t.branch;
+    for (const { group, title, edge } of edgeElements.values()) {
+      const from = nodeText(nodeById.get(edge.from)).name, to = nodeText(nodeById.get(edge.to)).name;
+      const label = `${from} → ${to} · ${edge.kind === "branch" ? t.branch : t.connection} · ${t.basis}`;
+      title.textContent = label; group.setAttribute("aria-label", label);
+    }
     for (const node of model.nodes) {
       const entry = elements.get(node.id), value = nodeText(node);
       const full = [value.name, entry.structural ? t.boundary : value.facts].filter(Boolean).join(" · ");
@@ -349,38 +367,69 @@ export function createGraphTopologyView(host, model, options = {}) {
     viewport = { x: viewport.x + (viewport.width - width) / 2, y: viewport.y + (viewport.height - height) / 2, width, height };
     paintViewport();
   }
-  function select(path) {
-    if (disposed) return false;
-    const id = path?.length === 1 ? path[0] : undefined;
-    if (path !== null && (!elements.has(id) || elements.get(id).structural)) return false;
-    selectedId = id;
+  function paintSelection() {
     for (const [nodeId, { group, structural }] of elements) {
       const selected = nodeId === selectedId;
       group.classList.toggle("is-selected", selected);
       if (!structural) group.setAttribute("aria-pressed", String(selected));
     }
+    for (const [edgeId, { group }] of edgeElements) {
+      const selected = edgeId === selectedEdgeId;
+      group.classList.toggle("is-selected", selected);
+      group.setAttribute("aria-pressed", String(selected));
+    }
+  }
+  function select(path) {
+    if (disposed) return false;
+    const id = path?.length === 1 ? path[0] : undefined;
+    if (path !== null && (!elements.has(id) || elements.get(id).structural)) return false;
+    selectedId = id; selectedEdgeId = undefined;
+    paintSelection();
     return true;
   }
-  function revealNode(id) {
-    if (disposed || !id) return false;
+  function selectEdge(id) {
+    if (disposed || (id !== null && !edgeElements.has(id))) return false;
+    selectedId = undefined; selectedEdgeId = id === null ? undefined : id;
+    paintSelection();
+    return true;
+  }
+  function revealBounds(point, width, height) {
+    if (disposed || !point) return false;
     resize();
-    const point = layout.positions.get(id);
-    if (!viewport || !point) return false;
+    if (!viewport) return false;
     const margin = 20;
     const shift = (start, end, offset, extent) => end - start + margin * 2 > extent
       ? (start + end - extent) / 2 : start < offset + margin ? start - margin : end > offset + extent - margin ? end - extent + margin : offset;
     viewport = { ...viewport,
-      x: shift(point.x, point.x + NODE_WIDTH, viewport.x, viewport.width),
-      y: shift(point.y, point.y + NODE_HEIGHT, viewport.y, viewport.height) };
+      x: shift(point.x, point.x + width, viewport.x, viewport.width),
+      y: shift(point.y, point.y + height, viewport.y, viewport.height) };
     paintViewport(); return true;
   }
-  function reveal() { return revealNode(selectedId); }
+  function revealNode(id) { return revealBounds(layout.positions.get(id), NODE_WIDTH, NODE_HEIGHT); }
+  function revealEdge(id) {
+    if (disposed || !edgeElements.has(id)) return false;
+    const path = edgeElements.get(id).path, point = path.getPointAtLength(path.getTotalLength() / 2);
+    return revealBounds({ x: point.x - 12, y: point.y - 12 }, 24, 24);
+  }
+  function reveal() { return selectedEdgeId !== undefined ? revealEdge(selectedEdgeId) : revealNode(selectedId); }
   function onFocus(event) {
-    const group = event.target.closest?.('[data-graph-node][role="button"]');
-    if (group) revealNode(group.getAttribute("data-graph-node"));
+    const group = event.target.closest?.('[data-graph-node][role="button"], [data-graph-edge-control]');
+    // A pointer can intentionally select the visible end of a long edge. Do
+    // not pan its midpoint under the pointer before that click completes.
+    if (group?.hasAttribute("data-graph-edge-control")) {
+      if (group.matches(":focus-visible")) revealEdge(group.getAttribute("data-graph-edge-control"));
+    }
+    else if (group) revealNode(group.getAttribute("data-graph-node"));
   }
   function invoke(group) {
     if (disposed || !group || group.getAttribute("role") !== "button") return;
+    if (group.hasAttribute("data-graph-edge-control")) {
+      const id = group.getAttribute("data-graph-edge-control"), entry = edgeElements.get(id);
+      if (!entry) return;
+      group.focus({ preventScroll: true });
+      options.onEdgeClick?.({ id, edge: entry.edge });
+      return;
+    }
     const id = group.getAttribute("data-graph-node"), node = nodeById.get(id);
     if (!node) return;
     group.focus({ preventScroll: true });
@@ -388,11 +437,11 @@ export function createGraphTopologyView(host, model, options = {}) {
   }
   function onClick(event) {
     if (ignoreNextClick) { ignoreNextClick = false; return; }
-    invoke(event.target.closest?.("[data-graph-node]"));
+    invoke(event.target.closest?.("[data-graph-node], [data-graph-edge-control]"));
   }
   function onKey(event) {
     if (event.key !== "Enter" && event.key !== " ") return;
-    const group = event.target.closest?.('[data-graph-node][role="button"]');
+    const group = event.target.closest?.('[data-graph-node][role="button"], [data-graph-edge-control]');
     if (!group || event.repeat) return;
     event.preventDefault(); invoke(group);
   }
@@ -429,6 +478,7 @@ export function createGraphTopologyView(host, model, options = {}) {
 
   const instance = {
     setActiveNodePath: select,
+    setActiveEdge: selectEdge,
     resetView: fit,
     zoomIn() { zoomBy(1.2); },
     zoomOut() { zoomBy(1 / 1.2); },

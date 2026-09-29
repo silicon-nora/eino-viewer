@@ -232,6 +232,10 @@ const messages = {
     inspectorView: "Inspector view",
     inspectorSection: "Evidence",
     inspectorTitle: "Run details",
+    graphConnectionDetails: "Connection details",
+    graphConnection: "Flow connection",
+    graphBranch: "Conditional branch",
+    graphDefinition: "Flow definition",
     nodeDetails: "Key information",
     explainedNodes: "Source highlights",
     rawRecords: "Raw records",
@@ -569,6 +573,10 @@ const messages = {
     inspectorView: "检查器视图",
     inspectorSection: "证据",
     inspectorTitle: "运行详情",
+    graphConnectionDetails: "连线详情",
+    graphConnection: "流程连接",
+    graphBranch: "条件分支",
+    graphDefinition: "流程定义",
     nodeDetails: "关键信息",
     explainedNodes: "原始信息摘要",
     rawRecords: "原始运行记录",
@@ -1583,7 +1591,7 @@ function locateNodeInEditor(path) {
 function rememberInspectorTrigger(trigger = document.activeElement) {
   if (!inspectorPresentationLocked && trigger instanceof Element && typeof trigger.focus === "function" && ![document.body, document.documentElement].includes(trigger) && !ui.inspector.contains(trigger)) {
     inspectorReturnFocus = trigger;
-    inspectorReturnSelection = ["data-trajectory-record", "data-inspection-node", "data-agent-outcome", "data-agent-capture", "data-graph-node"]
+    inspectorReturnSelection = ["data-trajectory-record", "data-inspection-node", "data-agent-outcome", "data-agent-capture", "data-graph-node", "data-graph-edge-control"]
       .map((attribute) => [attribute, inspectorReturnFocus.getAttribute(attribute)])
       .find(([, value]) => value !== null);
   }
@@ -1626,7 +1634,7 @@ function inspectorPanel(panel, { focus = false, reveal = true } = {}) {
   if (readingOnly) panel = "node";
   const showNode = panel === "node";
   ui.inspectorTabs.hidden = readingOnly;
-  const titleKey = "inspectorTitle";
+  const titleKey = currentObjectKind === "graph" && selectedNodeDetail?.graphEdgeId ? "graphConnectionDetails" : "inspectorTitle";
   const title = ui.inspectorTitle;
   title.dataset.i18n = titleKey;
   title.textContent = translate(titleKey);
@@ -3330,7 +3338,33 @@ function selectGraphDefinition(node, { activate = true } = {}) {
   ui.selectedPath.textContent = node.name;
 }
 
-function showGraphTopology(model, { graphViewport, previousDefinitionId } = {}) {
+function selectGraphEdge(edge, model, { activate = true } = {}) {
+  // A connection belongs to the definition, not an observed invocation. It
+  // must not retain the previous step's input/output, status, or evidence.
+  clearLinkedSelection();
+  selectedRenderedNode = undefined;
+  selectedNodeDetail = { graphEdgeId: edge.id, graphDefinitionEdge: edge };
+  const endpointName = (id) => {
+    const node = model.nodes.find((entry) => entry.id === id);
+    if (node.kind === "start") return currentLanguage === "zh" ? "开始" : "Start";
+    if (node.kind === "end") return currentLanguage === "zh" ? "结束" : "End";
+    return node.name || node.id;
+  };
+  const name = `${endpointName(edge.from)} → ${endpointName(edge.to)}`;
+  const content = htmlElement("div", "node-detail-content");
+  const hero = htmlElement("div", "node-detail-hero");
+  hero.append(htmlElement("h3", "", name), htmlElement("p", "step-state",
+    `${translate(edge.kind === "branch" ? "graphBranch" : "graphConnection")} · ${translate("graphDefinition")}`));
+  content.append(hero);
+  ui.nodeDetail.replaceChildren(content);
+  markInspectionSelection();
+  graphTopologyInstance?.setActiveEdge(edge.id);
+  selectedPathIsPrompt = false;
+  ui.selectedPath.textContent = name;
+  inspectorPanel("node", { reveal: activate });
+}
+
+function showGraphTopology(model, { graphViewport, previousDefinitionId, previousEdgeId } = {}) {
   workflowInstance?.destroy();
   workflowInstance = undefined;
   graphViewerInstance?.destroy();
@@ -3361,15 +3395,24 @@ function showGraphTopology(model, { graphViewport, previousDefinitionId } = {}) 
           if (ui.workbench.getBoundingClientRect().width < 1200) ui.inspectorTitle.scrollIntoView({ block: "start" });
         }
       },
+      onEdgeClick({ edge }) {
+        rememberInspectorTrigger(document.activeElement);
+        selectGraphEdge(edge, model);
+      },
     });
     restorePathSelection();
     if (previousDefinitionId) {
       const node = model.nodes.find((entry) => entry.id === previousDefinitionId);
       if (node) selectGraphDefinition(node, { activate: false });
     }
+    if (selectedNodeDetail?.graphEdgeId) graphTopologyInstance.setActiveEdge(selectedNodeDetail.graphEdgeId);
     if (graphViewport) restoreViewerViewport(graphTopologyInstance, graphViewport);
   });
   if (currentExplanation) renderExplanationOverview(currentExplanation);
+  const previousEdge = model.edges.find(({ id }) => id === previousEdgeId);
+  // Restore text synchronously as well as selection after mounting: locale
+  // refresh and collapsed/hidden canvases must not leave stale step details.
+  if (previousEdge) selectGraphEdge(previousEdge, model, { activate: false });
   setRenderState("valid", "snapshotRendered", "renderSummary", {
     nodes: model.nodes.length, edges: model.edges.length, outcomes: currentExecutionDAG?.nodes.length || 0,
   });
@@ -3891,6 +3934,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   const previousPanel = ui.editorWrap.hidden ? "node" : "raw";
   const previousSelection = selectedNodeDetail?.explanationNode?.id;
   const previousDefinitionId = selectedNodeDetail?.graphDefinitionNodeId;
+  const previousEdgeId = selectedNodeDetail?.graphEdgeId;
   if (scopeOnly) inspectorPresentationLocked = true;
   try {
   const projected = currentProjection.document;
@@ -3913,6 +3957,13 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
     || !currentExecutionDAG && currentScopeReading?.group?.kind === "graph";
   currentGraphTopology = projected.kind === "graph" && fullGraphScope ? buildGraphTopology(projected, { visibleExecution }) : undefined;
   const scopeSize = Math.max(currentScopeReading?.nodeIds.length ?? visibleExecution?.nodes.length ?? 0, currentGraphTopology?.nodes.length ?? 0);
+  if (previousEdgeId && (!currentGraphTopology?.edges.some(({ id }) => id === previousEdgeId)
+    || scopeSize > 500 && !largeVisualRequested)) {
+    clearLinkedSelection();
+    clearNodeDetail({ preservePanel: true });
+    selectedPathIsPrompt = true;
+    ui.selectedPath.textContent = translate("selectNodePrompt");
+  }
   currentGraphReading = projected.kind === "graph" && currentExecutionDAG && !currentGraphTopology
     ? buildGraphReading(currentExecutionDAG, projected.evidence, { visibleExecution }) : undefined;
   for (const node of currentGraphTopology?.nodes || []) for (const id of node.memberIds) {
@@ -3952,7 +4003,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
     ui.inspection.open = true;
     renderExplanationOverview(currentExplanation);
   } else if (currentGraphTopology) {
-    showGraphTopology(currentGraphTopology, { graphViewport, previousDefinitionId });
+    showGraphTopology(currentGraphTopology, { graphViewport, previousDefinitionId, previousEdgeId });
   } else if (projected.kind === "workflow" || currentExecutionDAG) {
     showWorkflow(visibleExecution ? executionSnapshot(currentGraphReading?.execution || visibleExecution, projected, { local: scoped })
       : workflowAPI.parseWorkflowSnapshot(currentScopeReading?.definitionSnapshot || projected.definition),

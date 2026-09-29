@@ -146,6 +146,107 @@ async function activateLogicalEvaluate(page) {
   await topologyNode(page, "evaluate").press("Enter");
 }
 
+const graphEdge = (page, from, to) => page.locator(`#dag [data-graph-edge][data-from=${JSON.stringify(from)}][data-to=${JSON.stringify(to)}]`);
+
+async function expectSelectedConnection(page, edge, expected, locale = "zh") {
+  const id = await edge.getAttribute("data-graph-edge");
+  await expect(edge.locator("..")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('#dag [data-graph-edge-control][aria-pressed="true"]')).toHaveCount(1);
+  await expect(page.locator('#dag [data-graph-node][aria-pressed="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-inspection-node][aria-current]')).toHaveCount(0);
+  await expect(page.locator("#editor-title")).toHaveText(locale === "zh" ? "连线详情" : "Connection details");
+  await expect(page.locator("#node-detail h3")).toHaveText(`${expected.from} → ${expected.to}`);
+  const kind = expected.kind === "branch" ? locale === "zh" ? "条件分支" : "Conditional branch"
+    : locale === "zh" ? "流程连接" : "Flow connection";
+  await expect(page.locator("#node-detail")).toContainText(`${kind} · ${locale === "zh" ? "流程定义" : "Flow definition"}`);
+  await expect(page.locator("#node-detail [data-business-channel], #node-detail .business-value-text, #node-detail .technical-disclosure, #node-detail [data-envelope-index], #node-detail [data-graph-visit]")).toHaveCount(0);
+  const selected = await page.evaluate(() => window.playground.selectedNodeDetail);
+  expect(selected.graphEdgeId).toBe(id);
+  expect(selected.graphDefinitionEdge).toEqual(expected);
+  expect(selected.executionNode).toBeUndefined();
+  expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual({
+    evidenceIndexes: [], executionNodeId: undefined, trajectoryRecordId: undefined, rawEnvelopeIndex: undefined,
+  });
+}
+
+async function expectConnectionsInteractive(page, fixture) {
+  const branch = graphEdge(page, "evaluate", "revise"), control = branch.locator("..");
+  const id = await branch.getAttribute("data-graph-edge");
+  const expected = await page.evaluate((id) => window.playground.graphTopology.edges.find((edge) => edge.id === id), id);
+  const source = fixture.record.evidence.find(({ kind }) => kind === "compose.graph").payload;
+  expect(expected).toMatchObject({ from: "evaluate", to: "revise", kind: "branch", basis: "declared" });
+  expect(source.branches[expected.sourceIndex].from).toBe(expected.from);
+  expect(source.branches[expected.sourceIndex].targets[expected.targetIndex]).toBe(expected.to);
+  await page.locator("#inspection-search").fill("evaluate");
+  await expect(control).toHaveAttribute("role", "button");
+  await expect(control).toHaveAttribute("tabindex", "0");
+  await control.focus();
+  await expect(control).toBeFocused();
+  await expect(control).toHaveAttribute("aria-pressed", "false");
+  const hitArea = await control.locator("[data-graph-edge-hit]").evaluate((path) => ({
+    width: Number.parseFloat(getComputedStyle(path).strokeWidth), scaling: getComputedStyle(path).vectorEffect,
+  }));
+  expect(hitArea.width).toBeGreaterThanOrEqual(14);
+  expect(hitArea.scaling).toBe("non-scaling-stroke");
+  await page.locator("#inspection-search").focus();
+  // Use the actual mouse beyond the thin visible curve, not dispatchEvent or
+  // the path's bounding-box center (which may be nowhere near a curved edge).
+  const hit = await branch.evaluate((path) => {
+    const matrix = path.getScreenCTM(), length = path.getTotalLength(), id = path.dataset.graphEdge;
+    for (let sample = 2; sample < 19; sample += 1) {
+      const distance = length * sample / 20;
+      const center = path.getPointAtLength(distance).matrixTransform(matrix);
+      const next = path.getPointAtLength(Math.min(length, distance + 1)).matrixTransform(matrix);
+      const size = Math.hypot(next.x - center.x, next.y - center.y);
+      if (!size) continue;
+      for (const offset of [5, -5]) {
+        const x = center.x - (next.y - center.y) / size * offset;
+        const y = center.y + (next.x - center.x) / size * offset;
+        if (x < 1 || y < 1 || x >= innerWidth - 1 || y >= innerHeight - 1) continue;
+        if (document.elementFromPoint(x, y)?.getAttribute("data-graph-edge-hit") === id) return { x, y };
+      }
+    }
+    return null;
+  });
+  expect(hit, "a point 5px away from the curve must remain clickable").not.toBeNull();
+  await page.mouse.move(hit.x, hit.y);
+  const colors = () => branch.evaluate((path) => {
+    const style = getComputedStyle(path), marker = style.markerEnd.match(/#([^\s)"']+)/)?.[1];
+    return { line: style.stroke, arrow: marker && getComputedStyle(document.getElementById(marker).querySelector("path")).fill };
+  });
+  await expect.poll(colors).toEqual({ line: "rgb(39, 88, 199)", arrow: "rgb(39, 88, 199)" });
+  await page.mouse.click(hit.x, hit.y);
+  await expectSelectedConnection(page, branch, expected);
+  await page.mouse.move(2, 2);
+  await page.locator("#inspection-search").focus();
+  await expect.poll(colors).toEqual({ line: "rgb(39, 88, 199)", arrow: "rgb(39, 88, 199)" });
+
+  const returning = graphEdge(page, "revise", "evaluate");
+  const returningId = await returning.getAttribute("data-graph-edge");
+  const returningModel = await page.evaluate((id) => window.playground.graphTopology.edges.find((edge) => edge.id === id), returningId);
+  expect(source.edges[returningModel.sourceIndex]).toMatchObject({ from: "revise", to: "evaluate" });
+  await returning.locator("..").focus();
+  await expect(control).toHaveAttribute("aria-pressed", "true");
+  await returning.locator("..").press("Enter");
+  await expectSelectedConnection(page, returning, returningModel);
+  await control.press("Space");
+  await expectSelectedConnection(page, branch, expected);
+
+  await page.locator("#zoom-out").click();
+  const viewport = await page.locator('#dag svg[data-graph-topology]').getAttribute("viewBox");
+  await page.locator('[data-language="en"]').click();
+  await expectSelectedConnection(page, branch, expected, "en");
+  await expect(page.locator("#inspection-search")).toHaveValue("evaluate");
+  await expect(page.locator('#dag svg[data-graph-topology]')).toHaveAttribute("viewBox", viewport);
+  await row(page, fixture.visits[1].node.id).click();
+  await expectSelectedVisit(page, fixture, fixture.visits[1]);
+  await expect(page.locator('#dag [data-graph-edge-control][aria-pressed="true"]')).toHaveCount(0);
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.graphEdgeId)).toBeUndefined();
+  await page.locator('[data-language="zh"]').click();
+  expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(fixture.execution);
+  expect(await page.evaluate(() => window.playground.document)).toEqual(fixture.record);
+}
+
 async function expectQuietControls(page) {
   await expect(page.locator("#open-raw, #raw-records-tab, #node-detail-tab, #close-details, #inspection-next-issue").filter({ visible: true })).toHaveCount(0);
   await expect(page.locator('#inspection-scope option[value="evidence"], #inspection-scope option[value="unassigned"]')).toHaveCount(0);
@@ -246,6 +347,7 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     await expect(page.locator("#node-detail")).toContainText("未观测到执行");
     await row(page, fixture.nodes[0].id).click();
     await expect(page.locator('#dag [data-graph-node][aria-pressed="true"]')).toHaveCount(0);
+    if (outcome === "success") await expectConnectionsInteractive(page, fixture);
     expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(fixture.execution);
     expect(await page.evaluate(() => window.playground.document)).toEqual(fixture.record);
   }
@@ -253,7 +355,13 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
   // fallback. It must not invent a topology from temporal callback order.
   const withoutDefinition = loopRecord("success").record;
   withoutDefinition.evidence = withoutDefinition.evidence.filter(({ kind }) => kind !== "compose.graph");
+  await graphEdge(page, "evaluate", "revise").locator("..").press("Enter");
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.graphEdgeId)).toBeTruthy();
+  await openSample(page, "graph", "graph-io-structured");
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.graphEdgeId)).toBeUndefined();
+  await expect(page.locator('#dag [data-graph-edge-control][aria-pressed="true"]')).toHaveCount(0);
   await openWorkbenchRecord(page, withoutDefinition);
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.graphEdgeId)).toBeUndefined();
   await expect(page.locator('#dag svg[data-graph-topology]')).toHaveCount(0);
   await expect(page.locator('#dag canvas').first()).toBeVisible();
   await expect(page.locator('#path-region > summary')).toContainText("调用关系");
