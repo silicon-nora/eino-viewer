@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { editCopy, openStepSearch, revealSource, openRecordActions, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { editCopy, openStepSearch, openRecordActions, openWorkbenchRecord, openRunInformation } from "../helpers/workbench-ui.js";
 import { openPasteEditor } from "../helpers/run-viewer-ui.js";
 
 const safeText = readFileSync(new URL("../../fixtures/input-boundaries/graph-safe-integers.json", import.meta.url), "utf8");
@@ -34,20 +34,26 @@ async function workbench(page) {
 
 test("workbench accepts real safe integers without changing values, text types, copy or source", { tag: "@P0" }, async ({ page }) => {
   await workbench(page);
+  await openRunInformation(page);
   const output = page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"]');
   expect(JSON.parse(await output.locator("[data-run-value]").textContent())).toEqual(rootBody);
   await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (text) => { window.copied = text; } } }));
   await output.locator("[data-run-copy-index]").click();
   expect(JSON.parse(await page.evaluate(() => window.copied))).toEqual(rootBody);
-  const reference = output.locator("[data-envelope-index]").first();
-  await revealSource(reference);
-  await reference.click();
-  expect(await page.locator("#snapshot-json").inputValue()).toBe(safeText);
+  await expect(output.locator("button[data-envelope-index]")).toHaveCount(0);
+  expect(await page.evaluate(() => ({
+    indexes: window.playground.explanation.run.output.items[0].evidenceEnvelopeIndexes,
+    envelope: window.playground.document.evidence[9],
+  }))).toEqual({ indexes: [9], envelope: safeRecord.evidence[9] });
   expect(await page.evaluate(() => window.playground.document)).toEqual(safeRecord);
 });
 
-test("workbench rejects unsafe numbers and deep metadata while preserving result, selection and the rejected draft", { tag: "@P0" }, async ({ page }) => {
-  await workbench(page);
+test("Workflow editor rejects unsafe numbers and deep metadata while preserving result, selection and the rejected draft", { tag: "@P0" }, async ({ page }) => {
+  const accepted = JSON.parse(readFileSync(new URL("../../fixtures/recorder-matrix/workflow-io-success.json", import.meta.url), "utf8"));
+  await page.goto("/.artifacts/pages/?lang=zh");
+  await page.waitForFunction(() => window.playground?.ready);
+  await openWorkbenchRecord(page, accepted);
+  await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(accepted);
   await openStepSearch(page);
   await page.locator("[data-inspection-node]").first().click();
   await openRecordActions(page);
@@ -69,7 +75,7 @@ test("workbench rejects unsafe numbers and deep metadata while preserving result
   await expect(editor).toHaveValue(unsafeText);
   await page.locator("#apply-json").click();
   await expect(editor).toHaveValue(unsafeText);
-  expect(await page.evaluate(() => window.playground.document)).toEqual(safeRecord);
+  expect(await page.evaluate(() => window.playground.document)).toEqual(accepted);
 });
 
 test("portable rejects numeric and depth hazards without replacing the accepted record or export", { tag: "@P0" }, async ({ page }) => {

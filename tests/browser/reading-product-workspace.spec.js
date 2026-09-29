@@ -433,7 +433,8 @@ test("homepage opens real examples without requiring JSON and the current-type s
       await expect(page.locator("#record-actions, #scope-information, #global-summary, [data-replay-controls]")).toHaveCount(0);
       await expect(page.locator("#paste-record")).toBeHidden();
       await expect(page.locator("#open-raw")).toBeHidden();
-    } else await expect(page.locator("#open-raw")).toBeVisible();
+    } else if (kind === "graph") await expect(page.locator("#open-raw")).toBeHidden();
+    else await expect(page.locator("#open-raw")).toBeVisible();
     await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
     if (kind === "agent") {
       await expect(page.locator('.eino-agent-reader [data-agent-trajectory]')).toBeVisible();
@@ -823,7 +824,7 @@ async function expectWorkspaceGeometry(page, mode) {
   }, mode);
   expect(boxes.overflow).toBe(false);
   if (boxes.width >= 1200) {
-    expect(boxes.sidebar.width).toBeCloseTo(240, 0);
+    expect(boxes.sidebar.width).toBeCloseTo(mode === "workbench" ? boxes.width >= 1440 ? 200 : 180 : 240, 0);
     expect(boxes.detail.width).toBeCloseTo(320, 0);
     expect(boxes.sidebar.right).toBeLessThanOrEqual(boxes.graph.left + 1);
     expect(boxes.graph.right).toBeLessThanOrEqual(boxes.detail.left + 1);
@@ -834,7 +835,7 @@ async function expectWorkspaceGeometry(page, mode) {
       expect(boxes.detail.bottom).toBeGreaterThanOrEqual(boxes.viewportBottom - boxes.footerHeight - 2);
     }
   } else if (boxes.width >= 768) {
-    expect(boxes.sidebar.width).toBeCloseTo(220, 0);
+    expect(boxes.sidebar.width).toBeCloseTo(mode === "workbench" ? 180 : 220, 0);
     expect(boxes.sidebar.right).toBeLessThanOrEqual(boxes.graph.left + 1);
     expect(boxes.detail.top).toBeGreaterThanOrEqual(boxes.graph.bottom - 1);
     expect(boxes.detail.left).toBeCloseTo(boxes.graph.left, 0);
@@ -853,6 +854,12 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       const record = fixture("graph-io-structured");
       await importRecord(page, mode, record);
       const output = page.locator(mode === "workbench" ? ':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"]' : '[data-run-summary] [data-run-channel="output"]');
+      if (mode === "workbench") {
+        await expect(page.locator("#global-summary")).not.toHaveAttribute("open");
+        await expect(page.locator("#dag")).toBeVisible();
+        await openRunInformation(page);
+        await output.scrollIntoViewIfNeeded();
+      }
       await expect(output).toBeInViewport();
       if (mode === "workbench") {
         const recorded = record.evidence.find((entry) => entry.kind === "component.io"

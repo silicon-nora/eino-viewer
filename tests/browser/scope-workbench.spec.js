@@ -369,12 +369,12 @@ test("declared nested Workflow draws only its own subtree and maps clicks to the
   expect(await canonicalState(page)).toEqual(before);
 });
 
-test("Graph loop visits stay separate inside a scope and graph clicks retain canonical identities", { tag: "@P0" }, async ({ page }) => {
+test("flat Graph loop visits stay separate and graph clicks retain canonical identities", { tag: "@P0" }, async ({ page }) => {
   const record = fixture("graph-step-limit");
   await openRecord(page, record);
   const before = await canonicalState(page);
-  const id = await page.evaluate(() => window.playground.explanation.groups[0].id);
-  await chooseGroup(page, id);
+  expect(await page.evaluate(() => window.playground.explanation.groups.length)).toBe(1);
+  await expect(page.locator("#hierarchy-directory")).toBeHidden();
   await expectInducedGraph(page);
   const visits = await page.evaluate(() => window.playground.scopeReading.execution.nodes.filter(({ component }) => component === "Lambda"));
   expect(visits).toHaveLength(3);
@@ -562,14 +562,15 @@ test("Agent trajectory stays in the selected call and returning between scopes d
   expect(await page.evaluate(() => window.playground.trajectory)).toEqual(trajectoryBefore);
 });
 
-test("a declared cyclic Graph stays the original SVG cycle when its root scope is selected", { tag: "@P0" }, async ({ page }) => {
+test("a declared flat Graph stays the original SVG cycle without a redundant root scope control", { tag: "@P0" }, async ({ page }) => {
   const record = JSON.parse(readFileSync(new URL("../../fixtures/eino-compose-cyclic-graph-envelope-v1.json", import.meta.url), "utf8"));
   await openRecord(page, record);
   const before = await canonicalState(page);
   expect(before.execution).toBeUndefined();
   const group = before.explanation.groups.find(({ kind }) => kind === "graph");
   expect(group.basis).toBe("declared");
-  await chooseGroup(page, group.id);
+  expect(before.explanation.groups).toHaveLength(1);
+  await expect(page.locator("#hierarchy-directory")).toBeHidden();
   await expect(scopeBox(page)).toBeHidden();
   await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "definition-only");
   await expect(page.locator("#dag .eino-viewer-graph svg")).toBeVisible();

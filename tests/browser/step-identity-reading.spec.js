@@ -233,6 +233,11 @@ async function checkResultAndSource(page, mode, target, expectCollapsed = false)
     if (target.agentPath.length > 1) await expect(detail(page, mode).locator(".agent-scope-path")).toHaveText(target.agentPath.join(" / "));
     return;
   }
+  if (mode === "workbench" && target.record.source === "graph") {
+    await expect(detail(page, mode).locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
+    await expectSelectedEvidence(page, target.index, target.envelope);
+    return;
+  }
   if (expectCollapsed) await expect(detail(page, mode).locator(".technical-disclosure")).not.toHaveAttribute("open");
   const source = detail(page, mode).locator(`[data-envelope-index="${target.index}"]`).first();
   await revealSource(source);

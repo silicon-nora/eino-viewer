@@ -87,9 +87,10 @@ test("trajectory-only Agent reading retains model inputs and reaches calls with 
   await openWorkbenchRecord(page, graph);
   await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(graph);
   await openStepSearch(page);
-  await expect(page.locator("#run-inspection > summary")).toHaveText("Find steps and evidence");
+  await expect(page.locator("#run-inspection > summary")).toHaveText("Steps");
   await expect(page.locator("#inspection-scope")).toHaveAttribute("aria-label", "Show");
-  await expect(page.locator("#inspection-next-issue")).toHaveText("Next error / interruption");
+  await expect(page.locator("#inspection-next-issue")).toBeHidden();
+  await expect(page.locator('#inspection-scope option[value="evidence"], #inspection-scope option[value="unassigned"]')).toHaveCount(0);
   await expect(page.locator("#inspection-previous")).toHaveText("Previous");
   await expect(page.locator("#inspection-next")).toHaveText("Next");
   await expect(page.locator("#reading-sidebar")).toHaveCount(1);

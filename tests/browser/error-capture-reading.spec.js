@@ -127,6 +127,12 @@ async function expectSource(page, mode, container, data) {
     }
     return;
   }
+  if (mode === "workbench" && data.record.source === "graph") {
+    await expect(container.locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
+    if (await container.getAttribute("id") !== "node-detail") await selectStep(page, mode, data.node.id);
+    await expectSelectedEvidence(page, data.sourceIndex, data.source);
+    return;
+  }
   const button = container.locator(`[data-envelope-index="${data.sourceIndex}"]`).first();
   await revealSource(button);
   await button.click();

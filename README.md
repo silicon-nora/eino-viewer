@@ -60,10 +60,16 @@ produces the saved record; users do not need to author a JSON schema. The workbe
 does not open or accept dropped files. Use the [offline HTML](#offline-html) for
 existing saved records, or pass them to the [embedded reader](#embed-the-complete-reader).
 
-An invalid example preserves the last accepted record, selection and unapplied
-Raw draft. Graph and Workflow retain their Raw-copy editor. For a first check,
-choose the Graph card and then **Route planning Graph** in the dropdown: find its
-final result, select a step and follow an input/output source link.
+An invalid example preserves the last accepted record and selection; Workflow
+also preserves its unapplied Raw draft. The Graph workbench now previews a simpler
+path → step → input/output reading flow. Normal results use an expandable summary;
+failures expose their recorded reason and supported step links. It has no Raw editor
+or technical directory. Try **Multi-round route revision** and inspect each recorded
+visit. This Graph design awaits owner acceptance; embedded/offline Graph, Agent and
+Workflow remain unchanged.
+
+See the [local version-control convention](docs/LOCAL_VERSION_CONTROL.md) for the
+accepted Agent baseline and separate Graph preview branch.
 
 ## Embed the complete reader
 
@@ -116,7 +122,7 @@ update keeps the valid view. `destroy()` is idempotent, and a destroyed instance
 cannot be updated or selected again.
 
 The object API cannot recover precision already lost by a caller's JSON parser.
-The offline file/paste entry and the workbench Graph/Workflow Raw-copy editor
+The offline file/paste entry and the workbench Workflow Raw-copy editor
 also validate original number tokens before parsing; see [input boundaries](#input-fidelity-boundaries).
 
 ## Reading rules

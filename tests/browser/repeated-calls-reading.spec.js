@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { projectEinoViewerDocument } from "../../src/viewer.js";
-import { openStepSearch, revealSource, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { openStepSearch, revealSource, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 import { ensureDiagramVisible } from "../helpers/run-viewer-ui.js";
 
 const root = new URL("../../", import.meta.url);
@@ -107,13 +107,15 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       const second = visits[1];
       await showRoundTwo(page, mode, second);
       await expect(title(page, mode)).toContainText("第 2 次");
-      const sourceButton = detail(page, mode).locator(`[data-envelope-index="${second.input.index}"]`).first();
-      await revealSource(sourceButton);
-      await sourceButton.click();
       if (mode === "workbench") {
-        expect(await page.locator("#snapshot-json").evaluate((editor) => JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)))).toEqual(second.input.envelope);
-        await page.locator("#node-detail-tab").click();
-      } else expect(JSON.parse(await page.locator("[data-raw-envelope]").textContent())).toEqual(second.input.envelope);
+        await expectSelectedEvidence(page, second.input.index, second.input.envelope);
+        await expect(detail(page, mode).locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
+      } else {
+        const sourceButton = detail(page, mode).locator(`[data-envelope-index="${second.input.index}"]`).first();
+        await revealSource(sourceButton);
+        await sourceButton.click();
+        expect(JSON.parse(await page.locator("[data-raw-envelope]").textContent())).toEqual(second.input.envelope);
+      }
       if (outcome === "failed") {
         if (mode === "workbench") await page.locator("#inspection-scope").selectOption("issues");
         else await page.locator("[data-issues-only]").check();

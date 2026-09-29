@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { revealSource, openRunInformation, openStepSearch, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { revealSource, openRunInformation, openStepSearch, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const fixtures = new URL("../../fixtures/recorder-matrix/", import.meta.url);
 const playgroundPath = process.env.EINO_VIEWER_PLAYGROUND_PATH ?? "/.artifacts/pages/?lang=zh";
@@ -41,7 +41,12 @@ async function runSummary(page) {
 }
 
 async function expectRawEvidence(page, scope, record, index) {
-  if (await page.evaluate(() => window.playground.objectKind === "agent")) {
+  if (await page.evaluate(() => window.playground.objectKind !== "workflow")) {
+    if (await scope.getAttribute("id") === "node-detail") {
+      await expectSelectedEvidence(page, index, record.evidence[index]);
+      await expect(scope.locator("button[data-envelope-index]")).toHaveCount(0);
+      return;
+    }
     const direction = await scope.getAttribute("data-run-channel");
     const source = await page.evaluate(({ direction, index }) => {
       const run = window.playground.explanation.run;
@@ -353,7 +358,7 @@ test("oversized Graph output is explicitly omitted, not rendered as empty, null 
   expect(summary.output.items[0]).toMatchObject({ availability: "not-observed", reason: "size_limit" });
   expect(Object.hasOwn(summary.output.items[0], "value")).toBe(false);
   expect(Object.hasOwn(envelope.payload, "body")).toBe(false);
-  await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="success"]')).toBeVisible();
+  await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="success"]')).toBeHidden();
   await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-capture="partial"]')).toBeVisible();
   await expect(channel(page, "output").locator("[data-run-value]")).toHaveCount(0);
   await expect(channel(page, "output")).toContainText("超出大小限制");

@@ -54,8 +54,8 @@ test("selecting another step in an already open panel preserves manual graph zoo
 });
 
 for (const viewport of [{ width: 1440, height: 1000, name: "desktop" }, { width: 390, height: 844, name: "narrow" }]) {
-  test(`Graph language changes preserve import draft, selection and open/closed state without transient reveals on ${viewport.name}`, { tag: "@P1" }, async ({ page }) => {
-    await open(page, viewport, "graph");
+  test(`Workflow language changes preserve import draft, selection and open/closed state without transient reveals on ${viewport.name}`, { tag: "@P1" }, async ({ page }) => {
+    await open(page, viewport, "workflow");
     await openPasteDraft(page);
     const draft = '{"unapplied draft": true';
     await expect(page.locator("#snapshot-json")).toBeEditable();

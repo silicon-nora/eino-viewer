@@ -25,6 +25,7 @@ const messages = {
     zoomOut: "Zoom out",
     inspectionTitle: "Find steps and evidence",
     agentInspectionTitle: "Find steps",
+    graphInspectionTitle: "Steps",
     agentInspectionSearch: "Search names or status",
     agentUnconfirmedRecord: "Agent record",
     hierarchyScope: "Call scope",
@@ -356,6 +357,7 @@ const messages = {
     zoomOut: "缩小",
     inspectionTitle: "查找步骤与证据",
     agentInspectionTitle: "查找步骤",
+    graphInspectionTitle: "步骤",
     agentInspectionSearch: "搜索名称或状态",
     agentUnconfirmedRecord: "Agent 记录",
     hierarchyScope: "调用范围",
@@ -1489,7 +1491,7 @@ function applyLanguage(language, { persist = true, updateUrl = true } = {}) {
   updateRecordLabel();
   if (coreLoadFailed) ui.importStatus.textContent = translate("rendererUnavailable");
   else if (ui.importStatus.dataset.error === "true") ui.importStatus.textContent = inputFailureSummary(issuesBefore, currentLanguage, Boolean(currentDocument))
-    || translate(currentObjectKind === "agent" ? "agentRecordRejected" : "recordRejected");
+    || translate(currentObjectKind !== "workflow" ? "agentRecordRejected" : "recordRejected");
   if (selectedPathIsPrompt) ui.selectedPath.textContent = translate("selectNodePrompt");
   displayRenderState();
   displayValidationState();
@@ -1603,29 +1605,29 @@ function setInspectorOpen(open, { returnFocus = false } = {}) {
 
 function inspectorPanel(panel, { focus = false, reveal = true } = {}) {
   if (inspectorPresentationLocked) return;
-  const agentReading = currentObjectKind === "agent";
-  // The Agent surface only reads values. Its selector switches saved examples.
-  if (agentReading) panel = "node";
+  const readingOnly = currentObjectKind !== "workflow";
+  // Agent and Graph read saved values; only Workflow retains the raw editor.
+  if (readingOnly) panel = "node";
   const showNode = panel === "node";
-  ui.inspectorTabs.hidden = agentReading;
-  const titleKey = agentReading && !showNode ? "pasteRecord" : "inspectorTitle";
+  ui.inspectorTabs.hidden = readingOnly;
+  const titleKey = "inspectorTitle";
   const title = ui.inspectorTitle;
   title.dataset.i18n = titleKey;
   title.textContent = translate(titleKey);
   title.tabIndex = -1;
-  ui.inspector.dataset.i18nAriaLabel = agentReading ? titleKey : "snapshotEditor";
+  ui.inspector.dataset.i18nAriaLabel = readingOnly ? titleKey : "snapshotEditor";
   ui.inspector.setAttribute("aria-label", translate(ui.inspector.dataset.i18nAriaLabel));
-  ui.editor.dataset.i18nAriaLabel = agentReading ? "pasteRecord" : "snapshotJson";
+  ui.editor.dataset.i18nAriaLabel = readingOnly ? "pasteRecord" : "snapshotJson";
   ui.editor.setAttribute("aria-label", translate(ui.editor.dataset.i18nAriaLabel));
   for (const [region, tab] of [[ui.nodeDetail, ui.nodeDetailTab], [ui.editorWrap, ui.rawRecordsTab]]) {
-    region.setAttribute("role", agentReading ? "region" : "tabpanel");
-    region.setAttribute("aria-labelledby", agentReading ? title.id : tab.id);
+    region.setAttribute("role", readingOnly ? "region" : "tabpanel");
+    region.setAttribute("aria-labelledby", readingOnly ? title.id : tab.id);
   }
   ui.nodeDetail.hidden = !showNode;
   ui.editorWrap.hidden = showNode;
   ui.format.hidden = showNode || ui.editor.readOnly;
   ui.apply.hidden = ui.editor.readOnly;
-  ui.edit.hidden = agentReading || !ui.editor.readOnly;
+  ui.edit.hidden = readingOnly || !ui.editor.readOnly;
   ui.validation.hidden = showNode;
   ui.issues.hidden = showNode;
   ui.editorActions.hidden = showNode;
@@ -1642,11 +1644,11 @@ function inspectorPanel(panel, { focus = false, reveal = true } = {}) {
   }
   ui.openDetails.setAttribute("aria-expanded", String(!ui.inspector.hidden && showNode));
   ui.openRaw.setAttribute("aria-expanded", String(!ui.inspector.hidden && !showNode));
-  if (focus) (agentReading ? (showNode ? title : ui.editor) : (showNode ? ui.nodeDetailTab : ui.rawRecordsTab)).focus();
+  if (focus) (readingOnly ? title : (showNode ? ui.nodeDetailTab : ui.rawRecordsTab)).focus();
 }
 
 function openRawInspector() {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   // Reopening a collapsed Raw panel must not replace an unapplied draft.
   if (!ui.editorWrap.hidden) {
     inspectorPanel("raw");
@@ -2205,7 +2207,7 @@ function evidenceReadingLabel(item) {
 }
 
 function appendTechnicalDetails(parent, explanationNode, relationships, evidence) {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   const disclosure = htmlElement("details", "technical-disclosure");
   disclosure.append(htmlElement("summary", "", translate("technicalDetails")));
   const body = htmlElement("div", "technical-disclosure-body");
@@ -2327,14 +2329,18 @@ function renderExplanationNode(explanationNode, { renderedNode, executionNode, a
   if (currentInvocationLabels.has(explanationNode.id)) heading.append(htmlElement("span", "heading-fact", currentInvocationLabels.get(explanationNode.id)));
   hero.append(heading);
   if (presentation.role) hero.append(htmlElement("small", "", presentation.role));
-  if (stateNode.status !== "declared") hero.append(htmlElement("p", `step-state ${stateNode.status}`, stepStatusLabel(stateNode)));
+  if (currentObjectKind === "graph" ? !confirmedStepSuccess(stateNode) : stateNode.status !== "declared") hero.append(htmlElement("p", `step-state ${stateNode.status}`, stepStatusLabel(stateNode)));
   if (!["input", "output"].includes(explanationNode.kind)) hero.append(htmlElement("p", "step-duration", recordedTimingText(explanationNode.timing)));
   if (presentation.value && !presentation.showFlow) {
     hero.append(htmlElement("p", "source-primary-value", presentation.value));
   }
   content.append(hero);
   const identity = currentIdentityLabels.get(explanationNode.id);
-  if (identity && currentObjectKind !== "agent") {
+  if (identity && currentObjectKind === "graph") {
+    const label = htmlElement("p", "step-reading-identity", identity);
+    label.title = identity;
+    content.append(label);
+  } else if (identity && currentObjectKind !== "agent") {
     const disclosure = htmlElement("details", "step-identity");
     disclosure.dataset.stepIdentity = "";
     disclosure.append(htmlElement("summary", "", `${currentLanguage === "zh" ? "身份" : "Identity"} · ${previewRecordedText(identity, 72)}`), htmlElement("pre", "", identity));
@@ -2496,7 +2502,8 @@ function renderInspectionResults() {
     if (isSteps) {
       action.dataset.inspectionNode = item.id;
       const presentation = sourcePresentation(item);
-      const facts = [currentInvocationLabels.get(item.id), presentation.role, stepStatusLabel(item)].filter(Boolean);
+      const facts = [currentInvocationLabels.get(item.id), presentation.role,
+        currentObjectKind === "graph" && confirmedStepSuccess(item) ? undefined : stepStatusLabel(item)].filter(Boolean);
       if (Number.isFinite(item.timing?.durationMs)) facts.push(timingText(item.timing));
       action.append(htmlElement("strong", "", presentation.name || item.label), htmlElement("small", "", facts.join(" · ")));
       const identity = currentIdentityLabels.get(item.id);
@@ -2516,6 +2523,8 @@ function renderInspectionResults() {
   ui.inspectionPrevious.disabled = page.offset === 0;
   ui.inspectionNext.disabled = page.offset + page.limit >= page.total;
   ui.inspectionNextIssue.disabled = !inspectionIssues().length && !currentInspection.searchSteps("", { ...range, issuesOnly: true, limit: 1 }).total;
+  ui.inspectionNextIssue.hidden = currentObjectKind === "graph";
+  ui.inspectionCount.closest("nav").hidden = currentObjectKind === "graph" && page.total <= page.limit;
   if (!page.total && ui.inspectionSearch.value) ui.inspectionResults.append(htmlElement("li", "search-empty", translate("noSearchResults")));
   ui.clearSearch.hidden = Boolean(page.total || !ui.inspectionSearch.value);
   markInspectionSelection();
@@ -2580,6 +2589,12 @@ function renderHierarchyNavigation() {
     ui.hierarchy.prepend(ui.hierarchyBreadcrumbs);
   }
   ui.hierarchy.hidden = !groups.length;
+  if (currentObjectKind === "graph" && hasSingleGraphScope() && !inspectionGroupId && !inspectionUngrouped) {
+    ui.hierarchy.hidden = true;
+    ui.hierarchyBreadcrumbs.replaceChildren();
+    ui.hierarchyGroups.replaceChildren();
+    return;
+  }
   if (!groups.length) return;
   const selected = currentInspection.getGroup(inspectionGroupId);
   const path = selected ? currentInspection.getGroupPath(selected.id) : [];
@@ -2648,7 +2663,7 @@ function rebuildInspection() {
 }
 
 function appendRunEvidence(container, indexes = []) {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   const valid = [...new Set(indexes)].filter((index) => Number.isSafeInteger(index) && sourceEnvelope(index));
   if (!valid.length) return;
   const disclosure = htmlElement("details", "run-sources");
@@ -2677,6 +2692,11 @@ function createRunChannel(direction, title) {
 function appendRunValue(container, item, { local = false, fold = false } = {}) {
   const block = htmlElement("div", "run-result-item");
   block.dataset.availability = item.availability;
+  // Retain a body's unique original source without adding a technical action.
+  if (currentObjectKind === "graph" && item.evidenceEnvelopeIndexes?.length === 1) {
+    const index = item.evidenceEnvelopeIndexes[0];
+    if (Number.isSafeInteger(index) && sourceEnvelope(index)) block.dataset.envelopeIndex = String(index);
+  }
   const stateKeys = {
     empty: "runEmptyValue", null: "runNullValue", redacted: "runRedactedValue",
     truncated: "runTruncatedValue", "not-observed": "runMissingValue",
@@ -2713,10 +2733,19 @@ function appendRunValue(container, item, { local = false, fold = false } = {}) {
 function renderScopeResultSummary() {
   const scope = currentScopeReading;
   const scoped = Boolean(scope && scope.mode !== "all" && !scope.topLevel);
-  if (currentObjectKind !== "agent" && ui.globalSummary.dataset.scoped !== String(scoped)) ui.globalSummary.open = !scoped;
+  if (currentObjectKind === "workflow" && ui.globalSummary.dataset.scoped !== String(scoped)) ui.globalSummary.open = !scoped;
   ui.globalSummary.dataset.scoped = String(scoped);
   ui.globalSummaryTitle.textContent = currentObjectKind === "agent" ? translate("runInformation")
     : `${translate("scopeBackToResult")} · ${currentExplanation?.run?.result.label || ""}`;
+  if (currentObjectKind === "graph") {
+    const run = currentExplanation?.run;
+    const facts = [run?.result.state !== "success" && run?.result.label,
+      run?.capture.status !== "complete" && run?.capture.label,
+      run?.result.state === "success" && run?.issues.length && translate("runIssues", { count: run.issues.length }),
+      `${translate("runDuration")} · ${timingText(run?.timing)}`].filter(Boolean);
+    ui.globalSummaryTitle.replaceChildren(htmlElement("strong", "", translate("scopeBackToResult")),
+      htmlElement("span", "graph-summary-meta", facts.join(" · ")));
+  }
   scopeSummaryCopyValues = [];
   ui.scopeResultSummary.replaceChildren();
   ui.scopeResultSummary.hidden = !scope || scope.mode === "all" || scope.topLevel;
@@ -2775,7 +2804,7 @@ function renderScopeResultSummary() {
     if (scope.boundary.total) note.append(htmlElement("p", "", translate("scopeBoundary", { incoming: scope.boundary.incoming.length, outgoing: scope.boundary.outgoing.length })));
     ui.scopeResultSummary.append(note);
   }
-  if (scope.group && currentObjectKind !== "agent") {
+  if (scope.group && currentObjectKind === "workflow") {
     const identity = htmlElement("details", "step-identity");
     identity.append(htmlElement("summary", "", currentLanguage === "zh" ? "调用身份" : "Call identity"), htmlElement("pre", "", scope.group.id));
     appendReadingCopy(identity, scope.group.id);
@@ -2798,6 +2827,7 @@ function renderRunResultSummary(explanation) {
   const status = htmlElement("div", "run-result-states");
   const resultLabel = htmlElement("span", "run-result-state", run.result.label);
   resultLabel.dataset.runResult = run.result.state;
+  resultLabel.hidden = currentObjectKind === "graph" && run.result.state === "success";
   const captureLabel = htmlElement("span", "run-capture-state", run.capture.label);
   captureLabel.setAttribute("aria-label", `${translate("runCaptureTitle")} · ${run.capture.label}`);
   captureLabel.dataset.runCapture = run.capture.status;
@@ -2869,7 +2899,7 @@ function renderRunResultSummary(explanation) {
       ui.runResultSummary.append(disclosure);
     }
   }
-  if (currentObjectKind !== "agent") ui.runResultSummary.append(information);
+  if (currentObjectKind === "workflow") ui.runResultSummary.append(information);
   rememberDisclosures(ui.runResultSummary, "run");
 }
 
@@ -2893,14 +2923,14 @@ function renderExplanationOverview(explanation, { activate = false } = {}) {
       htmlElement("strong", "", presentation.overviewLabel),
     );
     if (presentation.overviewValue) button.append(htmlElement("small", "", presentation.overviewValue));
-    if (stateNode.status !== "declared") button.append(htmlElement("small", `step-state ${stateNode.status}`, stepStatusLabel(stateNode)));
+    if (currentObjectKind === "graph" ? !confirmedStepSuccess(stateNode) : stateNode.status !== "declared") button.append(htmlElement("small", `step-state ${stateNode.status}`, stepStatusLabel(stateNode)));
     button.setAttribute("aria-label", `${translate("inspectExplanationNode")}: ${presentation.overviewLabel}`);
     list.append(button);
   }
   section.append(list);
   if (highlights.length > 100) section.append(htmlElement("p", "node-detail-note", translate("overviewLimited")));
   content.append(section);
-  if (currentObjectKind !== "agent") {
+  if (currentObjectKind === "workflow") {
   const disclosure = htmlElement("details", "technical-disclosure overview-technical");
   disclosure.append(htmlElement("summary", "", translate("technicalDetails")));
   const technicalBody = htmlElement("div", "technical-disclosure-body");
@@ -3009,7 +3039,7 @@ function showAcceptedRecordInEditor() {
 }
 
 function locateEnvelopeInEditor(index) {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   if (!sourceEnvelope(index)) return;
   if (currentScopeReading?.mode !== "all" && !currentScopeReading?.evidenceEnvelopeIndexes.includes(index)) {
     selectInspectionGroup(undefined);
@@ -3431,6 +3461,17 @@ function stepStatusLabel(record) {
   return key ? translate(key) : trajectoryStatusLabel(record.status);
 }
 
+function confirmedStepSuccess(record) {
+  const metadata = record.metadata || record.technical?.metadata || {};
+  return record.status === "success" && !metadata.agentScopeUnresolved
+    && !["planned", "interrupted", "unrecorded"].includes(metadata.executionState);
+}
+
+function hasSingleGraphScope() {
+  return currentExplanation?.groups?.length === 1
+    && currentInspection.searchSteps("", { ungroupedOnly: true, limit: 1 }).total === 0;
+}
+
 function appendTrajectoryValue(parent, label, value, options = {}) {
   const item = htmlElement("div", "trajectory-detail-value");
   if (options.direction) item.dataset.businessChannel = options.direction;
@@ -3442,8 +3483,9 @@ function appendTrajectoryValue(parent, label, value, options = {}) {
 
 function appendStepScopeContext(content, groups) {
   if (!currentInspection?.groupCount) return;
+  if (currentObjectKind === "graph" && hasSingleGraphScope()) return;
   const context = htmlElement("section", "step-scope-context");
-  context.append(htmlElement("small", "", translate("hierarchyStepScope")));
+  context.append(htmlElement("small", "", currentObjectKind === "graph" ? "Graph" : translate("hierarchyStepScope")));
   for (const group of groups) {
     const action = htmlElement("button", "", currentInspection.getGroupPath(group.id).map(({ label }) => label).join(" / "));
     action.type = "button";
@@ -3471,22 +3513,24 @@ function updateRunViewTabs() {
   pathHeading.textContent = translate(pathHeading.dataset.i18n);
   ui.workbench.dataset.readingKind = currentObjectKind;
   const agentReading = currentObjectKind === "agent";
-  ui.openDetails.hidden = agentReading;
-  ui.openRaw.hidden = agentReading;
-  ui.pasteRecord.hidden = agentReading;
+  const readingOnly = currentObjectKind !== "workflow";
+  ui.openDetails.hidden = readingOnly;
+  ui.openRaw.hidden = readingOnly;
+  ui.pasteRecord.hidden = readingOnly;
+  if (currentObjectKind === "graph") ui.workflowControls.hidden = true;
   const inspectionTitle = ui.inspection.querySelector(":scope > summary");
-  inspectionTitle.dataset.i18n = agentReading ? "agentInspectionTitle" : "inspectionTitle";
+  inspectionTitle.dataset.i18n = agentReading ? "agentInspectionTitle" : currentObjectKind === "graph" ? "graphInspectionTitle" : "inspectionTitle";
   inspectionTitle.textContent = translate(inspectionTitle.dataset.i18n);
   const searchLabel = ui.inspectionSearch.closest("label").querySelector("span");
-  searchLabel.dataset.i18n = agentReading ? "agentInspectionSearch" : "inspectionSearch";
+  searchLabel.dataset.i18n = readingOnly ? "agentInspectionSearch" : "inspectionSearch";
   searchLabel.textContent = translate(searchLabel.dataset.i18n);
   ui.inspectionSearch.dataset.i18nAriaLabel = searchLabel.dataset.i18n;
   ui.inspectionSearch.setAttribute("aria-label", searchLabel.textContent);
   ui.inspectionSearch.placeholder = searchLabel.textContent;
   const inspectionMode = ui.inspectionScope.value;
-  ui.inspectionScope.replaceChildren(...inspectionOptions.filter((option) => !agentReading || ["steps", "issues"].includes(option.value)));
+  ui.inspectionScope.replaceChildren(...inspectionOptions.filter((option) => !readingOnly || ["steps", "issues"].includes(option.value)));
   for (const option of ui.inspectionScope.options) option.textContent = translate(option.dataset.i18n);
-  ui.inspectionScope.value = agentReading && !["steps", "issues"].includes(inspectionMode) ? "steps" : inspectionMode;
+  ui.inspectionScope.value = readingOnly && !["steps", "issues"].includes(inspectionMode) ? "steps" : inspectionMode;
   inspectorPanel(ui.editorWrap.hidden ? "node" : "raw", { reveal: false });
   if (agentReading) {
     ui.readingSidebar.remove();
@@ -3589,7 +3633,7 @@ function rejectDocument(diagnostics) {
   const normalized = normalizeDiagnostics(diagnostics);
   showIssues(normalized);
   ui.importStatus.textContent = inputFailureSummary(diagnostics, currentLanguage, Boolean(currentDocument))
-    || translate(currentObjectKind === "agent" ? "agentRecordRejected" : "recordRejected");
+    || translate(currentObjectKind !== "workflow" ? "agentRecordRejected" : "recordRejected");
   ui.importStatus.dataset.error = "true";
   // A draft is not the opened run. Preserve the rendered result and its cursor.
   if (!currentDocument) {
@@ -3672,6 +3716,8 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   const scoped = currentScopeReading?.mode !== "all";
   const visibleExecution = currentScopeReading?.execution || currentExecutionDAG;
   const scopeSize = currentScopeReading?.nodeIds.length ?? visibleExecution?.nodes.length ?? 0;
+  if (projected.kind === "graph") ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(400, scopeSize * 100))}px`);
+  else ui.workbench.style.removeProperty("--graph-reading-height");
   const emptyScope = scopeSize === 0;
   if (emptyScope || scopeSize > 500 && !largeVisualRequested) {
     workflowInstance?.destroy();
@@ -3839,6 +3885,7 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   ui.sample.value = fixtureItem?.id || "";
   updateRecordLabel();
   renderCurrentDocument({ fit });
+  if (next.kind === "graph") ui.globalSummary.open = ["failed", "cancelled", "interrupted"].includes(currentExplanation?.run?.result.state);
   if (next.kind !== "agent" && !selectInitialReadingDetail()) setInspectorOpen(false);
   window.scrollTo({ top: 0 });
   ui.domainView.scrollTop = 0;
@@ -3876,7 +3923,7 @@ ui.openDetails.addEventListener("click", () => {
   inspectorPanel("node", { focus: true });
 });
 ui.openRaw.addEventListener("click", () => {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   ui.openRaw.focus({ preventScroll: true });
   openRawInspector();
   ui.rawRecordsTab.focus();
@@ -3891,7 +3938,7 @@ document.querySelector("#zoom-in").addEventListener("click", () => workflowInsta
 document.querySelector("#zoom-out").addEventListener("click", () => workflowInstance?.zoomOut());
 document.querySelector("#fit-reading").addEventListener("click", () => workflowInstance?.resetView());
 ui.pasteRecord.addEventListener("click", () => {
-  if (currentObjectKind === "agent" && currentDocument) return;
+  if (currentObjectKind !== "workflow" && currentDocument) return;
   ui.pasteRecord.focus({ preventScroll: true });
   rememberInspectorTrigger(ui.pasteRecord);
   if (ui.editor.readOnly) {
@@ -4000,7 +4047,7 @@ ui.runViewTabs.addEventListener("keydown", (event) => {
   ui.runViewTabs.querySelector(`[data-run-view="${currentRunView}"]`)?.focus();
 });
 ui.inspectorTabs.addEventListener("click", (event) => {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   const tab = event.target.closest("[data-inspector-panel]");
   if (!tab) return;
   if (tab.dataset.inspectorPanel === "node") {
@@ -4008,7 +4055,7 @@ ui.inspectorTabs.addEventListener("click", (event) => {
   } else openRawInspector();
 });
 ui.inspectorTabs.addEventListener("keydown", (event) => {
-  if (currentObjectKind === "agent") return;
+  if (currentObjectKind !== "workflow") return;
   if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
   event.preventDefault();
   const panel = event.target.dataset.inspectorPanel === "node" ? "raw" : "node";
@@ -4017,7 +4064,7 @@ ui.inspectorTabs.addEventListener("keydown", (event) => {
 ui.nodeDetail.addEventListener("click", (event) => {
   const scope = event.target.closest("[data-hierarchy-group]");
   if (scope) selectInspectionGroup(scope.dataset.hierarchyGroup, { focus: true });
-  const button = event.target.closest("[data-envelope-index]");
+  const button = event.target.closest("button[data-envelope-index]");
   if (button) {
     locateEnvelopeInEditor(Number(button.dataset.envelopeIndex));
     return;
@@ -4045,7 +4092,7 @@ ui.nodeDetail.addEventListener("click", (event) => {
 ui.runResultSummary.addEventListener("click", async (event) => {
   const issue = event.target.closest("[data-run-issue-step]");
   if (issue) { jumpToInspectionStep(issue.dataset.runIssueStep); return; }
-  const evidence = event.target.closest("[data-envelope-index]");
+  const evidence = event.target.closest("button[data-envelope-index]");
   if (evidence) {
     locateEnvelopeInEditor(Number(evidence.dataset.envelopeIndex));
     return;
@@ -4068,7 +4115,7 @@ ui.scopeResultSummary.addEventListener("click", async (event) => {
     ui.runResultSummary.focus({ preventScroll: true });
     return;
   }
-  const evidence = event.target.closest("[data-envelope-index]");
+  const evidence = event.target.closest("button[data-envelope-index]");
   if (evidence) {
     locateEnvelopeInEditor(Number(evidence.dataset.envelopeIndex));
     return;

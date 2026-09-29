@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, readFileSync } from "node:fs";
 import { projectEinoViewerDocument } from "../../src/viewer.js";
-import { openStepSearch, openWorkbenchRecord, revealSource } from "../helpers/workbench-ui.js";
+import { openStepSearch, openWorkbenchRecord, openRunInformation, revealSource, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const root = new URL("../../", import.meta.url);
 const cases = [
@@ -35,6 +35,7 @@ async function openRecord(page, mode, scenario, record) {
       await page.waitForFunction(() => window.playground?.ready);
       await openWorkbenchRecord(page, record);
       await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(record);
+      await openRunInformation(page);
     } else {
       await page.locator("#locale").selectOption("zh");
       await page.locator("#record-file").setInputFiles({ name: `${scenario.id}.json`, mimeType: "application/json", buffer: Buffer.from(JSON.stringify(record)) });
@@ -63,6 +64,17 @@ async function expectJSONValue(value, expected) {
 }
 
 async function expectEvidence(page, mode, container, record, index) {
+  if (mode === "workbench" && record.source === "graph") {
+    await expect(container.locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
+    const direction = await container.getAttribute("data-run-channel");
+    if (direction) {
+      expect(await page.evaluate(({ direction, index }) => ({
+        linked: window.playground.explanation.run[direction].items.some((item) => item.evidenceEnvelopeIndexes.includes(index)),
+        envelope: window.playground.document.evidence[index],
+      }), { direction, index })).toEqual({ linked: true, envelope: record.evidence[index] });
+    } else await expectSelectedEvidence(page, index, record.evidence[index]);
+    return;
+  }
   const button = container.locator(`[data-envelope-index="${index}"]`).first();
   await revealSource(button);
   await button.click();
@@ -123,7 +135,9 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       expect(owned.filter(({ status }) => status === "failed")).toHaveLength(scenario.error ? 1 : 0);
       await openRecord(page, mode, scenario, record);
       const summary = page.locator(mode === "workbench" ? "#run-result-summary" : "[data-run-summary]");
-      await expect(page.locator(`[data-run-result="${scenario.error ? "failed" : "success"}"]`).first()).toBeVisible();
+      const outcome = page.locator(`[data-run-result="${scenario.error ? "failed" : "success"}"]`).first();
+      if (mode === "workbench" && scenario.source === "graph" && !scenario.error) await expect(outcome).toBeHidden();
+      else await expect(outcome).toBeVisible();
       for (const direction of ["input", "output"]) {
         const source = entries.find(({ envelope }) => envelope.kind === "component.io" && !envelope.payload.nodePath?.length
           && envelope.payload.address?.length === 1 && envelope.payload.direction === direction);
@@ -141,7 +155,10 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       for (let visit = 0; visit < inputs.length; visit += 1) {
         const input = inputs[visit], owner = owned[visit];
         await selectStep(page, mode, owner.id);
-        await expect(detail).toContainText(owner.status === "failed" ? "失败" : "成功");
+        if (mode === "workbench" && scenario.source === "graph" && owner.status === "success") {
+          await expect(detail.locator(".step-state.success")).toHaveCount(0);
+          expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe(owner.status);
+        } else await expect(detail).toContainText(owner.status === "failed" ? "失败" : "成功");
         for (const direction of ["input", "output"]) {
           const source = nodeIO.find(({ envelope }) => envelope.payload.direction === direction
             && (scenario.source === "graph" ? envelope.correlation.invocationId === input.envelope.correlation.invocationId

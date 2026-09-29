@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, mkdirSync } from "node:fs";
 import { syntheticAgentRecord, syntheticGraphRecord } from "../helpers/synthetic-record.js";
-import { openStepSearch, openWorkbenchRecord, revealSource, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openStepSearch, openWorkbenchRecord, openRunInformation, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 async function openRecord(page, record) {
   await page.goto("/.artifacts/pages/?lang=zh");
@@ -11,18 +11,19 @@ async function openRecord(page, record) {
   await expect.poll(() => page.evaluate(() => window.playground.document?.runId)).toBe(record.runId);
 }
 
-test("saved record has truthful elapsed time and searchable paged steps/evidence", { tag: "@P0" }, async ({ page }, testInfo) => {
+test("saved Graph record has truthful elapsed time and searchable source-backed paged steps", { tag: "@P0" }, async ({ page }, testInfo) => {
   const record = syntheticGraphRecord(1000);
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1560, height: 980 });
   await openRecord(page, record);
+  await openRunInformation(page);
   await expect(page.locator("[data-run-duration]")).toHaveText("耗时 · 496 ms");
   await openStepSearch(page);
   const indexBounds = await page.locator("#run-inspection").boundingBox();
   const mainBounds = await page.locator(":is(#reading-main, .eino-agent-reader [data-reading-main])").boundingBox();
   expect(indexBounds.x + indexBounds.width).toBeLessThanOrEqual(mainBounds.x + 1);
-  expect((await page.locator(".canvas-host").boundingBox()).height).toBeLessThanOrEqual(800);
+  expect((await page.locator(".canvas-host").boundingBox()).height).toBeLessThanOrEqual(1200);
   await expect(page.locator("[data-inspection-node]")).toHaveCount(25);
   await expect(page.locator("#inspection-count")).toHaveText("1–25 / 250");
   await page.locator("#inspection-next").click();
@@ -35,15 +36,16 @@ test("saved record has truthful elapsed time and searchable paged steps/evidence
     mkdirSync(new URL("../../.artifacts/iteration-3/", import.meta.url), { recursive: true });
     await page.screenshot({ path: new URL("../../.artifacts/iteration-3/workbench-timing-inspection.png", import.meta.url).pathname, fullPage: true });
   }
+  const selection = await page.evaluate(() => window.playground.linkedSelection);
+  const indexes = await page.evaluate(() => window.playground.selectedNodeDetail.evidence.map(({ envelopeIndex }) => envelopeIndex));
+  expect(indexes.length).toBeGreaterThan(0);
+  for (const index of indexes) await expectSelectedEvidence(page, index, record.evidence[index]);
   await page.locator("#inspection-search").fill("");
-  await page.locator("#inspection-scope").selectOption("evidence");
-  await expect(page.locator("[data-inspection-evidence]")).toHaveCount(25);
-  await expect(page.locator("#inspection-count")).toHaveText("1–25 / 1000");
-  await page.locator("#inspection-search").fill("schema.document");
-  await expect(page.locator("[data-inspection-evidence]")).toHaveCount(1);
-  await page.locator("[data-inspection-evidence]").click();
-  const selected = await page.locator("#snapshot-json").evaluate((el) => JSON.parse(el.value.slice(el.selectionStart, el.selectionEnd)));
-  expect(selected.kind).toBe("schema.document");
+  await expect(page.locator('#inspection-scope option[value="evidence"], #inspection-scope option[value="unassigned"], [data-inspection-evidence]')).toHaveCount(0);
+  await expect(page.locator("[data-inspection-node]")).toHaveCount(25);
+  expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(selection);
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe(id);
+  expect(record.evidence.filter(({ kind }) => kind === "schema.document")).toHaveLength(1);
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
   expect(errors).toEqual([]);
 });
@@ -59,6 +61,7 @@ test("error navigation and a legacy record never invent duration", { tag: "@P0" 
   const legacy = syntheticGraphRecord(100);
   legacy.evidence = legacy.evidence.filter(({ kind, payload }) => kind !== "run.lifecycle" && !(kind === "callback.event" && payload.address.length === 1));
   await openWorkbenchRecord(page, legacy);
+  await openRunInformation(page);
   await expect(page.locator("[data-run-duration]")).toHaveText("耗时 · 未记录");
 });
 
@@ -70,10 +73,8 @@ test("definition-only Graph clicks preserve definition evidence in the workbench
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe("graph:1:retry");
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.timing.durationMs)).toBeUndefined();
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .node-detail-hero")).not.toContainText(/\b0 ms\b/);
-  const source = page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) [data-envelope-index]");
-  await revealSource(source);
-  await source.click();
-  const selected = await page.locator("#snapshot-json").evaluate((el) => JSON.parse(el.value.slice(el.selectionStart, el.selectionEnd)));
+  await expect(page.locator("#node-detail .technical-disclosure, #node-detail button[data-envelope-index]")).toHaveCount(0);
+  const selected = await expectSelectedEvidence(page, 0, record.evidence[0]);
   expect(selected).toEqual(record.evidence[0]);
 });
 
@@ -125,20 +126,15 @@ test("large Graph records retain bounded navigation while Agent trajectories flo
     await openWorkbenchRecord(page, record);
     await expect.poll(() => page.evaluate(() => window.playground.document?.runId)).toBe(record.runId);
     const technical = page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure");
-    await expect(technical).not.toHaveAttribute("open");
-    await expect(technical.locator(".relationship-row")).toHaveCount(0);
+    await expect(technical).toHaveCount(0);
     if (count === 100) {
-      // Expanding the default root's evidence must still expose every actual
-      // child identity, once only, and survive a language refresh.
+      // Technical source rows are no longer UI. The selected root must still
+      // retain every exact child identity through a language refresh.
       const expectedPeers = Array.from({ length: Math.floor((count - 7) / 4) }, (_, index) => `callback:runnable:scale-node:visit:${index + 2}`);
-      const peerIds = () => technical.locator(".relationship-row code").allTextContents();
-      await technical.locator(":scope > summary").click();
-      await expect.poll(peerIds).toEqual(expectedPeers);
-      await technical.locator(":scope > summary").click();
-      await technical.locator(":scope > summary").click();
+      const peerIds = () => page.evaluate(() => window.playground.selectedNodeDetail.relationships.map(({ peer }) => peer));
       await expect.poll(peerIds).toEqual(expectedPeers);
       await page.locator('[data-language="en"]').click();
-      await expect(technical).toHaveAttribute("open");
+      await expect(technical).toHaveCount(0);
       await expect.poll(peerIds).toEqual(expectedPeers);
       await page.locator('[data-language="zh"]').click();
       await expect.poll(peerIds).toEqual(expectedPeers);
@@ -150,10 +146,13 @@ test("large Graph records retain bounded navigation while Agent trajectories flo
       await expect(page.locator(".large-record-notice button")).toHaveText("绘制完整视图");
     }
     await openStepSearch(page);
-    await page.locator("#inspection-scope").selectOption("evidence");
-    await expect(page.locator("[data-inspection-evidence]")).toHaveCount(25);
-    await page.locator("[data-inspection-evidence]").first().click();
-    await expect(page.locator("#snapshot-json")).toHaveAttribute("data-selected-envelope-index", "0");
+    const stepCount = await page.evaluate(() => window.playground.explanation.nodes.length);
+    await expect(page.locator("[data-inspection-node]")).toHaveCount(Math.min(25, stepCount));
+    await page.locator("[data-inspection-node]").first().click();
+    const indexes = await page.evaluate(() => window.playground.selectedNodeDetail.evidence.map(({ envelopeIndex }) => envelopeIndex));
+    expect(indexes.length).toBeGreaterThan(0);
+    for (const index of indexes) await expectSelectedEvidence(page, index, record.evidence[index]);
+    expect(await page.evaluate(() => window.playground.document)).toEqual(record);
   }
   const base = JSON.parse(readFileSync(new URL("../../fixtures/recorder-matrix/agent-direct-answer.json", import.meta.url), "utf8"));
   const agent = syntheticAgentRecord(base, 125);

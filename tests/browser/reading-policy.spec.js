@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, mkdirSync } from "node:fs";
-import { editCopy, revealSource, openRecordActions, openAgentScope, openScopeInformation, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { editCopy, revealSource, openRecordActions, openAgentScope, openScopeInformation, openWorkbenchRecord, openRunInformation } from "../helpers/workbench-ui.js";
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${name}.json`, import.meta.url), "utf8"));
 const failures = new WeakMap();
@@ -59,7 +59,7 @@ for (const width of [1440, 390]) {
 }
 
 test("raw source is read-only until edit-copy and source navigation preserves the draft", { tag: "@P0" }, async ({ page }) => {
-  const record = fixture("graph-io-structured");
+  const record = fixture("workflow-io-success");
   await openRecord(page, record);
   await openRecordActions(page);
   await page.locator("#open-raw").click();
@@ -85,6 +85,7 @@ test("root results distinguish ambiguous strings from JSON primitives without ch
     const entry = record.evidence.find(({ kind, payload, metadata }) => kind === "component.io" && metadata?.io?.scope === "root" && payload.direction === "output");
     entry.payload.body = value;
     await openRecord(page, record);
+    await openRunInformation(page);
     const result = page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"] .run-result-item');
     await expect(result).toHaveAttribute("data-value-type", value === null ? "null" : typeof value);
     await expect(result.locator("[data-run-value]")).toHaveText(value === "" ? '""' : typeof value === "string" ? value : JSON.stringify(value, null, 2));

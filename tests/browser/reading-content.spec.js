@@ -225,7 +225,7 @@ test("recorded redaction stays visible beside business content", { tag: "@P0" },
   const id = await page.evaluate(() => window.playground.explanation.nodes.find((node) => node.output.items.some((item) => item.availability === "redacted")).id);
   await selectStep(page, id);
   await expect(page.locator(':is(#node-detail, .eino-agent-reader [data-step-detail]) [data-business-channel="output"] [data-availability="redacted"]')).toBeVisible();
-  await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure")).not.toHaveAttribute("open");
+  await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure")).toHaveCount(0);
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
 });
 

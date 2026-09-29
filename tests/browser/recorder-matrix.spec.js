@@ -93,7 +93,7 @@ function trajectoryStep(page, id) {
 }
 
 async function openEvidence(page, index, expected) {
-  if (await page.evaluate(() => window.playground.objectKind === "agent")) {
+  if (await page.evaluate(() => window.playground.objectKind !== "workflow")) {
     await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure, :is(#node-detail, .eino-agent-reader [data-step-detail]) button[data-envelope-index]")).toHaveCount(0);
     await expect(page.locator("#snapshot-json")).toBeHidden();
     return expectSelectedEvidence(page, index, expected);

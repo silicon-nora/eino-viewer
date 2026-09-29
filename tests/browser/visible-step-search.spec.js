@@ -145,6 +145,11 @@ async function expectSource(page, mode, target, direction) {
     else if (mode === "embedded") await expectAgentAPIEvidence(page, agentReader(page), target.index, target.envelope, "searchViewer");
     return;
   }
+  if (mode === "workbench" && target.record.source === "graph") {
+    await expect(detail(page, mode).locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
+    await expectSelectedEvidence(page, target.index, target.envelope);
+    return;
+  }
   const button = detail(page, mode).locator(`[data-envelope-index="${target.index}"]`).first();
   await revealSource(button);
   await button.click();

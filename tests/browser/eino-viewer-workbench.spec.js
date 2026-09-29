@@ -433,7 +433,7 @@ test("rejected example records and Raw drafts preserve the full valid document a
     await expect(page.locator("#sample")).toHaveValue("agent-weather-workflow");
     await page.unroute(sampleResource);
   }
-  await openSample(page, "graph");
+  await openSample(page, "workflow");
   await openStepSearch(page);
   await page.locator("[data-inspection-node]").first().click();
   const selectedStep = await page.evaluate(() => ({ selection: window.playground.linkedSelection,
@@ -460,9 +460,9 @@ test("rejected example records and Raw drafts preserve the full valid document a
   await expect(page.locator("#snapshot-json")).toHaveValue('{"broken":');
 });
 
-test("Raw links select complete envelopes in compact JSON with repeated timestamps", { tag: "@P0" }, async ({ page }) => {
-  const record = fixtureRecord("eino-graph-recorder-cyclic-v1.json");
-  // Graph callbacks require their envelope and payload clocks to agree. Keep
+test("Workflow Raw links select complete envelopes in compact JSON with repeated timestamps", { tag: "@P0" }, async ({ page }) => {
+  const record = fixtureRecord("eino-workflow-recorder-weather-completed-v1.json");
+  // Callbacks require their envelope and payload clocks to agree. Keep
   // that protocol invariant while deliberately repeating every timestamp.
   for (const envelope of record.evidence) {
     envelope.observedAtMs = 42;
@@ -472,7 +472,7 @@ test("Raw links select complete envelopes in compact JSON with repeated timestam
   expect(projectEinoViewerDocument(structuredClone(record)).ok).toBe(true);
   await importRecord(page, record);
   await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(record);
-  await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe("graph");
+  await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe("workflow");
   await openRecordActions(page);
   await page.locator("#open-raw").click();
   await editCopy(page);
@@ -632,7 +632,7 @@ test("Graph keeps its cyclic definition while showing repeated runtime visits", 
   await page.locator("[data-inspection-node]").nth(1).click();
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toBeVisible();
   await expect(page.locator(".node-detail-hero h3")).toHaveText("Model");
-  await expect(page.locator(".technical-disclosure")).not.toHaveAttribute("open", "");
+  await expect(page.locator(".technical-disclosure")).toHaveCount(0);
 });
 
 test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: "@P0" }, async ({ page }) => {
@@ -691,27 +691,28 @@ test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: 
   await expect(page.locator(".business-content")).toContainText('"TemperatureC": 31');
 });
 
-test("invalid cyclic Graph edits keep the last valid view", { tag: "@P0" }, async ({ page }) => {
+test("invalid cyclic Graph example replacements keep the last valid view", { tag: "@P0" }, async ({ page }) => {
+  const invalid = fixtureRecord("eino-graph-recorder-cyclic-completed-v1.json");
+  invalid.evidence[0].payload.edges[0].to = "missing";
+  const resource = /\/fixtures\/recorder-matrix\/graph-multistep-loop-failed\.json(?:\?|$)/;
+  await page.route(resource, (route) => route.fulfill({ contentType: "application/json", body: JSON.stringify(invalid) }));
+  await page.goto(playgroundPath);
+  await page.waitForFunction(() => window.playground?.ready);
   await openSample(page, "graph", "compose-cyclic-graph");
   const before = await page.evaluate(() => {
     window.lastValidGraphCanvas = document.querySelector("#dag canvas");
-    return { document: window.playground.document, dag: window.playground.executionDAG };
+    return { document: window.playground.document, dag: window.playground.executionDAG, selection: window.playground.linkedSelection };
   });
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  await editCopy(page);
-  await page.evaluate(() => {
-    const value = structuredClone(window.playground.document);
-    value.evidence[0].payload.edges[0].to = "missing";
-    document.querySelector("#snapshot-json").value = JSON.stringify(value, null, 2);
-  });
-  await page.locator("#apply-json").click();
-  await expect(page.locator("#validation-result")).toHaveClass(/invalid/);
-  await expect(page.locator("#issue-list")).toContainText("compose.unknown_edge_target");
-  // Opening Raw changes the canvas width; rejection must preserve the actual
-  // mounted view and accepted data, not its previous pixel dimensions.
+  await page.locator("#sample").selectOption("graph-multistep-loop-failed");
+  await expect(page.locator("#import-status")).toHaveAttribute("data-error", "true");
+  await expect(page.locator("#import-status")).toBeVisible();
+  expect(await page.evaluate(() => window.playground.diagnostics.map(({ code }) => code))).toContain("compose.unknown_edge_target");
+  await expect(page.locator("#sample")).toHaveValue("compose-cyclic-graph");
+  await expect(page.locator("#open-raw")).toBeHidden();
+  // Rejected selection preserves the actual mounted graph and selected step.
   expect(await page.evaluate(() => document.querySelector("#dag canvas") === window.lastValidGraphCanvas)).toBe(true);
-  expect(await page.evaluate(() => ({ document: window.playground.document, dag: window.playground.executionDAG }))).toEqual(before);
+  expect(await page.evaluate(() => ({ document: window.playground.document, dag: window.playground.executionDAG, selection: window.playground.linkedSelection }))).toEqual(before);
+  await page.unroute(resource);
 });
 
 test("the public viewer preserves valid state and has a final destroy lifecycle", { tag: "@P0" }, async ({ page }) => {

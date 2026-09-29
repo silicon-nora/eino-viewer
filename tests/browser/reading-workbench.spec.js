@@ -70,7 +70,7 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
       await openSample(page, kind);
       await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe(kind);
       await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
-      if (kind === "agent") {
+      if (kind !== "workflow") {
         await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
         expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
       } else await expect(page.locator("[data-run-capture]")).toHaveAttribute("data-run-capture", "complete");
@@ -147,6 +147,13 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
         expect(shortGeometry.minimum).toBe("0px");
         expect(Math.abs(shortGeometry.containerHeight - shortGeometry.height)).toBeLessThanOrEqual(1);
         expect(await page.evaluate(() => window.playground.document)).toEqual(shortRecord);
+      } else if (kind === "graph") {
+        await expect(page.locator("#global-summary")).not.toHaveAttribute("open");
+        await expect(output).toBeHidden();
+        await expect(page.locator("#dag")).toBeVisible();
+        if (viewport.width >= 768) expect(geometry.sidebar.right).toBeLessThanOrEqual(geometry.main.left + 1);
+        else expect(geometry.sidebar.top).toBeGreaterThanOrEqual(geometry.main.bottom - 1);
+        await expect(page.locator("#inspection-search")).toBeVisible();
       } else {
         await expect(output).toBeInViewport();
         expect(geometry.result.bottom).toBeGreaterThanOrEqual(geometry.output.bottom);
@@ -231,9 +238,9 @@ test("visible path zoom controls change only the viewport and remain keyboard op
   }
 });
 
-test("Graph step selection preserves a pending paste draft without replacing the accepted record", { tag: "@P2" }, async ({ page }) => {
+test("Workflow step selection preserves a pending paste draft without replacing the accepted record", { tag: "@P2" }, async ({ page }) => {
   await open(page);
-  await openSample(page, "graph");
+  await openSample(page, "workflow");
   const record = await page.evaluate(() => window.playground.document);
   await openPasteDraft(page);
   const draft = '{"next record":';

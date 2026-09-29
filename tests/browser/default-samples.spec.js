@@ -28,7 +28,7 @@ for (const sample of defaults) {
     await openSample(page, sample.kind, sample.id);
     await expect(page.locator("#sample")).toHaveValue(sample.id);
     await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
-    if (sample.kind === "agent") {
+    if (sample.kind !== "workflow") {
       await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
       expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
     } else await expect(page.locator("[data-run-capture]")).toHaveAttribute("data-run-capture", "complete");

@@ -114,19 +114,27 @@ export async function openDetails(page) {
     await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toBeVisible();
     return;
   }
+  if (await page.evaluate(() => window.playground.objectKind === "graph")) {
+    const selected = page.locator('[data-inspection-node][aria-current="true"]');
+    await expect(selected).toHaveCount(1);
+    await revealSource(selected);
+    await selected.click();
+    await expect(page.locator("#node-detail")).toBeVisible();
+    return;
+  }
   await revealSource(button);
   await button.click();
 }
 
 export async function openRaw(page) {
-  expect(await page.evaluate(() => window.playground.objectKind), "Agent reading has no Raw operation").not.toBe("agent");
+  expect(await page.evaluate(() => window.playground.objectKind), "Only the unchanged Workflow workbench retains the Raw operation").toBe("workflow");
   const button = page.locator("#open-raw");
   await revealSource(button);
   await button.click();
 }
 
 export async function openPasteDraft(page) {
-  expect(await page.evaluate(() => window.playground.objectKind), "Agent reading does not expose the raw editor").not.toBe("agent");
+  expect(await page.evaluate(() => window.playground.objectKind), "Only Workflow exposes the raw editor").toBe("workflow");
   await openRaw(page);
   const button = page.locator("#paste-record");
   await revealSource(button);
@@ -135,7 +143,7 @@ export async function openPasteDraft(page) {
   await expect(page.locator("#snapshot-json")).toBeEditable();
 }
 
-// The workbench Agent intentionally has no raw-source UI. Verify the current
+// The Agent and Graph workbench intentionally has no raw-source UI. Verify the current
 // real UI selection owns the exact original envelope; do not open a hidden tab
 // or substitute a document-only equality check for the association assertion.
 export async function expectSelectedEvidence(page, index, expected) {
@@ -146,6 +154,7 @@ export async function expectSelectedEvidence(page, index, expected) {
     return { selection, indexes, envelope: window.playground.document.evidence[envelopeIndex],
       stepId: detail?.explanationNode?.id || detail?.executionNode?.id,
       trajectoryId: detail?.trajectoryRecord?.id, kind: window.playground.objectKind,
+      definitionOnly: !window.playground.executionDAG && detail?.explanationNode?.basis === "declared",
       title: detail?.presentation?.name || detail?.presentation?.title };
   }, index);
   expect(actual.indexes).toContain(index);
@@ -155,7 +164,8 @@ export async function expectSelectedEvidence(page, index, expected) {
     await expect(page.locator(`[data-trajectory-record=${JSON.stringify(actual.trajectoryId)}]`)).toHaveAttribute("aria-pressed", "true");
   } else {
     expect(actual.stepId).toBeTruthy();
-    expect(actual.selection.executionNodeId).toBe(actual.stepId);
+    if (actual.definitionOnly) expect(actual.selection.executionNodeId).toBeUndefined();
+    else expect(actual.selection.executionNodeId).toBe(actual.stepId);
     if (actual.kind === "agent") {
       // A real run/step issue can select a canonical error without a matching
       // trajectory row. Its visible detail and exact source association remain
@@ -210,13 +220,13 @@ export async function openSample(page, kind = "agent", id = defaultSamples[kind]
   await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(expected);
 }
 
-// Display fixtures enter through the existing Graph/Workflow raw-copy editor.
+// Display fixtures enter through the existing Workflow raw-copy editor.
 // File import is intentionally absent from the workbench. This does not claim
-// that an Agent can reject an import in place; those cases use a bad example.
+// that an Agent or Graph can reject an import in place; those cases use a bad example.
 export async function openWorkbenchRecord(page, recordOrText) {
   const text = typeof recordOrText === "string" ? recordOrText : JSON.stringify(recordOrText);
   const state = await page.evaluate(() => ({ opened: Boolean(window.playground.document), kind: window.playground.objectKind }));
-  if (!state.opened || state.kind === "agent") await openSample(page, "graph");
+  if (!state.opened || state.kind !== "workflow") await openSample(page, "workflow");
   await openRaw(page);
   await editCopy(page);
   await page.locator("#snapshot-json").fill(text);
