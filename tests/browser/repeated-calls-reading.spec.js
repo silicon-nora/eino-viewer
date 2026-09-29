@@ -59,37 +59,39 @@ async function showRoundTwo(page, mode, second) {
 }
 
 async function checkKeyboardLabel(page, mode, id, expected, logical) {
-  if (mode !== "workbench") {
-    await ensureDiagramVisible(page.locator("[data-eino-run-viewer]"));
+  if (mode === "workbench") {
+    const node = page.locator('#dag [data-graph-node="evaluate"]');
+    await expect(node).toHaveAttribute("aria-label", logical.countLabel);
+    if (logical.failureLabel) await expect(node).toHaveAttribute("aria-label", logical.failureLabel);
+    await node.focus();
+    await node.press("Enter");
+    await expect(node).toHaveAttribute("aria-pressed", "true");
+    await expect(title(page, mode)).toContainText(expected);
+    expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode.id)).toBe(id);
+    await expect(page.locator("[data-graph-visit]")).toHaveValue(id);
+    return;
   }
-  const host = page.locator(mode === "workbench" ? "#dag" : "[data-run-graph]");
+  await ensureDiagramVisible(page.locator("[data-eino-run-viewer]"));
+  const host = page.locator("[data-run-graph]");
   await expect.poll(() => host.evaluate((element) => [element, ...element.querySelectorAll("*")].some((item) => item._cyreg?.cy))).toBe(true);
   await host.focus();
   await host.press("Home");
-  // Embedded and portable still select individual calls. The workbench must
-  // preserve the selected call while moving focus across its logical graph.
-  if (mode !== "workbench") await host.press("Enter");
+  // Embedded and portable still select individual calls on the native canvas.
+  await host.press("Enter");
   let reached = false;
   for (let attempt = 0; attempt < 30; attempt += 1) {
     reached = await host.evaluate((element, target) => {
       const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
       const current = cy?.nodes(".keyboard-focus").first();
       return (current?.data("path")?.at(-1) || current?.id()) === target;
-    }, mode === "workbench" ? logical.id : id);
+    }, id);
     if (reached) break;
     await host.press("ArrowRight");
   }
   expect(reached).toBe(true);
-  if (mode === "workbench") {
-    await expect(host).toHaveAttribute("aria-label", logical.countLabel);
-    if (logical.failureLabel) await expect(host).toHaveAttribute("aria-label", logical.failureLabel);
-  } else await expect(host).toHaveAttribute("aria-label", expected);
+  await expect(host).toHaveAttribute("aria-label", expected);
   await host.press("Enter");
   await expect(title(page, mode)).toContainText(expected);
-  if (mode === "workbench") {
-    expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode.id)).toBe(id);
-    await expect(page.locator("[data-graph-visit]")).toHaveValue(id);
-  }
 }
 
 for (const mode of ["workbench", "embedded", "portable"]) {

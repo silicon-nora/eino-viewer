@@ -7,6 +7,8 @@ import { captureViewerViewport, restoreViewerViewport, revealViewerSelection, ca
 import { createRenderedValueFoldObserver } from "../src/rendered-value-fold.js";
 import { createEinoRunViewer, setRunViewerLocale, inspectRunViewer } from "./agent-reader.js?v=__EINO_VIEWER_ASSET_REVISION__";
 import { buildGraphReading } from "./graph-reading.js?v=__EINO_VIEWER_ASSET_REVISION__";
+import { buildGraphTopology } from "./graph-topology.js?v=__EINO_VIEWER_ASSET_REVISION__";
+import { createGraphTopologyView } from "./graph-topology-view.js?v=__EINO_VIEWER_ASSET_REVISION__";
 
 const messages = {
   en: {
@@ -28,6 +30,8 @@ const messages = {
     agentInspectionTitle: "Find steps",
     graphInspectionTitle: "Steps",
     graphVisit: "Execution",
+    graphFlow: "Flow",
+    graphCallsView: "Call relationships",
     graphCalls: "{count} calls",
     graphFailedCalls: "{count} failed",
     agentInspectionSearch: "Search names or status",
@@ -363,6 +367,8 @@ const messages = {
     agentInspectionTitle: "查找步骤",
     graphInspectionTitle: "步骤",
     graphVisit: "执行记录",
+    graphFlow: "流程",
+    graphCallsView: "调用关系",
     graphCalls: "执行 {count} 次",
     graphFailedCalls: "{count} 次失败",
     agentInspectionSearch: "搜索名称或状态",
@@ -818,6 +824,8 @@ let einoAPI;
 let viewRegistry;
 let workflowInstance;
 let graphViewerInstance;
+let graphTopologyInstance;
+let currentGraphTopology;
 let currentSnapshot;
 let currentDocument;
 let currentDocumentText = "";
@@ -1463,8 +1471,8 @@ function updateRecordLabel() {
 
 function applyLanguage(language, { persist = true, updateUrl = true } = {}) {
   cancelAnimationFrame(workflowRevealFrame);
-  const graphViewport = captureViewerViewport(workflowInstance);
-  if (graphViewport) graphViewport.layout = captureViewerLayout(workflowInstance);
+  const graphViewport = captureViewerViewport(activePathRenderer());
+  if (graphViewport) graphViewport.layout = captureViewerLayout(activePathRenderer());
   // Read our owned scroll containers at the moment of the language change.
   // Scroll events can arrive a frame later, especially after a keyboard jump.
   const positions = new Map(readingScrollRegions.map((region) => [region, { top: region.scrollTop, left: region.scrollLeft }]));
@@ -1573,9 +1581,9 @@ function locateNodeInEditor(path) {
 }
 
 function rememberInspectorTrigger(trigger = document.activeElement) {
-  if (!inspectorPresentationLocked && trigger instanceof HTMLElement && ![document.body, document.documentElement].includes(trigger) && !ui.inspector.contains(trigger)) {
+  if (!inspectorPresentationLocked && trigger instanceof Element && typeof trigger.focus === "function" && ![document.body, document.documentElement].includes(trigger) && !ui.inspector.contains(trigger)) {
     inspectorReturnFocus = trigger;
-    inspectorReturnSelection = ["data-trajectory-record", "data-inspection-node", "data-agent-outcome", "data-agent-capture"]
+    inspectorReturnSelection = ["data-trajectory-record", "data-inspection-node", "data-agent-outcome", "data-agent-capture", "data-graph-node"]
       .map((attribute) => [attribute, inspectorReturnFocus.getAttribute(attribute)])
       .find(([, value]) => value !== null);
   }
@@ -1751,7 +1759,7 @@ function restorePathSelection() {
   refreshExecutionSelection();
   const id = selectedExecutionNodeId || selectedNodeDetail?.explanationNode?.id;
   const node = currentInspection?.getNode(id);
-  if (!node || !workflowInstance || !currentSnapshot || !currentScopeReading?.nodeIds.includes(id)) return;
+  if (!node || !activePathRenderer() || (!currentSnapshot && !currentGraphTopology) || !currentScopeReading?.nodeIds.includes(id)) return;
   const executionNode = currentExecutionDAG?.nodes?.find((entry) => entry.id === id);
   const renderedNode = { id: executionNode?.id || node.path.at(-1), path: node.path,
     name: node.label, component: node.component, metadata: node.technical?.metadata || {}, status: node.status };
@@ -1978,6 +1986,22 @@ function sourcePresentation(node, renderedNode) {
   const reading = buildReadingStepPresentation(node, { locale: currentLanguage,
     envelopes: currentProjection?.document.evidence || [], invocationLabels: currentInvocationLabels,
     identityLabels: currentObjectKind === "agent" ? undefined : currentIdentityLabels });
+  if (currentObjectKind === "graph") {
+    const logicalId = currentGraphTopology?.nodeIdByExecutionId.get(node.id);
+    const logical = currentGraphTopology?.nodes.find(({ id }) => id === logicalId);
+    if (logical) {
+      const callbacks = (node.evidence || []).map(({ envelopeIndex }) => currentProjection.document.evidence[envelopeIndex])
+        .filter((envelope) => envelope?.kind === "callback.event");
+      // A component-type fallback is not an application-owned name. Prefer
+      // the confirmed definition name only when the source supplied no name;
+      // an explicit custom name equal to its component remains untouched.
+      if (node.label === node.component && callbacks.length
+        && callbacks.every(({ payload }) => !payload.run?.name)) {
+        reading.name = logical.name;
+        reading.title = invocationLabel(node.id, logical.name);
+      } else if (reading.name !== logical.name) reading.role = logical.name;
+    }
+  }
   if (currentObjectKind === "agent" && node.technical?.metadata?.agentScopeUnresolved) reading.role = translate("agentUnconfirmedRecord");
   return { ...presentation, title: reading.title, name: reading.name, overviewLabel: reading.title, role: reading.role };
 }
@@ -2667,8 +2691,6 @@ function rebuildInspection() {
   ui.inspection.hidden = !currentInspection;
   if (inspectionGroupId && !currentInspection?.getGroup(inspectionGroupId)) inspectionGroupId = undefined;
   currentScopeReading = currentExplanation ? buildScopeReading(currentProjection.document, currentExplanation, { ...inspectionRange(), locale: currentLanguage }) : undefined;
-  renderHierarchyNavigation();
-  renderInspectionResults();
 }
 
 function appendRunEvidence(container, indexes = []) {
@@ -3063,15 +3085,24 @@ function locateEnvelopeInEditor(index) {
   ui.editor.setSelectionRange(range.start, range.end);
 }
 
+function activePathRenderer() { return graphTopologyInstance || workflowInstance; }
+
 function activateReadingPath(executionId, path = [executionId]) {
+  if (graphTopologyInstance) {
+    const id = currentGraphTopology.nodeIdByExecutionId.get(executionId)
+      || (!currentExecutionDAG && currentInspection?.getNode(executionId)?.technical?.metadata?.sourceNodeId);
+    graphTopologyInstance.setActiveNodePath(id ? [id] : null);
+    return;
+  }
   const graphId = currentObjectKind === "graph" && currentGraphReading?.nodeIdByExecutionId.get(executionId);
   workflowInstance?.setActiveNodePath(graphId ? [graphId] : path.slice(currentSnapshotPrefix.length));
 }
 
 function graphVisitIds(executionId) {
   if (currentObjectKind !== "graph") return [];
-  const graphId = currentGraphReading?.nodeIdByExecutionId.get(executionId);
-  return currentGraphReading?.memberIdsByNodeId.get(graphId) || [];
+  const reading = currentGraphTopology || currentGraphReading;
+  const graphId = reading?.nodeIdByExecutionId.get(executionId);
+  return reading?.memberIdsByNodeId.get(graphId) || [];
 }
 
 function appendGraphVisitPicker(content, executionId) {
@@ -3085,7 +3116,9 @@ function appendGraphVisitPicker(content, executionId) {
   for (const id of members) {
     const node = currentInspection.getNode(id);
     const state = currentExecutionDAG.nodes.find((item) => item.id === id);
-    const option = htmlElement("option", "", [currentInvocationLabels.get(id),
+    const sourceLabel = Number.isSafeInteger(state?.sequence)
+      ? `${currentLanguage === "zh" ? "记录" : "Record"} #${state.sequence}` : id;
+    const option = htmlElement("option", "", [currentInvocationLabels.get(id) || sourceLabel,
       !confirmedStepSuccess(state) && stepStatusLabel(state), recordedTimingText(node?.timing)].filter(Boolean).join(" · "));
     option.value = id;
     select.append(option);
@@ -3184,7 +3217,7 @@ function schedulePathSelectionReveal() {
       || ui.inspector.hidden || ui.nodeDetail.hidden || ui.host.hidden || !ui.host.isConnected) return;
     // The detail column has taken its final width. Refresh native dimensions
     // and pan only an out-of-view selection; never fit or change the zoom.
-    revealViewerSelection(workflowInstance);
+    revealViewerSelection(activePathRenderer());
   });
 }
 
@@ -3237,6 +3270,8 @@ function setMetricLabels(keys) {
 }
 
 function showWorkflow(snapshot, { fit = true, pathPrefix = [], graphViewport } = {}) {
+  graphTopologyInstance?.destroy();
+  graphTopologyInstance = undefined;
   if (graphViewerInstance) {
     graphViewerInstance.destroy();
     graphViewerInstance = undefined;
@@ -3270,6 +3305,74 @@ function showWorkflow(snapshot, { fit = true, pathPrefix = [], graphViewport } =
   const outcomes = snapshot.execution?.nodes?.length || 0;
   setRenderState("valid", "snapshotRendered", "renderSummary", { nodes: counts.nodes, edges: counts.edges, outcomes });
   showIssues([], { key: "validSnapshot", params: {} });
+}
+
+function selectGraphDefinition(node, { activate = true } = {}) {
+  // A declared but unobserved branch has no invocation body to borrow. Keep
+  // its definition separate from both the run's result and actual step data.
+  clearLinkedSelection();
+  if (!currentExecutionDAG) {
+    renderNodeDetail({ id: node.definitionId, path: node.path, name: node.name,
+      component: node.component, kind: "graph", status: "declared", metadata: node.definition?.metadata || {} }, { activate });
+  } else {
+    const content = htmlElement("div", "node-detail-content");
+    const hero = htmlElement("div", "node-detail-hero");
+    hero.append(htmlElement("h3", "", node.name), htmlElement("p", "step-state", currentLanguage === "zh" ? "未观测到执行" : "No execution observed"));
+    content.append(hero);
+    ui.nodeDetail.replaceChildren(content);
+    selectedNodeDetail = { graphDefinitionNodeId: node.id };
+    markInspectionSelection();
+    if (activate) inspectorPanel("node");
+  }
+  selectedNodeDetail.graphDefinitionNodeId = node.id;
+  graphTopologyInstance?.setActiveNodePath([node.id]);
+  selectedPathIsPrompt = false;
+  ui.selectedPath.textContent = node.name;
+}
+
+function showGraphTopology(model, { graphViewport, previousDefinitionId } = {}) {
+  workflowInstance?.destroy();
+  workflowInstance = undefined;
+  graphViewerInstance?.destroy();
+  graphViewerInstance = undefined;
+  graphTopologyInstance?.destroy();
+  graphTopologyInstance = undefined;
+  currentSnapshot = undefined;
+  currentSnapshotPrefix = [];
+  ui.domainView.hidden = true;
+  ui.host.hidden = false;
+  ui.workflowControls.hidden = true;
+  clearNodeDetail();
+  whenPathReady(() => {
+    graphTopologyInstance = createGraphTopologyView(ui.host, model, {
+      locale: currentLanguage,
+      onNodeClick({ id, node }) {
+        rememberInspectorTrigger(document.activeElement);
+        const members = model.memberIdsByNodeId.get(id) || [];
+        if (members.length) {
+          const selected = selectedNodeDetail?.explanationNode?.id;
+          const visits = members.map((member) => currentExecutionDAG.nodes.find((entry) => entry.id === member));
+          const target = members.includes(selected) ? selected
+            : visits.find((entry) => entry.status === "failed")?.id
+              || visits.find((entry) => !confirmedStepSuccess(entry))?.id || members[0];
+          jumpToInspectionStep(target, document.activeElement, { scroll: ui.workbench.getBoundingClientRect().width < 1200 });
+        } else {
+          selectGraphDefinition(node);
+          if (ui.workbench.getBoundingClientRect().width < 1200) ui.inspectorTitle.scrollIntoView({ block: "start" });
+        }
+      },
+    });
+    restorePathSelection();
+    if (previousDefinitionId) {
+      const node = model.nodes.find((entry) => entry.id === previousDefinitionId);
+      if (node) selectGraphDefinition(node, { activate: false });
+    }
+    if (graphViewport) restoreViewerViewport(graphTopologyInstance, graphViewport);
+  });
+  if (currentExplanation) renderExplanationOverview(currentExplanation);
+  setRenderState("valid", "snapshotRendered", "renderSummary", {
+    nodes: model.nodes.length, edges: model.edges.length, outcomes: currentExecutionDAG?.nodes.length || 0,
+  });
 }
 
 function appendBadge(parent, value, tone = "") {
@@ -3594,7 +3697,8 @@ function selectInitialReadingDetail() {
 
 function updateRunViewTabs() {
   ui.runViewTabs.hidden = true;
-  pathHeading.dataset.i18n = currentObjectKind === "agent" ? "trajectoryView" : "pathView";
+  pathHeading.dataset.i18n = currentObjectKind === "agent" ? "trajectoryView" : currentObjectKind === "graph"
+    ? currentGraphTopology ? "graphFlow" : "graphCallsView" : "pathView";
   pathHeading.textContent = translate(pathHeading.dataset.i18n);
   ui.workbench.dataset.readingKind = currentObjectKind;
   const agentReading = currentObjectKind === "agent";
@@ -3630,7 +3734,7 @@ function updateRunViewTabs() {
     ui.scopeResultSummary.classList.remove("agent-reading-content");
   }
   ui.agentRunMeta.hidden = true;
-  ui.diagramTools.hidden = ui.host.hidden || !workflowInstance;
+  ui.diagramTools.hidden = ui.host.hidden || !activePathRenderer();
 }
 
 function selectRunView(view) {
@@ -3757,6 +3861,9 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   if (!currentProjection?.ok) return;
   if (currentProjection.document.kind === "agent") {
     currentGraphReading = undefined;
+    currentGraphTopology = undefined;
+    graphTopologyInstance?.destroy();
+    graphTopologyInstance = undefined;
     cancelAnimationFrame(workflowRevealFrame);
     cancelPathMount();
     workflowInstance?.destroy();
@@ -3783,6 +3890,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   const previousLock = inspectorPresentationLocked;
   const previousPanel = ui.editorWrap.hidden ? "node" : "raw";
   const previousSelection = selectedNodeDetail?.explanationNode?.id;
+  const previousDefinitionId = selectedNodeDetail?.graphDefinitionNodeId;
   if (scopeOnly) inspectorPresentationLocked = true;
   try {
   const projected = currentProjection.document;
@@ -3797,17 +3905,30 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   currentIdentityLabels = buildStepIdentityLabels(currentExecutionDAG, projected.evidence);
   }
   rebuildInspection();
-  if (!scopeOnly || projected.kind === "agent") renderRunResultSummary(currentExplanation);
-  renderScopeResultSummary();
   const scoped = currentScopeReading?.mode !== "all";
   const visibleExecution = currentScopeReading?.execution || currentExecutionDAG;
-  const scopeSize = currentScopeReading?.nodeIds.length ?? visibleExecution?.nodes.length ?? 0;
-  currentGraphReading = projected.kind === "graph" && currentExecutionDAG
+  // A filtered execution scope does not necessarily describe another declared
+  // graph. Only use the root topology for the full run (or its complete group).
+  const fullGraphScope = !scoped || visibleExecution && visibleExecution.nodes.length === currentExecutionDAG?.nodes.length
+    || !currentExecutionDAG && currentScopeReading?.group?.kind === "graph";
+  currentGraphTopology = projected.kind === "graph" && fullGraphScope ? buildGraphTopology(projected, { visibleExecution }) : undefined;
+  const scopeSize = Math.max(currentScopeReading?.nodeIds.length ?? visibleExecution?.nodes.length ?? 0, currentGraphTopology?.nodes.length ?? 0);
+  currentGraphReading = projected.kind === "graph" && currentExecutionDAG && !currentGraphTopology
     ? buildGraphReading(currentExecutionDAG, projected.evidence, { visibleExecution }) : undefined;
-  if (projected.kind === "graph") ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(400, (currentGraphReading?.execution.nodes.length ?? scopeSize) * 100))}px`);
+  for (const node of currentGraphTopology?.nodes || []) for (const id of node.memberIds) {
+    currentReadingRoles.get(id)?.add(node.name.toLocaleLowerCase().replace(/\s+/gu, " "));
+  }
+  renderHierarchyNavigation();
+  renderInspectionResults();
+  if (!scopeOnly || projected.kind === "agent") renderRunResultSummary(currentExplanation);
+  renderScopeResultSummary();
+  if (projected.kind === "graph") ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(500, currentGraphTopology
+    ? currentGraphTopology.nodes.length * 105 : (currentGraphReading?.execution.nodes.length ?? scopeSize) * 85))}px`);
   else ui.workbench.style.removeProperty("--graph-reading-height");
   const emptyScope = scopeSize === 0;
   if (emptyScope || scopeSize > 500 && !largeVisualRequested) {
+    graphTopologyInstance?.destroy();
+    graphTopologyInstance = undefined;
     workflowInstance?.destroy();
     workflowInstance = undefined;
     graphViewerInstance?.destroy();
@@ -3830,12 +3951,16 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
     ui.domainView.replaceChildren(notice);
     ui.inspection.open = true;
     renderExplanationOverview(currentExplanation);
+  } else if (currentGraphTopology) {
+    showGraphTopology(currentGraphTopology, { graphViewport, previousDefinitionId });
   } else if (projected.kind === "workflow" || currentExecutionDAG) {
     showWorkflow(visibleExecution ? executionSnapshot(currentGraphReading?.execution || visibleExecution, projected, { local: scoped })
       : workflowAPI.parseWorkflowSnapshot(currentScopeReading?.definitionSnapshot || projected.definition),
     { fit, pathPrefix: currentScopeReading?.definitionPathPrefix || [], graphViewport });
     restorePathSelection();
   } else {
+    graphTopologyInstance?.destroy();
+    graphTopologyInstance = undefined;
     workflowInstance?.destroy();
     workflowInstance = undefined;
     graphViewerInstance?.destroy();
@@ -3881,7 +4006,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   updateSignalBus(currentDocument);
   showRunState(currentDocument, currentRunView === "trajectory" ? currentTrajectory : visibleExecution);
   showIssues(recordDiagnostics(), { key: "validSnapshot", accepted: true });
-  ui.diagramTools.hidden = ui.host.hidden || !workflowInstance;
+  ui.diagramTools.hidden = ui.host.hidden || !activePathRenderer();
   if (selectedPathIsPrompt) ui.selectedPath.textContent = translate("selectNodePrompt");
   } finally {
     if (scopeOnly) {
@@ -3924,6 +4049,8 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   clearNodeDetail({ preservePanel: true });
   selectedPathIsPrompt = true;
   if (changedSource) {
+    graphTopologyInstance?.destroy();
+    graphTopologyInstance = undefined;
     workflowInstance?.destroy();
     workflowInstance = undefined;
     graphViewerInstance?.destroy();
@@ -4022,9 +4149,9 @@ ui.inspector.addEventListener("keydown", (event) => {
     setInspectorOpen(false, { returnFocus: true });
   }
 });
-document.querySelector("#zoom-in").addEventListener("click", () => workflowInstance?.zoomIn());
-document.querySelector("#zoom-out").addEventListener("click", () => workflowInstance?.zoomOut());
-document.querySelector("#fit-reading").addEventListener("click", () => workflowInstance?.resetView());
+document.querySelector("#zoom-in").addEventListener("click", () => activePathRenderer()?.zoomIn());
+document.querySelector("#zoom-out").addEventListener("click", () => activePathRenderer()?.zoomOut());
+document.querySelector("#fit-reading").addEventListener("click", () => activePathRenderer()?.resetView());
 ui.pasteRecord.addEventListener("click", () => {
   if (currentObjectKind !== "workflow" && currentDocument) return;
   ui.pasteRecord.focus({ preventScroll: true });
@@ -4070,7 +4197,11 @@ ui.restoreDraft.addEventListener("click", () => {
 });
 window.addEventListener("pagehide", (event) => {
   cancelPathMount();
-  if (!event.persisted) agentReader?.destroy();
+  if (!event.persisted) {
+    agentReader?.destroy();
+    graphTopologyInstance?.destroy();
+    graphTopologyInstance = undefined;
+  }
 });
 
 for (const control of [ui.inspectionSearch, ui.inspectionScope]) {
@@ -4172,7 +4303,7 @@ ui.nodeDetail.addEventListener("click", (event) => {
     durationMs: explanationNode.timing?.durationMs,
   };
   const executionNode = currentExecutionDAG?.nodes?.find((node) => node.id === explanationNode.id);
-  if (!ui.host.hidden && workflowInstance) activateReadingPath(explanationNode.id, explanationNode.path);
+  if (!ui.host.hidden && activePathRenderer()) activateReadingPath(explanationNode.id, explanationNode.path);
   selectedPathIsPrompt = false;
   renderExplanationNode(explanationNode, { renderedNode, executionNode });
   ui.selectedPath.textContent = selectedNodeDetail?.presentation?.title || explanationNode.label;
@@ -4290,6 +4421,8 @@ window.playground = {
   get api() { return workflowAPI; },
   get einoAPI() { return einoAPI; },
   get instance() { return workflowInstance; },
+  get graphTopology() { return currentGraphTopology; },
+  get graphTopologyInstance() { return graphTopologyInstance; },
   get snapshot() { return currentSnapshot; },
   get document() { return currentDocument; },
   get projection() { return currentProjection; },

@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { projectEinoViewerDocument } from "../../src/viewer.js";
-import { expectSelectedEvidence, openSample, openStepSearch } from "../helpers/workbench-ui.js";
+import { expectSelectedEvidence, openSample, openStepSearch, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { topologyFacts, topologyNode } from "../helpers/graph-topology-ui.js";
 
 const failures = new WeakMap();
 test.beforeEach(async ({ page }) => {
@@ -69,10 +70,7 @@ async function expectSelectedVisit(page, fixture, visit) {
     expect(await errorValue.textContent()).toBe(visit.error.envelope.payload.error.message);
     await expectSelectedEvidence(page, visit.error.index, fixture.record.evidence[visit.error.index]);
   }
-  await expect.poll(() => page.locator("#dag").evaluate((host) => {
-    const cy = [host, ...host.querySelectorAll("*")].map((element) => element._cyreg?.cy).find(Boolean);
-    return cy?.nodes(".active-node").map((node) => node.data("path")?.at(-1) || node.id());
-  })).toEqual([fixture.visits[0].node.id]);
+  await expect.poll(async () => (await topologyFacts(page)).nodes.filter(({ active }) => active).map(({ id }) => id)).toEqual(["evaluate"]);
   const picker = page.locator("select[data-graph-visit]");
   await expect(picker).toBeVisible();
   await expect(picker).toHaveValue(visit.node.id);
@@ -81,59 +79,71 @@ async function expectSelectedVisit(page, fixture, visit) {
 }
 
 async function expectLogicalGraph(page, fixture, outcome) {
-  const displayed = await page.locator("#dag").evaluate((host) => {
-    const cy = [host, ...host.querySelectorAll("*")].map((element) => element._cyreg?.cy).find(Boolean);
-    const id = (node) => node.data("path")?.at(-1) || node.id();
-    return {
-      nodes: cy.nodes().filter((node) => node.data("metadata")?.executionKind).map((node) => ({
-        id: id(node), members: node.data("metadata")?.graphReading?.memberIds,
-        counts: node.data("metadata")?.graphReading?.statusCounts, label: node.data("label"),
-      })),
-      edges: cy.edges().map((edge) => ({ from: id(edge.source()), to: id(edge.target()),
-        kind: edge.data("metadata")?.executionEdgeKind, originals: edge.data("metadata")?.graphReading?.edgeIds })),
-    };
-  });
-  // These counts come from the real named scenario, not the grouping helper.
-  expect(displayed.nodes).toHaveLength(outcome === "success" ? 5 : 4);
-  const evaluate = displayed.nodes.filter(({ members }) => members.includes(fixture.visits[0].node.id));
+  const displayed = await topologyFacts(page);
+  const definition = fixture.record.evidence.find(({ kind }) => kind === "compose.graph").payload;
+  // Declared branches, including unobserved alternatives, are not execution
+  // parent/child links. Derive this contract from the unmodified source.
+  expect(displayed.nodes.map(({ id }) => id).sort()).toEqual(["start", "end", ...definition.nodes.map(({ id }) => id)].sort());
+  expect(displayed.nodes).toHaveLength(7);
+  expect(displayed.nodes.filter(({ active }) => active)).toEqual([]);
+  const expectedEdges = [...definition.edges.map(({ from, to }) => ({ from, to, kind: "edge" })),
+    ...definition.branches.flatMap(({ from, targets }) => targets.map((to) => ({ from, to, kind: "branch" })))];
+  expect(displayed.edges.map(({ from, to, kind }) => ({ from, to, kind }))).toEqual(expectedEdges);
+  expect(displayed.edges.filter(({ from, kind }) => from === "evaluate" && kind === "branch").map(({ to }) => to).sort())
+    .toEqual(["fallback", "finish", "revise"]);
+  expect(displayed.edges.find(({ from, to }) => from === "revise" && to === "evaluate").path).toBeTruthy();
+  await expect(page.locator('#dag [data-graph-edge][data-status], #dag [data-graph-edge][data-count], #dag [data-graph-edge][data-observed]')).toHaveCount(0);
+  const evaluate = displayed.nodes.filter(({ id }) => id === "evaluate");
   expect(evaluate).toHaveLength(1);
-  expect(evaluate[0].id).toBe(fixture.visits[0].node.id);
   expect(evaluate[0].members).toEqual(fixture.visits.map(({ node }) => node.id));
   expect(evaluate[0].label).toContain(`执行 ${outcome === "success" ? 3 : 2} 次`);
   if (outcome === "failed") {
     expect(evaluate[0].label).toContain("1 次失败");
     expect(evaluate[0].counts.failed).toBe(1);
   }
-  expect(displayed.nodes.flatMap(({ members }) => members).sort()).toEqual(fixture.nodes.map(({ id }) => id).sort());
-  const owner = new Map(displayed.nodes.flatMap(({ id, members }) => members.map((member) => [member, id])));
-  expect(displayed.edges.flatMap(({ originals }) => originals).sort()).toEqual(fixture.execution.edges.map(({ id }) => id).sort());
-  for (const edge of displayed.edges) {
-    expect(edge.originals.length).toBeGreaterThan(0);
-    for (const originalId of edge.originals) {
-      const original = fixture.execution.edges.find(({ id }) => id === originalId);
-      expect({ from: edge.from, to: edge.to, kind: edge.kind })
-        .toEqual({ from: owner.get(original.from), to: owner.get(original.to), kind: original.kind });
-    }
+  expect(displayed.nodes.flatMap(({ members }) => members).sort()).toEqual(fixture.nodes.slice(1).map(({ id }) => id).sort());
+  const fallback = displayed.nodes.find(({ id }) => id === "fallback");
+  expect(fallback).toMatchObject({ members: [], counts: {}, status: "not-observed" });
+  expect(fallback.label).toContain("未观测到执行");
+  if (outcome === "failed") expect(displayed.nodes.find(({ id }) => id === "finish"))
+    .toMatchObject({ members: [], counts: {}, status: "not-observed" });
+  for (const id of ["start", "end"]) {
+    await expect(topologyNode(page, id)).toHaveAttribute("role", "img");
+    await expect(topologyNode(page, id)).not.toHaveAttribute("tabindex", "0");
+  }
+  const branches = await page.locator('#dag [data-graph-edge][data-edge-kind="branch"]').evaluateAll((edges) =>
+    edges.map((edge) => ({ dashed: getComputedStyle(edge).strokeDasharray, marker: edge.getAttribute("marker-end") })));
+  expect(branches.every(({ dashed, marker }) => dashed !== "none" && Boolean(marker))).toBe(true);
+  if (outcome === "success") {
+    // Inspect the actual drawn curves, not model endpoints. The conditional
+    // evaluate→fallback/finish routes skip revise's row and must go around it.
+    const crossings = await page.locator('#dag svg[data-graph-topology]').evaluate((svg) => {
+      const boxes = [...svg.querySelectorAll('[data-graph-node]')].map((node) => ({
+        id: node.dataset.graphNode, box: node.querySelector('rect').getBoundingClientRect(),
+      }));
+      const intersections = [];
+      for (const edge of svg.querySelectorAll('[data-graph-edge]')) {
+        const length = edge.getTotalLength(), matrix = edge.getScreenCTM();
+        for (let offset = 1; offset < length; offset += 2) {
+          const point = edge.getPointAtLength(offset).matrixTransform(matrix);
+          const hit = boxes.find(({ id, box }) => ![edge.dataset.from, edge.dataset.to].includes(id)
+            && point.x > box.left + 1 && point.x < box.right - 1 && point.y > box.top + 1 && point.y < box.bottom - 1);
+          if (hit) {
+            intersections.push({ from: edge.dataset.from, to: edge.dataset.to, crossed: hit.id });
+            break;
+          }
+        }
+      }
+      return intersections;
+    });
+    expect(crossings).toEqual([]);
   }
   expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(fixture.execution);
 }
 
-async function activateLogicalEvaluate(page, fixture) {
-  const host = page.locator("#dag");
-  await host.focus();
-  await host.press("Home");
-  let reached = false;
-  for (let attempt = 0; attempt < 10; attempt += 1) {
-    reached = await host.evaluate((element, target) => {
-      const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
-      const node = cy.nodes(".keyboard-focus").first();
-      return (node.data("path")?.at(-1) || node.id()) === target;
-    }, fixture.visits[0].node.id);
-    if (reached) break;
-    await host.press("ArrowRight");
-  }
-  expect(reached).toBe(true);
-  await host.press("Enter");
+async function activateLogicalEvaluate(page) {
+  await topologyNode(page, "evaluate").focus();
+  await topologyNode(page, "evaluate").press("Enter");
 }
 
 async function expectQuietControls(page) {
@@ -146,6 +156,7 @@ async function expectQuietControls(page) {
 }
 
 test("Graph workbench keeps real loop visits and source-bound values in its simplified reading flow", { tag: "@P0" }, async ({ page }) => {
+  test.setTimeout(60000);
   for (const outcome of ["success", "failed"]) {
     const fixture = loopRecord(outcome);
     await open(page, fixture);
@@ -223,8 +234,31 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     await expectSelectedVisit(page, fixture, preferred);
     await activateLogicalEvaluate(page, fixture);
     await expectSelectedVisit(page, fixture, preferred);
+    // An available but unobserved branch cannot borrow an executed call's I/O.
+    await topologyNode(page, "fallback").click();
+    await expect(topologyNode(page, "fallback")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("#node-detail h3")).toHaveText("fallback");
+    await expect(page.locator("#node-detail")).toContainText("No execution observed");
+    await expect(page.locator("#node-detail [data-business-channel], #node-detail [data-graph-visit]")).toHaveCount(0);
+    expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toBeUndefined();
+    await page.locator('[data-language="zh"]').click();
+    await expect(topologyNode(page, "fallback")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("#node-detail")).toContainText("未观测到执行");
+    await row(page, fixture.nodes[0].id).click();
+    await expect(page.locator('#dag [data-graph-node][aria-pressed="true"]')).toHaveCount(0);
+    expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(fixture.execution);
     expect(await page.evaluate(() => window.playground.document)).toEqual(fixture.record);
   }
+  // A derived record with no declaration keeps the existing execution-view
+  // fallback. It must not invent a topology from temporal callback order.
+  const withoutDefinition = loopRecord("success").record;
+  withoutDefinition.evidence = withoutDefinition.evidence.filter(({ kind }) => kind !== "compose.graph");
+  await openWorkbenchRecord(page, withoutDefinition);
+  await expect(page.locator('#dag svg[data-graph-topology]')).toHaveCount(0);
+  await expect(page.locator('#dag canvas').first()).toBeVisible();
+  await expect(page.locator('#path-region > summary')).toContainText("调用关系");
+  expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(projectEinoViewerDocument(withoutDefinition).document.execution);
+  expect(await page.evaluate(() => window.playground.document)).toEqual(withoutDefinition);
 });
 
 test("Graph workbench keeps the path primary and complete details reachable at four reading widths", { tag: "@P1" }, async ({ page }) => {
@@ -235,7 +269,7 @@ test("Graph workbench keeps the path primary and complete details reachable at f
     await expectQuietControls(page);
     await expect(page.locator("#global-summary")).not.toHaveAttribute("open");
     await expect(page.locator("#global-summary > summary")).toBeInViewport();
-    await expect(page.locator("#dag canvas").first()).toBeVisible();
+    await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
     await expect(page.locator("#dag")).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: `.artifacts/graph-reading-${viewport.width}-initial.png` });

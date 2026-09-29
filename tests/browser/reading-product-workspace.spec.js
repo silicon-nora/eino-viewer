@@ -7,6 +7,7 @@ import { buildExecutionTrajectory } from "../../src/trajectory.js";
 import { trajectoryRecordValue } from "../../src/trajectory-reading.js";
 import { syntheticGraphRecord } from "../helpers/synthetic-record.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
+import { buildGraphTopology } from "../../site/graph-topology.js";
 import { openSample, revealSource, openRunInformation, expectSelectedEvidence, selectAgentStep, openWorkbenchRecord } from "../helpers/workbench-ui.js";
 
 const root = new URL("../../", import.meta.url);
@@ -130,6 +131,16 @@ async function expectAgentSources(page, mode, record, trajectoryRecord) {
 
 async function graphFacts(page, mode) {
   return page.locator(mode === "workbench" ? "#dag" : "#viewer [data-run-graph]").evaluate((host) => {
+    const svg = host.querySelector('svg[data-graph-topology]');
+    if (svg) {
+      const box = svg.getBoundingClientRect(), view = svg.viewBox.baseVal;
+      return { zoom: box.width / view.width, pan: { x: view.x, y: view.y }, width: box.width, height: box.height,
+        active: [...svg.querySelectorAll('[data-graph-node][aria-pressed="true"]')].map((node) => {
+          const bounds = node.getBoundingClientRect();
+          return { path: [node.dataset.graphNode], bounds: { x1: bounds.left - box.left, y1: bounds.top - box.top,
+            x2: bounds.right - box.left, y2: bounds.bottom - box.top } };
+        }) };
+    }
     const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
     if (!cy) return null;
     return { zoom: cy.zoom(), pan: cy.pan(), width: cy.width(), height: cy.height(),
@@ -143,10 +154,13 @@ async function graphFacts(page, mode) {
 async function canvasStepPath(page, mode, executionId) {
   if (mode !== "workbench" || await page.evaluate(() => window.playground.objectKind) !== "graph") return [executionId];
   const state = await page.evaluate(() => ({ execution: window.playground.executionDAG,
+    document: window.playground.projection.document, definitionPath: window.playground.scopeReading.definitionPathPrefix || [],
     evidence: window.playground.document.evidence, visibleExecution: window.playground.scopeReading.execution }));
-  const graphId = buildGraphReading(state.execution, state.evidence, { visibleExecution: state.visibleExecution }).nodeIdByExecutionId.get(executionId);
-  expect(graphId).toBeTruthy();
-  return [graphId];
+  const topology = buildGraphTopology(state.document, { visibleExecution: state.visibleExecution, definitionPath: state.definitionPath });
+  const graphId = topology ? topology.nodeIdByExecutionId.get(executionId)
+    : buildGraphReading(state.execution, state.evidence, { visibleExecution: state.visibleExecution }).nodeIdByExecutionId.get(executionId);
+  if (!topology) expect(graphId).toBeTruthy();
+  return graphId === undefined ? undefined : [graphId];
 }
 
 async function expectActiveStep(page, mode, id) {
@@ -160,7 +174,8 @@ async function expectActiveStep(page, mode, id) {
     return;
   }
   const expectedPath = await canvasStepPath(page, mode, id);
-  await expect.poll(async () => (await graphFacts(page, mode))?.active.map(({ path }) => path)).toEqual([expectedPath]);
+  await expect.poll(async () => (await graphFacts(page, mode))?.active.map(({ path }) => path)).toEqual(expectedPath ? [expectedPath] : []);
+  if (!expectedPath) return;
   await expect.poll(async () => {
     const graph = await graphFacts(page, mode), bounds = graph?.active[0]?.bounds;
     return bounds && bounds.x1 >= -1 && bounds.y1 >= -1 && bounds.x2 <= graph.width + 1 && bounds.y2 <= graph.height + 1
@@ -170,6 +185,11 @@ async function expectActiveStep(page, mode, id) {
 
 async function workbenchGraphLayout(page) {
   return page.locator("#dag").evaluate((host) => {
+    const svg = host.querySelector('svg[data-graph-topology]');
+    if (svg) return {
+      nodes: [...svg.querySelectorAll('[data-graph-node]')].map((node) => ({ id: node.dataset.graphNode, transform: node.getAttribute('transform') })),
+      edges: [...svg.querySelectorAll('[data-graph-edge]')].map((edge) => ({ id: edge.dataset.graphEdge, path: edge.getAttribute('d') })),
+    };
     const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
     return {
       nodes: cy.nodes().map((node) => ({ id: node.id(), position: node.position(), ports: node.scratch("einoWorkflowDAG")?.ports || [] })),
@@ -452,7 +472,7 @@ test("homepage opens real examples without requiring JSON and the current-type s
       await expect(page.locator("#run-view-tabs")).toBeHidden();
       await expect(page.locator("#dag canvas")).toHaveCount(0);
       await expect(page.locator("[data-trajectory-record]")).toHaveCount(7);
-    } else await expect(page.locator("#dag canvas").first()).toBeVisible();
+    } else await expect(page.locator(kind === "graph" ? "#dag svg[data-graph-topology]" : "#dag canvas").first()).toBeVisible();
   }
   await openReader(page, "workbench");
   await openSample(page, "graph");
@@ -682,20 +702,34 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     await expect(search).toHaveValue("");
     await expect(graphStep).toBeVisible();
     await page.locator(mode === "workbench" ? "#dag" : "#viewer [data-run-graph]").evaluate((host) => {
-      const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
       window.programmaticGraphTaps = 0;
-      cy.on("tap", () => { window.programmaticGraphTaps += 1; });
+      if (host.querySelector('svg[data-graph-topology]')) host.addEventListener("click", (event) => {
+        if (event.target.closest('[data-graph-node]')) window.programmaticGraphTaps += 1;
+      });
+      else {
+        const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
+        cy.on("tap", () => { window.programmaticGraphTaps += 1; });
+      }
     });
     await graphStep.click();
     await expectActiveStep(page, mode, graphId);
     expect(await page.evaluate(() => window.programmaticGraphTaps)).toBe(0);
     const clicks = mode === "embedded" ? await page.evaluate(() => window.productClicks) : undefined;
     if (clicks) expect(clicks).toEqual([...Array(3).fill("tool:lookup_profile:call-tool-recovered"), graphId]);
-    await page.locator(mode === "workbench" ? "#dag" : "#viewer [data-run-graph]").evaluate((host) => {
-      const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
-      cy.zoom(cy.zoom() * 0.8);
-      cy.pan({ x: cy.pan().x + 6, y: cy.pan().y + 9 });
-    });
+    if (mode === "workbench") {
+      await page.locator("#zoom-out").click();
+      const svg = page.locator('#dag svg[data-graph-topology]');
+      await svg.scrollIntoViewIfNeeded();
+      const box = await svg.boundingBox();
+      await page.mouse.move(box.x + 8, box.y + 8);
+      await page.mouse.down();
+      await page.mouse.move(box.x + 14, box.y + 17, { steps: 3 });
+      await page.mouse.up();
+    } else await page.locator("#viewer [data-run-graph]").evaluate((host) => {
+        const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
+        cy.zoom(cy.zoom() * 0.8);
+        cy.pan({ x: cy.pan().x + 6, y: cy.pan().y + 9 });
+      });
     const viewport = await graphFacts(page, mode);
     const layout = mode === "workbench" ? await workbenchGraphLayout(page) : undefined;
     await setLocale(page, mode, "en");
@@ -1039,7 +1073,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     const record = syntheticGraphRecord(2007);
     await importRecord(page, mode, record);
     const graph = page.locator(mode === "workbench" ? "#dag" : "[data-run-graph]");
-    await expect(graph.locator("canvas")).toHaveCount(0);
+    await expect(graph.locator("canvas, svg[data-graph-topology]")).toHaveCount(0);
     const step = page.locator(mode === "workbench" ? "[data-inspection-node]" : "[data-step-list] [data-step-id]").first();
     const id = await step.getAttribute(mode === "workbench" ? "data-inspection-node" : "data-step-id");
     await step.click();
@@ -1048,7 +1082,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     await expect(detail).toBeVisible();
     if (mode === "workbench") expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe(id);
     else await expect(detail).toHaveAttribute("data-step-id", id);
-    await expect(graph.locator("canvas")).toHaveCount(0);
+    await expect(graph.locator("canvas, svg[data-graph-topology]")).toHaveCount(0);
     await expectOriginal(page, mode, record);
   });
 

@@ -69,7 +69,7 @@ test("definition-only Graph clicks preserve definition evidence in the workbench
   const original = JSON.parse(readFileSync(new URL("../../fixtures/recorder-matrix/graph-step-limit.json", import.meta.url)));
   const record = { ...original, evidence: original.evidence.filter(({ kind }) => kind === "compose.graph") };
   await openRecord(page, record);
-  await page.locator('#dag [data-node-id="retry"]').click();
+  await page.locator('#dag [data-graph-node="retry"]').click();
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe("graph:1:retry");
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.timing.durationMs)).toBeUndefined();
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .node-detail-hero")).not.toContainText(/\b0 ms\b/);
@@ -140,7 +140,7 @@ test("large Graph records retain bounded navigation while Agent trajectories flo
       await expect.poll(peerIds).toEqual(expectedPeers);
     }
     if (count === 10000) {
-      await expect(page.locator("#dag canvas")).toHaveCount(0);
+      await expect(page.locator("#dag canvas, #dag svg[data-graph-topology]")).toHaveCount(0);
       await expect(page.locator(".large-record-notice")).toContainText("较长的运行记录");
       expect(await page.evaluate(() => window.playground.executionDAG.nodes.length)).toBe(2500);
       await expect(page.locator(".large-record-notice button")).toHaveText("绘制完整视图");

@@ -221,6 +221,8 @@ test("visible path zoom controls change only the viewport and remain keyboard op
     await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe(kind);
     const before = await page.evaluate(() => ({ document: window.playground.document, dag: window.playground.executionDAG }));
     const zoom = () => page.locator("#dag").evaluate((host) => {
+      const svg = host.querySelector('svg[data-graph-topology]');
+      if (svg) return svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
       const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
       return cy.zoom();
     });

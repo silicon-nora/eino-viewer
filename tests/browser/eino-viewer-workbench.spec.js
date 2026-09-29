@@ -6,6 +6,8 @@ import { validateEinoRunRecord } from "../../src/run-record.js";
 import { runCompletion } from "../../src/run-lifecycle.js";
 import { buildExecutionTrajectory } from "../../src/trajectory.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
+import { buildGraphTopology } from "../../site/graph-topology.js";
+import { topologyFacts, topologyNode } from "../helpers/graph-topology-ui.js";
 import { editCopy, openSample, openWorkbenchRecord, expectAgentTrajectory, openRecordActions, openRunInformation, openDetails, openStepSearch, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 function fixtureRecord(name) {
@@ -58,27 +60,37 @@ async function expectRepeatedCanvasSelection(page, node) {
   const values = await detail.locator("[data-business-channel] .business-value-text").allTextContents();
   const host = page.locator("#dag");
   const graphState = await page.evaluate(() => ({ kind: window.playground.objectKind,
+    document: window.playground.projection.document, definitionPath: window.playground.scopeReading.definitionPathPrefix || [],
     execution: window.playground.executionDAG, evidence: window.playground.document.evidence,
     visibleExecution: window.playground.scopeReading.execution }));
-  const canvasId = graphState.kind === "graph"
+  const topology = graphState.kind === "graph" && buildGraphTopology(graphState.document,
+    { visibleExecution: graphState.visibleExecution, definitionPath: graphState.definitionPath });
+  const canvasId = topology ? topology.nodeIdByExecutionId.get(node.id) : graphState.kind === "graph"
     ? buildGraphReading(graphState.execution, graphState.evidence, { visibleExecution: graphState.visibleExecution }).nodeIdByExecutionId.get(node.id)
     : node.id;
-  expect(canvasId).toBeTruthy();
-  await host.focus();
-  await host.press("Home");
-  let reached = false;
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    reached = await host.evaluate((element, id) => {
-      const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
-      const focused = cy?.nodes(".keyboard-focus").first();
-      return (focused?.data("path")?.at(-1) || focused?.id()) === id;
-    }, canvasId);
-    if (reached) break;
-    await host.press("ArrowRight");
+  if (topology && canvasId === undefined) {
+    // The root execution is not the structural start boundary.
+    await expect(page.locator('#dag [data-graph-node][aria-pressed="true"]')).toHaveCount(0);
+  } else if (topology) await topologyNode(page, canvasId).focus();
+  else {
+    expect(canvasId).toBeTruthy();
+    await host.focus();
+    await host.press("Home");
+    let reached = false;
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      reached = await host.evaluate((element, id) => {
+        const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
+        const focused = cy?.nodes(".keyboard-focus").first();
+        return (focused?.data("path")?.at(-1) || focused?.id()) === id;
+      }, canvasId);
+      if (reached) break;
+      await host.press("ArrowRight");
+    }
+    expect(reached).toBe(true);
   }
-  expect(reached).toBe(true);
   for (let activation = 0; activation < 2; activation += 1) {
-    await host.press("Enter");
+    if (topology && canvasId !== undefined) await topologyNode(page, canvasId).press("Enter");
+    else if (!topology) await host.press("Enter");
     expect(await page.evaluate(() => window.playground.selectedNodeDetail?.executionNode)).toEqual(node);
     await expect(detail).toBeVisible();
     await expect(detail.locator(".node-detail-hero h3")).toHaveText(heading);
@@ -395,7 +407,7 @@ test("Raw edit copies recognize all three run sources without exposing a file pi
     await expect(page.locator("#record-kind")).toHaveText({ agent: "Agent", graph: "Graph", workflow: "Workflow" }[source]);
     await expect(page.locator("#record-file, #import-record, #record-drop-zone")).toHaveCount(0);
     if (source === "agent") await expectAgentTrajectory(page);
-    else await expect(page.locator("#dag canvas").first()).toBeVisible();
+    else await expect(page.locator(source === "graph" ? "#dag svg[data-graph-topology]" : "#dag canvas").first()).toBeVisible();
     if (source === "agent") {
       await expect(page.locator("#import-status")).toHaveAttribute("data-error", "false");
       expect(await page.evaluate(() => window.playground.validation.kind)).not.toBe("invalid");
@@ -614,7 +626,7 @@ test("Graph keeps its cyclic definition while showing repeated runtime visits", 
   await expect(page.locator("#sample")).toHaveValue("compose-cyclic-graph");
   await expect(page.locator("#signal-protocol")).toHaveText("GRAPH RUN");
   await expect(page.locator("#signal-kind")).toHaveText("9 条原始记录");
-  await expect(page.locator("#dag canvas").first()).toBeVisible();
+  await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
   await openStepSearch(page);
   await expect(page.locator("[data-inspection-node] strong")).toHaveText([
     "cyclic-agent-graph", "Model", "Model",
@@ -648,18 +660,24 @@ test("Graph keeps its cyclic definition while showing repeated runtime visits", 
   await page.locator("[data-inspection-node]").nth(2).click();
   await expectRepeatedCanvasSelection(page, visits[1]);
   // Canonical nodes may use the start event ID as a derived invocation ID.
-  // Only an explicit ID in the original callbacks can prove these repeats.
+  // The topology maps exact source locations, not an invented invocation ID.
   for (const visit of visits) {
     const callbacks = visit.evidence.map(({ envelopeIndex }) => legacy.evidence[envelopeIndex])
       .filter(({ kind }) => kind === "callback.event");
     expect(callbacks.map(({ payload }) => payload.phase)).toEqual(["start", "end"]);
     for (const callback of callbacks) expect(Object.hasOwn(callback.correlation, "invocationId")).toBe(false);
   }
-  await expect(page.locator("[data-graph-visit]")).toHaveCount(0);
-  expect(await page.locator("#dag").evaluate((host, ids) => {
-    const cy = [host, ...host.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
-    return cy.nodes().filter((node) => ids.includes(node.data("path")?.at(-1) || node.id())).map((node) => node.data("path")?.at(-1) || node.id());
-  }, visits.map(({ id }) => id))).toEqual(visits.map(({ id }) => id));
+  await expect(page.locator("[data-graph-visit]")).toHaveValue(visits[1].id);
+  expect(await page.locator("[data-graph-visit] option").evaluateAll((options) => options.map(({ value }) => value)))
+    .toEqual(visits.map(({ id }) => id));
+  const topology = await topologyFacts(page);
+  expect(topology.nodes.map(({ id }) => id)).toEqual(["start", "model", "end"]);
+  expect(topology.nodes.find(({ id }) => id === "model").members).toEqual(visits.map(({ id }) => id));
+  expect(topology.edges.map(({ from, to, kind }) => ({ from, to, kind }))).toEqual([
+    { from: "start", to: "model", kind: "edge" }, { from: "model", to: "end", kind: "branch" },
+    { from: "model", to: "model", kind: "branch" },
+  ]);
+  expect(topology.edges.find(({ from, to }) => from === to).path).toBeTruthy();
 });
 
 test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: "@P0" }, async ({ page }) => {
@@ -727,7 +745,7 @@ test("invalid cyclic Graph example replacements keep the last valid view", { tag
   await page.waitForFunction(() => window.playground?.ready);
   await openSample(page, "graph", "compose-cyclic-graph");
   const before = await page.evaluate(() => {
-    window.lastValidGraphCanvas = document.querySelector("#dag canvas");
+    window.lastValidGraphCanvas = document.querySelector("#dag svg[data-graph-topology]");
     return { document: window.playground.document, dag: window.playground.executionDAG, selection: window.playground.linkedSelection };
   });
   await page.locator("#sample").selectOption("graph-multistep-loop-failed");
@@ -737,7 +755,7 @@ test("invalid cyclic Graph example replacements keep the last valid view", { tag
   await expect(page.locator("#sample")).toHaveValue("compose-cyclic-graph");
   await expect(page.locator("#open-raw")).toBeHidden();
   // Rejected selection preserves the actual mounted graph and selected step.
-  expect(await page.evaluate(() => document.querySelector("#dag canvas") === window.lastValidGraphCanvas)).toBe(true);
+  expect(await page.evaluate(() => document.querySelector("#dag svg[data-graph-topology]") === window.lastValidGraphCanvas && Boolean(window.lastValidGraphCanvas))).toBe(true);
   expect(await page.evaluate(() => ({ document: window.playground.document, dag: window.playground.executionDAG, selection: window.playground.linkedSelection }))).toEqual(before);
   await page.unroute(resource);
 });
@@ -905,7 +923,7 @@ test("the unified viewer stays usable on narrow screens and passes accessibility
   expect(pickerBounds.x).toBeGreaterThanOrEqual(0);
   expect(pickerBounds.x + pickerBounds.width).toBeLessThanOrEqual(390);
   await openSample(page, "graph");
-  await expect(page.locator("#dag canvas").first()).toBeVisible();
-  const results = await new AxeBuilder({ page }).exclude("#dag canvas").analyze();
+  await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
+  const results = await new AxeBuilder({ page }).analyze();
   expect(results.violations.filter((violation) => ["serious", "critical"].includes(violation.impact))).toEqual([]);
 });

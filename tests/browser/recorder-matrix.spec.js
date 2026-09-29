@@ -32,7 +32,7 @@ for (const scenario of scenarios) {
       if (scenario.capture === "partial") await expect(page.locator('[data-agent-capture="partial"]')).toBeVisible();
     } else {
       await expect(page.locator("#validation-result")).not.toHaveClass(/invalid/);
-      await expect(page.locator("#dag canvas").first()).toBeVisible();
+      await expect(page.locator(scenario.source === "graph" ? "#dag svg[data-graph-topology]" : "#dag canvas").first()).toBeVisible();
     }
     if (!scenario.definitionOnly && scenario.source !== "agent") {
       await expect(page.locator("#render-status")).toHaveText(scenario.capture === "partial" ? "运行已结束 · 采集不完整" : statusLabels[scenario.outcome]);
@@ -79,7 +79,7 @@ async function openMatrixRecord(page, id) {
   await openWorkbenchRecord(page, record);
   await expect.poll(() => page.evaluate(() => window.playground.document?.runId)).toBe(record.runId);
   if (record.source === "agent") await expectAgentTrajectory(page);
-  else await expect(page.locator("#dag canvas").first()).toBeVisible();
+  else await expect(page.locator(record.source === "graph" ? "#dag svg[data-graph-topology]" : "#dag canvas").first()).toBeVisible();
   if (record.source !== "agent") await openDetails(page);
   return { record, errors };
 }

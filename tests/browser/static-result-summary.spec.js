@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { projectEinoViewerDocument } from "../../src/viewer.js";
 import { revealSource, openRunInformation, openStepSearch, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const fixtures = new URL("../../fixtures/recorder-matrix/", import.meta.url);
@@ -198,9 +199,10 @@ test("derived definition-only Graph remains viewable without claiming execution 
   expect(summary.input.availability).toBe("not-observed");
   expect(summary.output.availability).toBe("not-observed");
   await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="definition-only"]')).toBeVisible();
-  const graph = page.locator("#dag .eino-viewer-graph");
+  const graph = page.locator("#dag svg[data-graph-topology]");
   await expect(graph).toBeVisible();
-  await expect(graph.getByRole("button", { name: "Retry forever", exact: true })).toBeVisible();
+  await expect(graph.locator('[data-graph-node="retry"]')).toBeVisible();
+  await expect(graph.locator('[data-graph-node="retry"] > title')).toHaveText("Retry forever · 仅定义");
   await openStepSearch(page);
   const step = page.locator('#inspection-results [data-inspection-node="graph:1:retry"]');
   await expect(page.locator("#inspection-results [data-inspection-node]")).toHaveCount(1);
@@ -212,7 +214,7 @@ test("derived definition-only Graph remains viewable without claiming execution 
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode)).toMatchObject({ id: "graph:1:retry", status: "declared" });
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).not.toContainText("成功");
   expect(await page.evaluate(() => window.playground.explanation.nodes.some(({ status }) => status === "success"))).toBe(false);
-  await graph.getByRole("button", { name: "Retry forever", exact: true }).click();
+  await graph.locator('[data-graph-node="retry"]').click();
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) h3")).toHaveText("Retry forever");
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).not.toContainText("成功");
   await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toContainText("没有执行记录");
@@ -260,6 +262,36 @@ function rootIO(record, direction) {
   const index = record.evidence.findIndex(({ kind, payload, metadata }) => kind === "component.io"
     && metadata?.io?.scope === "root" && payload.direction === direction);
   return { index, envelope: record.evidence[index] };
+}
+
+async function expectGraphNodeName(page, record, displayName, searchName) {
+  const execution = projectEinoViewerDocument(record).document.execution;
+  const start = record.evidence.findIndex(({ kind, payload }) => kind === "callback.event"
+    && payload.phase === "start" && payload.nodePath?.[0] === "process");
+  expect(start).toBeGreaterThanOrEqual(0);
+  const canonical = execution.nodes.find((node) => node.evidence.some(({ envelopeIndex }) => envelopeIndex === start));
+  expect(canonical.label).toBe("Lambda");
+  await openStepSearch(page);
+  await page.locator("#inspection-search").fill(searchName);
+  const row = page.locator(`#inspection-results [data-inspection-node=${JSON.stringify(canonical.id)}]`);
+  await expect(row).toHaveCount(1);
+  await expect(row.locator("strong")).toHaveText(displayName);
+  await row.click();
+  await expect(row).toHaveAttribute("aria-current", "true");
+  await expect(page.locator("#node-detail .node-detail-hero h3")).toHaveText(displayName);
+  await expect(page.locator('#dag [data-graph-node="process"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('#dag [data-graph-node="process"] > title')).toContainText(searchName);
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toEqual(canonical);
+  for (const direction of ["input", "output"]) {
+    const index = record.evidence.findIndex(({ kind, payload, metadata }) => kind === "component.io"
+      && metadata?.io?.scope === "node" && payload.direction === direction);
+    expect(index).toBeGreaterThanOrEqual(0);
+    const value = page.locator(`#node-detail [data-business-channel="${direction}"] .business-value-text`);
+    expect(JSON.parse(await value.textContent())).toEqual(record.evidence[index].payload.body);
+    await expectSelectedEvidence(page, index, record.evidence[index]);
+  }
+  expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(execution);
+  expect(await page.evaluate(() => window.playground.document)).toEqual(record);
 }
 
 for (const scenario of [
@@ -326,6 +358,23 @@ for (const scenario of [
     }
     for (const direction of ["input", "output"]) {
       await expectRawEvidence(page, channel(page, direction), record, rootIO(record, direction).index);
+    }
+    if (scenario.id === "graph-io-structured") {
+      const callbacks = record.evidence.filter(({ kind, payload }) => kind === "callback.event" && payload.nodePath?.[0] === "process");
+      expect(callbacks).toHaveLength(2);
+      for (const source of callbacks) expect(Object.hasOwn(source.payload.run, "name")).toBe(false);
+      await expectGraphNodeName(page, record, "process", "process");
+
+      // A display-only boundary copy, not another real Recorder scenario:
+      // an explicit application name must survive even if it equals the type.
+      // Its distinct declared alias also proves private UI search enrichment.
+      const named = structuredClone(record);
+      named.evidence.find(({ kind }) => kind === "compose.graph").payload.nodes[0].name = "路线处理";
+      for (const source of named.evidence) if (source.kind === "callback.event" && source.payload.nodePath?.[0] === "process") {
+        source.payload.run.name = "Lambda";
+      }
+      await importRecord(page, named);
+      await expectGraphNodeName(page, named, "Lambda", "路线处理");
     }
   });
 }

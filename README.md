@@ -65,11 +65,13 @@ also preserves its unapplied Raw draft. The Graph workbench now previews a simpl
 path → step → input/output reading flow. Normal results use an expandable summary;
 failures expose their recorded reason and supported step links. It has no Raw editor
 or technical directory. Try **Multi-round route revision** and inspect each recorded
-visit. Source-proven repeated visits share one diagram node with call and exceptional-outcome counts;
-the step list and detail execution selector retain each original visit and its values. This is a
-display-only grouping: original relations and the canonical 500-node guard remain unchanged,
-and records without reliable identities stay separate. This Graph design awaits owner acceptance; embedded/offline Graph, Agent and
-Workflow remain unchanged.
+visit. The middle diagram uses the Graph definition, including branches and cycles, with confirmed
+visit and exceptional-outcome counts on nodes. Edges are declared connections, not claims of observed
+traversal; unobserved nodes are not marked skipped. The step list and execution selector retain
+original visits and values; the root invocation is not disguised as the structural start node.
+Missing definitions or scopes without a matching definition retain a labeled call-relationship view.
+The canonical scope guard remains; definitions exceeding 500 diagram nodes also require explicit drawing.
+This Graph design awaits owner acceptance; embedded/offline Graph, Agent and Workflow remain unchanged.
 
 See the [local version-control convention](docs/LOCAL_VERSION_CONTROL.md) for the
 accepted Agent baseline and separate Graph preview branch.

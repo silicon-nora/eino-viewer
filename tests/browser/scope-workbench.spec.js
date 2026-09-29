@@ -4,6 +4,8 @@ import { openStepSearch, openReadingDirectory, openRunInformation, openScopeInfo
 import { expectedScopeTrajectoryIds } from "../helpers/run-viewer-ui.js";
 import { buildScopeReading } from "../../src/scope-reading.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
+import { buildGraphTopology } from "../../site/graph-topology.js";
+import { topologyFacts, topologyNode } from "../helpers/graph-topology-ui.js";
 import { buildExecutionTrajectory } from "../../src/trajectory.js";
 
 const fixture = (id) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${id}.json`, import.meta.url), "utf8"));
@@ -117,16 +119,26 @@ async function expectInducedGraph(page) {
   } else {
     if (await page.evaluate(() => window.playground.objectKind === "graph")) {
       const state = await page.evaluate(() => ({ execution: window.playground.executionDAG,
+        document: window.playground.projection.document, definitionPath: window.playground.scopeReading.definitionPathPrefix || [],
         evidence: window.playground.document.evidence, visibleExecution: window.playground.scopeReading.execution }));
-      // Only the reading diagram is grouped. Preserve the complete original
-      // scope and list identities alongside the aggregated canvas contract.
+      // Definition topology and canonical execution links are distinct. Keep
+      // the complete original scope and list identities alongside the diagram.
       expect(state.visibleExecution.nodes.map(({ id }) => id).sort()).toEqual(expected.nodes);
       expect(state.visibleExecution.edges.map(({ from, to, kind }) => ({ from, to, kind, synthetic: false }))
         .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))).toEqual(expected.edges);
-      const display = buildGraphReading(state.execution, state.evidence, { visibleExecution: state.visibleExecution }).execution;
-      await expect.poll(() => graphState(page)).toEqual({ nodes: display.nodes.map(({ id }) => id).sort(),
-        edges: display.edges.map(({ from, to, kind }) => ({ from, to, kind, synthetic: false }))
-          .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))) });
+      const topology = buildGraphTopology(state.document, { visibleExecution: state.visibleExecution, definitionPath: state.definitionPath });
+      if (topology) {
+        const displayed = await topologyFacts(page);
+        expect(displayed.nodes.map(({ id, members, counts, status }) => ({ id, members, counts, status })))
+          .toEqual(topology.nodes.map(({ id, memberIds, statusCounts, status }) => ({ id, members: memberIds, counts: statusCounts, status })));
+        expect(displayed.edges.map(({ from, to, kind }) => ({ from, to, kind })))
+          .toEqual(topology.edges.map(({ from, to, kind }) => ({ from, to, kind })));
+      } else {
+        const display = buildGraphReading(state.execution, state.evidence, { visibleExecution: state.visibleExecution }).execution;
+        await expect.poll(() => graphState(page)).toEqual({ nodes: display.nodes.map(({ id }) => id).sort(),
+          edges: display.edges.map(({ from, to, kind }) => ({ from, to, kind, synthetic: false }))
+            .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))) });
+      }
     } else await expect.poll(() => graphState(page)).toEqual(expected);
     const steps = await page.locator("[data-inspection-node]").evaluateAll((nodes) => nodes.map((node) => node.dataset.inspectionNode).sort());
     expect(steps).toEqual(expected.nodes);
@@ -382,7 +394,7 @@ test("declared nested Workflow draws only its own subtree and maps clicks to the
   expect(await canonicalState(page)).toEqual(before);
 });
 
-test("legacy Graph loop visits without confirmed invocation identity remain separate in graph, list and detail", { tag: "@P0" }, async ({ page }) => {
+test("legacy Graph loop maps source locations to topology while keeping all canonical visits separate", { tag: "@P0" }, async ({ page }) => {
   const record = fixture("graph-step-limit");
   await openRecord(page, record);
   const before = await canonicalState(page);
@@ -392,25 +404,21 @@ test("legacy Graph loop visits without confirmed invocation identity remain sepa
   const visits = await page.evaluate(() => window.playground.scopeReading.execution.nodes.filter(({ component }) => component === "Lambda"));
   expect(visits).toHaveLength(3);
   expect(new Set(visits.map(({ id }) => id)).size).toBe(3);
-  const canvasVisits = await page.locator("#dag").evaluate((host, ids) => {
-    const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
-    const id = (node) => node.data("path")?.at(-1) || node.id();
-    return cy.nodes().filter((node) => ids.includes(id(node))).map((node) => ({ id: id(node), members: node.data("metadata")?.graphReading?.memberIds }));
-  }, visits.map(({ id }) => id));
+  const displayed = await topologyFacts(page);
   for (const visit of visits) {
     const callbacks = visit.evidence.map(({ envelopeIndex }) => record.evidence[envelopeIndex])
       .filter(({ kind }) => kind === "callback.event");
     expect(callbacks.map(({ payload }) => payload.phase)).toEqual(["start", "end"]);
     for (const callback of callbacks) expect(Object.hasOwn(callback.correlation, "invocationId")).toBe(false);
   }
-  expect(canvasVisits).toEqual(visits.map(({ id }) => ({ id, members: [id] })));
+  expect(displayed.nodes.filter(({ members }) => members.length).map(({ id, members }) => ({ id, members })))
+    .toEqual([{ id: "retry", members: visits.map(({ id }) => id) }]);
+  expect(displayed.edges.find(({ from, to }) => from === "retry" && to === "retry").path).toBeTruthy();
   for (const node of visits) {
     await page.locator(`[data-inspection-node=${JSON.stringify(node.id)}]`).click();
-    await expect(page.locator("[data-graph-visit]")).toHaveCount(0);
-    await page.locator("#dag").evaluate((host, id) => {
-      const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
-      cy.getElementById(id).emit("tap");
-    }, node.id);
+    await expect(page.locator("[data-graph-visit]")).toHaveValue(node.id);
+    expect(await page.locator("[data-graph-visit] option").evaluateAll((options) => options.map(({ value }) => value))).toEqual(visits.map(({ id }) => id));
+    await topologyNode(page, "retry").click();
     await expect.poll(() => page.evaluate(() => window.playground.selectedNodeDetail?.executionNode.id)).toBe(node.id);
     expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode.evidence)).toEqual(node.evidence);
     await expect(page.locator(`[data-inspection-node=${JSON.stringify(node.id)}]`)).toHaveAttribute("aria-current", "true");
@@ -601,19 +609,20 @@ test("a declared flat Graph stays the original SVG cycle without a redundant roo
   await expect(page.locator("#hierarchy-directory")).toBeHidden();
   await expect(scopeBox(page)).toBeHidden();
   await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "definition-only");
-  await expect(page.locator("#dag .eino-viewer-graph svg")).toBeVisible();
+  await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
   await expect(page.locator("#dag canvas")).toHaveCount(0);
-  const rendered = await page.locator("#dag .eino-viewer-graph svg").evaluate((svg) => ({
-    nodes: [...svg.querySelectorAll("[data-node-id]")].map((node) => node.dataset.nodeId).sort(),
-    edges: [...svg.querySelectorAll("[data-edge-index]")].map((edge) => ({ index: Number(edge.dataset.edgeIndex), path: edge.getAttribute("d") })),
-  }));
-  expect(rendered.nodes).toEqual(["end", "model", "start", "tools"]);
-  expect(rendered.edges.map(({ index }) => index)).toEqual(record.payload.edges.map((_, index) => index));
-  const forwardIndex = record.payload.edges.findIndex(({ from, to }) => from === "model" && to === "tools");
-  const reverseIndex = record.payload.edges.findIndex(({ from, to }) => from === "tools" && to === "model");
-  expect(rendered.edges[forwardIndex].path).toContain(" Q ");
-  expect(rendered.edges[reverseIndex].path).toContain(" Q ");
-  expect(rendered.edges[forwardIndex].path).not.toBe(rendered.edges[reverseIndex].path);
+  const rendered = await topologyFacts(page);
+  expect(rendered.nodes.map(({ id }) => id).sort()).toEqual(["end", "model", "start", "tools"]);
+  expect(rendered.nodes.filter(({ id }) => !["start", "end"].includes(id)).every(({ status, members }) => status === "definition-only" && !members.length)).toBe(true);
+  expect(rendered.edges.map(({ from, to, kind }) => ({ from, to, kind }))).toEqual([
+    ...record.payload.edges.map(({ from, to }) => ({ from, to, kind: "edge" })),
+    ...(record.payload.branches || []).flatMap(({ from, targets }) => targets.map((to) => ({ from, to, kind: "branch" }))),
+  ]);
+  const forward = rendered.edges.find(({ from, to }) => from === "model" && to === "tools");
+  const reverse = rendered.edges.find(({ from, to }) => from === "tools" && to === "model");
+  expect(forward.path).toBeTruthy();
+  expect(reverse.path).toBeTruthy();
+  expect(forward.path).not.toBe(reverse.path);
   expect(await page.evaluate(() => window.playground.scopeReading.execution)).toBeUndefined();
   expect(await page.evaluate(() => window.playground.projection.document.definition)).toEqual(record.payload);
   expect(await canonicalState(page)).toEqual(before);
