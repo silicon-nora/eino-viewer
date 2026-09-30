@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, mkdirSync } from "node:fs";
-import { editCopy, revealSource, openRecordActions, openAgentScope, openScopeInformation, openWorkbenchRecord, openRunInformation } from "../helpers/workbench-ui.js";
+import { openAgentScope, openScopeInformation, openWorkbenchRecord, openRunInformation } from "../helpers/workbench-ui.js";
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${name}.json`, import.meta.url), "utf8"));
 const failures = new WeakMap();
@@ -58,24 +58,20 @@ for (const width of [1440, 390]) {
   });
 }
 
-test("raw source is read-only until edit-copy and source navigation preserves the draft", { tag: "@P0" }, async ({ page }) => {
+test("Workflow result reading keeps exact input and output without raw-source or editing controls", { tag: "@P0" }, async ({ page }) => {
   const record = fixture("workflow-io-success");
   await openRecord(page, record);
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  const editor = page.locator("#snapshot-json");
-  await expect(editor).toHaveAttribute("readonly");
-  await expect(page.locator("#apply-json")).toBeHidden();
-  await editCopy(page);
-  await editor.fill('{"unfinished":');
-  const source = page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"] [data-envelope-index]').first();
-  await revealSource(source);
-  await source.click();
-  await expect(editor).toHaveAttribute("readonly");
-  await expect(page.locator("#restore-draft")).toBeVisible();
-  await page.locator("#restore-draft").click();
-  await expect(editor).toHaveValue('{"unfinished":');
-  await expect(editor).toBeEditable();
+  await openRunInformation(page);
+  for (const selector of ["#open-raw", "#snapshot-json", "#apply-json", "#paste-record"]) await expect(page.locator(selector)).toBeHidden();
+  const summary = page.locator("#node-detail #run-result-summary");
+  await expect(summary).toBeVisible();
+  await expect(summary.locator("button[data-envelope-index], .technical-disclosure, .run-copy-value")).toHaveCount(0);
+  expect(await summary.locator("[data-run-channel]").evaluateAll((channels) => channels.map(({ dataset }) => dataset.runChannel))).toEqual(["input", "output"]);
+  for (const direction of ["input", "output"]) {
+    const original = record.evidence.find(({ kind, metadata, payload }) => kind === "component.io" && metadata?.io?.scope === "root" && payload.direction === direction);
+    const value = original.payload.body;
+    await expect(summary.locator(`[data-run-channel="${direction}"] [data-run-value]`)).toHaveText(typeof value === "string" ? value : JSON.stringify(value, null, 2));
+  }
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
 });
 

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openSample, openStepSearch, openPasteDraft } from "../helpers/workbench-ui.js";
+import { openSample, openStepSearch } from "../helpers/workbench-ui.js";
 
 const errors = new WeakMap();
 test.beforeEach(async ({ page }) => {
@@ -42,26 +42,20 @@ test("selecting another step in an already open panel preserves manual graph zoo
   await frames(page);
   expect(await zoom(page)).toBeCloseTo(manual, 8);
   await expect(page.locator(":is(#inspector-panel, .eino-agent-reader [data-step-panel])")).toBeVisible();
-  await expect(page.locator("#open-details")).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#open-details")).toBeHidden();
   const selected = await page.evaluate(() => window.playground.linkedSelection);
   await page.locator('[data-language="en"]').click();
   await frames(page);
-  await expect(page.locator("#node-detail-tab")).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("#open-details")).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#node-detail")).toBeVisible();
+  await expect(page.locator("#open-details")).toBeHidden();
   expect(await zoom(page)).toBeCloseTo(manual, 8);
   expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(selected);
   expect(await page.evaluate(() => window.playground.document)).toEqual(document);
 });
 
 for (const viewport of [{ width: 1440, height: 1000, name: "desktop" }, { width: 390, height: 844, name: "narrow" }]) {
-  test(`Workflow language changes preserve import draft, selection and open/closed state without transient reveals on ${viewport.name}`, { tag: "@P1" }, async ({ page }) => {
+  test(`Workflow language changes preserve selection and fixed reading panels without transient reveals on ${viewport.name}`, { tag: "@P1" }, async ({ page }) => {
     await open(page, viewport, "workflow");
-    await openPasteDraft(page);
-    const draft = '{"unapplied draft": true';
-    await expect(page.locator("#snapshot-json")).toBeEditable();
-    await page.locator("#snapshot-json").fill(draft);
-    await page.locator("#snapshot-json").evaluate((editor) => editor.setSelectionRange(2, 9, "backward"));
-    await frames(page);
     const before = await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection }));
     // Observe actual transient state, not just the final restored appearance.
     await page.evaluate(() => {
@@ -77,34 +71,24 @@ for (const viewport of [{ width: 1440, height: 1000, name: "desktop" }, { width:
       });
       window.panelVisibilityObserver.observe(document.querySelector(":is(#inspector-panel, .eino-agent-reader [data-step-panel])"), { attributes: true, attributeFilter: ["hidden"], attributeOldValue: true });
     });
-    for (const openState of [true, false]) {
-      if (!openState) {
-        await expect(page.locator("#close-details")).toHaveCount(0);
-        await page.locator("#snapshot-json").focus();
-        await page.keyboard.press("Escape");
-        await frames(page);
-      }
+    for (const language of ["en", "zh"]) {
       await page.evaluate(() => { window.panelScrollCalls = 0; window.panelVisibilityChanges = []; });
       const baselineZoom = await zoom(page);
-      await page.locator(`[data-language="${openState ? "en" : "zh"}"]`).click();
+      await page.locator(`[data-language="${language}"]`).click();
       await frames(page);
-      await expect(page.locator("#raw-records-tab")).toHaveAttribute("aria-selected", "true");
-      await expect(page.locator("#node-detail-tab")).toHaveAttribute("aria-selected", "false");
-      await expect(page.locator("#open-raw")).toHaveAttribute("aria-expanded", String(openState));
-      expect(await page.locator(":is(#inspector-panel, .eino-agent-reader [data-step-panel])").evaluate((panel) => !panel.hidden)).toBe(openState);
-      expect(await page.locator("#snapshot-json").inputValue()).toBe(draft);
-      expect(await page.locator("#snapshot-json").evaluate((editor) => [editor.selectionStart, editor.selectionEnd, editor.selectionDirection])).toEqual([2, 9, "backward"]);
+      for (const selector of ["#raw-records-tab", "#open-raw", "#snapshot-json"]) await expect(page.locator(selector)).toBeHidden();
+      await expect(page.locator("#node-detail")).toBeVisible();
+      await expect(page.locator("section#path-region")).toBeVisible();
+      await expect(page.locator("#close-details, #path-region > summary")).toHaveCount(0);
       expect(await page.evaluate(() => window.panelScrollCalls)).toBe(0);
       // Assigning the unchanged hidden property can emit an attribute record;
       // every prior value must still match the unchanged visibility state.
       const transitions = await page.evaluate(() => window.panelVisibilityChanges);
-      expect(transitions.every((value) => openState ? value === null : value !== null)).toBe(true);
+      expect(transitions.every((value) => value === null)).toBe(true);
       expect(baselineZoom).toBeGreaterThan(0);
       expect(await zoom(page)).toBeCloseTo(baselineZoom, 8);
       expect(await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection }))).toEqual(before);
     }
-    await openPasteDraft(page);
-    await expect(page.locator("#snapshot-json")).toHaveValue(draft);
     await page.evaluate(() => window.panelVisibilityObserver.disconnect());
   });
 }

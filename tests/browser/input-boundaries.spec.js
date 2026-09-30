@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { editCopy, openStepSearch, openRecordActions, openWorkbenchRecord, openRunInformation, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openStepSearch, openSample, prepareWorkbenchExample, openWorkbenchRecord, openRunInformation, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 import { openPasteEditor } from "../helpers/run-viewer-ui.js";
 
 const safeText = readFileSync(new URL("../../fixtures/input-boundaries/graph-safe-integers.json", import.meta.url), "utf8");
@@ -46,34 +46,25 @@ test("workbench accepts real safe integers without changing values, text types o
   expect(await page.evaluate(() => window.playground.document)).toEqual(safeRecord);
 });
 
-test("Workflow editor rejects unsafe numbers and deep metadata while preserving result, selection and the rejected draft", { tag: "@P0" }, async ({ page }) => {
+test("Workflow example changes reject unsafe numbers and deep metadata while preserving the accepted result and selection", { tag: "@P0" }, async ({ page }) => {
   const accepted = JSON.parse(readFileSync(new URL("../../fixtures/recorder-matrix/workflow-io-success.json", import.meta.url), "utf8"));
-  await page.goto("/.artifacts/pages/?lang=zh");
-  await page.waitForFunction(() => window.playground?.ready);
-  await openWorkbenchRecord(page, accepted);
-  await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(accepted);
-  await openStepSearch(page);
-  await page.locator("[data-inspection-node]").first().click();
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  await editCopy(page);
-  const editor = page.locator("#snapshot-json");
-  const state = await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection, result: document.querySelector(":is(#run-result-summary, .eino-agent-reader [data-run-summary])").innerHTML }));
   for (const [text, reason] of [[unsafeText, "整数超出精确范围"], [roundedText, "数字精度无法保留"], [deepText, "记录嵌套过深"]]) {
-    await editor.fill(text);
-    await page.locator("#apply-json").click();
+    const candidate = await prepareWorkbenchExample(page, text, { kind: "workflow", id: "workflow-parallel-join-failed" });
+    await page.goto("/.artifacts/pages/?lang=zh");
+    await page.waitForFunction(() => window.playground?.ready);
+    await openSample(page, "workflow");
+    expect(await page.evaluate(() => window.playground.document)).toEqual(accepted);
+    await openStepSearch(page);
+    await page.locator("[data-inspection-node]").first().click();
+    const state = await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection, result: document.querySelector("#node-detail").innerHTML }));
+    await page.locator("#sample").selectOption(candidate.id);
     await expect(page.locator("#import-status")).toHaveAttribute("data-error", "true");
     await expect(page.locator("#import-status")).toHaveText(`${reason}；当前结果已保留。`);
-    await expect(editor).toHaveValue(text);
-    expect(await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection, result: document.querySelector(":is(#run-result-summary, .eino-agent-reader [data-run-summary])").innerHTML }))).toEqual(state);
+    expect(await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection, result: document.querySelector("#node-detail").innerHTML }))).toEqual(state);
+    await expect(page.locator("#sample")).toHaveValue("workflow-io-success");
+    await expect(page.locator("#snapshot-json")).toBeHidden();
+    await candidate.dispose();
   }
-  // Formatting is another parse boundary: it must not round an unaccepted draft.
-  await editor.fill(unsafeText);
-  await page.locator("#format-json").click();
-  await expect(editor).toHaveValue(unsafeText);
-  await page.locator("#apply-json").click();
-  await expect(editor).toHaveValue(unsafeText);
-  expect(await page.evaluate(() => window.playground.document)).toEqual(accepted);
 });
 
 test("portable rejects numeric and depth hazards without replacing the accepted record or export", { tag: "@P0" }, async ({ page }) => {

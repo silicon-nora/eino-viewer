@@ -64,7 +64,7 @@ async function expectJSONValue(value, expected) {
 }
 
 async function expectEvidence(page, mode, container, record, index) {
-  if (mode === "workbench" && record.source === "graph") {
+  if (mode === "workbench") {
     await expect(container.locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
     await expectSelectedEvidence(page, index, record.evidence[index]);
     return;
@@ -135,8 +135,12 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe(scenario.error ? "failed" : "success");
         if (scenario.error) await expect(summary.locator(".step-state.failed")).toBeVisible();
         else await expect(summary.locator(".step-state.success")).toHaveCount(0);
-      }
-      else await expect(outcome).toBeVisible();
+      } else if (mode === "workbench") {
+        expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe(scenario.error ? "failed" : "success");
+        await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
+        if (scenario.error) await expect(outcome).toBeVisible();
+        else await expect(outcome).toHaveCount(0);
+      } else await expect(outcome).toBeVisible();
       for (const direction of ["input", "output"]) {
         const source = entries.find(({ envelope }) => envelope.kind === "component.io" && !envelope.payload.nodePath?.length
           && envelope.payload.address?.length === 1 && envelope.payload.direction === direction);
@@ -144,7 +148,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         const value = channel.locator(graphWorkbench ? ".business-value-text" : "[data-run-value]");
         if (!source) { await expect(value).toHaveCount(0); continue; }
         await expectJSONValue(value, source.envelope.payload.body);
-        if (graphWorkbench) await expect(channel.locator(".run-copy-value")).toHaveCount(0);
+        if (mode === "workbench") await expect(channel.locator(".run-copy-value")).toHaveCount(0);
         else {
           await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true,
             value: { writeText: async (value) => { window.complexCopied = value; } } }));
@@ -158,7 +162,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       for (let visit = 0; visit < inputs.length; visit += 1) {
         const input = inputs[visit], owner = owned[visit];
         await selectStep(page, mode, owner.id);
-        if (mode === "workbench" && scenario.source === "graph" && owner.status === "success") {
+        if (mode === "workbench" && owner.status === "success") {
           await expect(detail.locator(".step-state.success")).toHaveCount(0);
           expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe(owner.status);
         } else await expect(detail).toContainText(owner.status === "failed" ? "失败" : "成功");

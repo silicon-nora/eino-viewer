@@ -8,7 +8,7 @@ import { buildExecutionTrajectory } from "../../src/trajectory.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
 import { buildGraphTopology } from "../../site/graph-topology.js";
 import { topologyFacts, topologyNode } from "../helpers/graph-topology-ui.js";
-import { editCopy, openSample, openWorkbenchRecord, expectAgentTrajectory, openRecordActions, openRunInformation, openDetails, openStepSearch, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openSample, prepareWorkbenchExample, openWorkbenchRecord, expectAgentTrajectory, openRecordActions, openRunInformation, openDetails, openStepSearch, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 function fixtureRecord(name) {
   return JSON.parse(readFileSync(new URL(`../../fixtures/${name}`, import.meta.url), "utf8"));
@@ -394,7 +394,7 @@ test("canonical steps and trajectory stay linked to exact source evidence withou
     .toEqual(failureTrajectory.records.filter(({ evidence }) => evidence.some(({ envelopeIndex }) => indexes.includes(envelopeIndex))).map(({ id }) => id));
 });
 
-test("Raw edit copies recognize all three run sources without exposing a file picker", { tag: "@P1" }, async ({ page }) => {
+test("example records recognize all three run sources without exposing raw editing or a file picker", { tag: "@P1" }, async ({ page }) => {
   for (const [source, filename] of [
     ["workflow", "eino-workflow-recorder-weather-v1.json"],
     ["graph", "eino-graph-recorder-cyclic-v1.json"],
@@ -406,6 +406,7 @@ test("Raw edit copies recognize all three run sources without exposing a file pi
     expect(await page.evaluate(() => window.playground.document)).toEqual(record);
     await expect(page.locator("#record-kind")).toHaveText({ agent: "Agent", graph: "Graph", workflow: "Workflow" }[source]);
     await expect(page.locator("#record-file, #import-record, #record-drop-zone")).toHaveCount(0);
+    for (const selector of ["#open-raw", "#snapshot-json", "#apply-json"]) await expect(page.locator(selector)).toBeHidden();
     if (source === "agent") await expectAgentTrajectory(page);
     else await expect(page.locator(source === "graph" ? "#dag svg[data-graph-topology]" : "#dag canvas").first()).toBeVisible();
     if (source === "agent") {
@@ -415,7 +416,7 @@ test("Raw edit copies recognize all three run sources without exposing a file pi
   }
 });
 
-test("rejected example records and Raw drafts preserve the full valid document and linked selection", { tag: "@P0" }, async ({ page }) => {
+test("rejected example records preserve the full valid document and linked selection", { tag: "@P0" }, async ({ page }) => {
   const accepted = fixtureRecord("eino-agent-recorder-trip-planner-completed-v1.json");
   const wrongSource = structuredClone(accepted);
   wrongSource.source = "not-a-source";
@@ -453,34 +454,23 @@ test("rejected example records and Raw drafts preserve the full valid document a
     await expect(page.locator("#sample")).toHaveValue("agent-weather-workflow");
     await page.unroute(sampleResource);
   }
+  const candidate = await prepareWorkbenchExample(page, '{"broken":', { kind: "workflow", id: "workflow-parallel-join-failed" });
+  await page.goto(playgroundPath);
+  await page.waitForFunction(() => window.playground?.ready);
   await openSample(page, "workflow");
   await openStepSearch(page);
   await page.locator("[data-inspection-node]").first().click();
-  const selectedStep = await page.evaluate(() => ({ selection: window.playground.linkedSelection,
-    firstEnvelopeIndex: window.playground.selectedNodeDetail.evidence[0].envelopeIndex }));
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual({
-    ...selectedStep.selection, rawEnvelopeIndex: selectedStep.firstEnvelopeIndex,
-  });
-  const rawSelection = await page.evaluate(() => {
-    const editor = document.querySelector("#snapshot-json");
-    return { text: editor.value.slice(editor.selectionStart, editor.selectionEnd),
-      envelope: window.playground.document.evidence[window.playground.linkedSelection.rawEnvelopeIndex] };
-  });
-  expect(JSON.parse(rawSelection.text)).toEqual(rawSelection.envelope);
-  await editCopy(page);
   const before = await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection }));
-  await page.locator("#snapshot-json").fill('{"broken":');
-  await page.locator("#apply-json").click();
-  await expect(page.locator("#validation-result")).toHaveClass(/invalid/);
-  await expect(page.locator("#issue-list")).toContainText("invalid_json");
+  await page.locator("#sample").selectOption(candidate.id);
+  await expect(page.locator("#import-status")).toHaveAttribute("data-error", "true");
+  expect(await page.evaluate(() => window.playground.diagnostics.map(({ code }) => code))).toContain("invalid_json");
   expect(await page.evaluate(() => window.playground.document)).toEqual(before.document);
   expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(before.selection);
-  await expect(page.locator("#snapshot-json")).toHaveValue('{"broken":');
+  await expect(page.locator("#snapshot-json")).toBeHidden();
+  await candidate.dispose();
 });
 
-test("Workflow Raw links select complete envelopes in compact JSON with repeated timestamps", { tag: "@P0" }, async ({ page }) => {
+test("Workflow step selections keep exact source associations with repeated timestamps", { tag: "@P0" }, async ({ page }) => {
   const record = fixtureRecord("eino-workflow-recorder-weather-completed-v1.json");
   // Callbacks require their envelope and payload clocks to agree. Keep
   // that protocol invariant while deliberately repeating every timestamp.
@@ -493,36 +483,18 @@ test("Workflow Raw links select complete envelopes in compact JSON with repeated
   await importRecord(page, record);
   await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(record);
   await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe("workflow");
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  await editCopy(page);
-  await page.locator("#snapshot-json").fill(JSON.stringify(record));
-  await page.locator("#apply-json").click();
   await expect(page.locator("#validation-result")).not.toHaveClass(/invalid/);
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
   await openStepSearch(page);
-  await page.locator("[data-inspection-node]").nth(1).click();
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  const selected = await page.evaluate(() => {
-    const editor = document.querySelector("#snapshot-json");
-    return {
-      index: window.playground.linkedSelection.rawEnvelopeIndex,
-      text: editor.value.slice(editor.selectionStart, editor.selectionEnd),
-    };
-  });
-  expect(Number.isInteger(selected.index)).toBe(true);
-  expect(JSON.parse(selected.text)).toEqual(record.evidence[selected.index]);
-  const draft = '{"unapplied":';
-  await editCopy(page);
-  await page.locator("#snapshot-json").fill(draft);
-  await page.locator("[data-inspection-node]").nth(2).click();
-  await openRecordActions(page);
-  await page.locator("#open-raw").click();
-  await expect(page.locator("#restore-draft")).toBeVisible();
-  expect(await page.locator("#snapshot-json").inputValue()).toBe(JSON.stringify(record));
-  await page.locator("#restore-draft").click();
-  await expect(page.locator("#snapshot-json")).toHaveValue(draft);
+  for (const position of [1, 2]) {
+    await page.locator("[data-inspection-node]").nth(position).click();
+    const indexes = await page.evaluate(() => window.playground.selectedNodeDetail.evidence.map(({ envelopeIndex }) => envelopeIndex));
+    expect(indexes.length).toBeGreaterThan(0);
+    for (const index of indexes) await expectSelectedEvidence(page, index, record.evidence[index]);
+    await expect(page.locator("#snapshot-json")).toBeHidden();
+    await expect(page.locator("#node-detail .technical-disclosure, #node-detail button[data-envelope-index]")).toHaveCount(0);
+    expect(await page.evaluate(() => window.playground.document)).toEqual(record);
+  }
 });
 
 
@@ -696,6 +668,8 @@ test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: 
     "Generate answer",
   ]);
   const first = projectEinoViewerDocument(fixtureRecord("eino-workflow-recorder-weather-completed-v1.json")).document.execution.nodes.find(({ id }) => id === "parse-city");
+  await expect(page.locator("[data-workflow-run]")).toHaveAttribute("aria-current", "true");
+  await page.locator("[data-inspection-node]").first().click();
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toEqual(first);
   await expect(page.locator("[data-inspection-node]").first()).toHaveAttribute("data-inspection-node", first.id);
   await expect(page.locator("[data-inspection-node]").first()).toHaveAttribute("aria-current", "true");

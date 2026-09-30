@@ -145,7 +145,7 @@ async function expectSource(page, mode, target, direction) {
     else if (mode === "embedded") await expectAgentAPIEvidence(page, agentReader(page), target.index, target.envelope, "searchViewer");
     return;
   }
-  if (mode === "workbench" && target.record.source === "graph") {
+  if (mode === "workbench") {
     await expect(detail(page, mode).locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
     await expectSelectedEvidence(page, target.index, target.envelope);
     return;
@@ -153,18 +153,10 @@ async function expectSource(page, mode, target, direction) {
   const button = detail(page, mode).locator(`[data-envelope-index="${target.index}"]`).first();
   await revealSource(button);
   await button.click();
-  if (mode === "workbench") {
-    expect(await page.locator("#snapshot-json").evaluate((editor) => ({
-      index: Number(editor.dataset.selectedEnvelopeIndex),
-      value: JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)),
-    }))).toEqual({ index: target.index, value: target.envelope });
-    await page.locator("#node-detail-tab").click();
-  } else {
-    const raw = page.locator("[data-raw-envelope]");
-    await expect(raw).toHaveAttribute("data-envelope-index", String(target.index));
-    await expect.poll(async () => JSON.parse(await raw.textContent() || "null")).toEqual(target.envelope);
-    await expect(detail(page, mode)).toHaveAttribute("data-step-id", target.node.id);
-  }
+  const raw = page.locator("[data-raw-envelope]");
+  await expect(raw).toHaveAttribute("data-envelope-index", String(target.index));
+  await expect.poll(async () => JSON.parse(await raw.textContent() || "null")).toEqual(target.envelope);
+  await expect(detail(page, mode)).toHaveAttribute("data-step-id", target.node.id);
 }
 
 async function expectOriginal(page, mode, data) {
@@ -251,7 +243,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     await openRecord(page, mode, workflow);
     for (const locale of ["zh", "en"]) {
       if (locale === "en") await english(page, mode, workflow);
-      await issuesOnly(page, mode, false);
+      if (mode !== "workbench") await issuesOnly(page, mode, false);
       await chooseScope(page, mode, workflow, left);
       await expectSearch(page, mode, "Shared step", [left]);
       await expectSearch(page, mode, "Shared step left / shared", [left]);
@@ -259,9 +251,16 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       await expectSource(page, mode, left, "output");
       await expectSearch(page, mode, "right/shared", []);
       await expectSearch(page, mode, "request/left", []);
-      await issuesOnly(page, mode, true);
-      await expectSearch(page, mode, "Shared step left / shared", []);
-      await issuesOnly(page, mode, false);
+      if (mode === "workbench") {
+        await expect(page.locator("#inspection-scope")).toBeHidden();
+        await expect(page.locator("#inspection-scope")).toBeDisabled();
+        await expectSearch(page, mode, "Shared step left / shared 失败", []);
+        await expectSearch(page, mode, "Shared step left / shared 成功", [left]);
+      } else {
+        await issuesOnly(page, mode, true);
+        await expectSearch(page, mode, "Shared step left / shared", []);
+        await issuesOnly(page, mode, false);
+      }
       await chooseScope(page, mode, workflow, right);
       await expectSearch(page, mode, "left/shared", []);
       await expectSearch(page, mode, "Shared step right/shared", [right]);

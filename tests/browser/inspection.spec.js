@@ -53,11 +53,11 @@ test("saved Graph record has truthful elapsed time and searchable source-backed 
 test("error navigation and a legacy record never invent duration", { tag: "@P0" }, async ({ page }) => {
   const record = JSON.parse(readFileSync(new URL("../../fixtures/recorder-matrix/workflow-failed-successor.json", import.meta.url)));
   await openRecord(page, record);
-  await openStepSearch(page);
-  await page.locator("#inspection-next-issue").click();
-  const hasRaw = await page.locator("#snapshot-json").isVisible();
-  if (hasRaw) await expect(page.locator("#snapshot-json")).toHaveAttribute("data-selected-envelope-index", /\d+/);
-  else await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toContainText(/失败|fail/);
+  await openRunInformation(page);
+  await page.locator("#run-result-summary [data-run-issue-step]").first().click();
+  await expect(page.locator("#node-detail")).toContainText(/失败|fail/);
+  await expect(page.locator("#snapshot-json")).toBeHidden();
+  await expectSelectedEvidence(page, 0, record.evidence[0]);
   const legacy = syntheticGraphRecord(100);
   legacy.evidence = legacy.evidence.filter(({ kind, payload }) => kind !== "run.lifecycle" && !(kind === "callback.event" && payload.address.length === 1));
   await openWorkbenchRecord(page, legacy);

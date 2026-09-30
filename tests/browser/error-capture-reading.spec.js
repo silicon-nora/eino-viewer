@@ -127,7 +127,7 @@ async function expectSource(page, mode, container, data) {
     }
     return;
   }
-  if (mode === "workbench" && data.record.source === "graph") {
+  if (mode === "workbench") {
     await expect(container.locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
     if (await container.getAttribute("id") !== "node-detail") await selectStep(page, mode, data.node.id);
     await expectSelectedEvidence(page, data.sourceIndex, data.source);
@@ -136,17 +136,9 @@ async function expectSource(page, mode, container, data) {
   const button = container.locator(`[data-envelope-index="${data.sourceIndex}"]`).first();
   await revealSource(button);
   await button.click();
-  if (mode === "workbench") {
-    expect(await page.locator("#snapshot-json").evaluate((editor) => ({
-      index: Number(editor.dataset.selectedEnvelopeIndex),
-      value: JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)),
-    }))).toEqual({ index: data.sourceIndex, value: data.source });
-    await page.locator("#node-detail-tab").click();
-  } else {
-    const raw = page.locator("[data-raw-envelope]");
-    await expect(raw).toHaveAttribute("data-envelope-index", String(data.sourceIndex));
-    await expect.poll(async () => JSON.parse(await raw.textContent() || "null")).toEqual(data.source);
-  }
+  const raw = page.locator("[data-raw-envelope]");
+  await expect(raw).toHaveAttribute("data-envelope-index", String(data.sourceIndex));
+  await expect.poll(async () => JSON.parse(await raw.textContent() || "null")).toEqual(data.source);
 }
 
 async function chooseChildScope(page, mode, data) {

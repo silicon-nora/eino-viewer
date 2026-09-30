@@ -21,7 +21,8 @@ test.afterEach(async ({ page }) => { expect(failures.get(page)).toEqual([]); });
 const escapePattern = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const row = (page, mode, id) => page.locator(mode === "workbench" ? `button[data-inspection-node=${JSON.stringify(id)}], [data-trajectory-step=${JSON.stringify(id)}]` : `button[data-step-id=${JSON.stringify(id)}], [data-trajectory-step=${JSON.stringify(id)}]`);
 const detail = (page, mode) => page.locator(mode === "workbench" ? ":is(#node-detail, .eino-agent-reader [data-step-detail])" : "[data-step-detail]");
-const title = (page, mode, target) => detail(page, mode).locator(target.callId ? ".node-detail-hero h3" : "[data-step-identity]");
+const title = (page, mode, target) => detail(page, mode).locator(target.callId ? ".node-detail-hero h3"
+  : mode === "workbench" ? ".step-reading-identity" : "[data-step-identity]");
 const search = (page, mode) => page.locator(mode === "workbench" ? "#inspection-search" : "[data-step-search]");
 
 function recordedTargets(record, workflow) {
@@ -233,7 +234,7 @@ async function checkResultAndSource(page, mode, target, expectCollapsed = false)
     if (target.agentPath.length > 1) await expect(detail(page, mode).locator(".agent-scope-path")).toHaveText(target.agentPath.join(" / "));
     return;
   }
-  if (mode === "workbench" && target.record.source === "graph") {
+  if (mode === "workbench") {
     await expect(detail(page, mode).locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
     await expectSelectedEvidence(page, target.index, target.envelope);
     return;
@@ -242,17 +243,9 @@ async function checkResultAndSource(page, mode, target, expectCollapsed = false)
   const source = detail(page, mode).locator(`[data-envelope-index="${target.index}"]`).first();
   await revealSource(source);
   await source.click();
-  if (mode === "workbench") {
-    expect(await page.locator("#snapshot-json").evaluate((editor) => ({
-      index: Number(editor.dataset.selectedEnvelopeIndex),
-      value: JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)),
-    }))).toEqual({ index: target.index, value: target.envelope });
-    await page.locator("#node-detail-tab").click();
-  } else {
-    const raw = page.locator("[data-raw-envelope]");
-    await expect(raw).toHaveAttribute("data-envelope-index", String(target.index));
-    await expect.poll(async () => JSON.parse(await raw.textContent() || "null")).toEqual(target.envelope);
-  }
+  const raw = page.locator("[data-raw-envelope]");
+  await expect(raw).toHaveAttribute("data-envelope-index", String(target.index));
+  await expect.poll(async () => JSON.parse(await raw.textContent() || "null")).toEqual(target.envelope);
 }
 
 async function checkTrajectoryIdentity(page, targets) {

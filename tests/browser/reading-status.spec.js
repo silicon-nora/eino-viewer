@@ -152,7 +152,7 @@ test("a real declaration-only Workflow with no execution node list opens without
   expect(summary.output.availability).toBe("not-observed");
   await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="definition-only"]')).toBeVisible();
   await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="success"]')).toHaveCount(0);
-  await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toContainText("没有执行记录");
+  await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
   await expect(page.locator("#dag canvas").first()).toBeVisible();
   await expect(page.locator("#dag")).not.toHaveAttribute("aria-label", /成功:|Succeeded:|Status success/);
   const observed = await page.evaluate(async (record) => {

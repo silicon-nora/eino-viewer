@@ -173,12 +173,34 @@ test("Workflow nesting and Graph revisits stay distinct, and definitions are nev
   await expect(page.locator("[data-inspection-node]")).toHaveCount(3);
   const ids = await page.locator("[data-inspection-node]").evaluateAll((nodes) => nodes.map((node) => node.dataset.inspectionNode));
   expect(new Set(ids).size).toBe(3);
-  await openRecord(page, fixture("workflow-definition-only"));
+  const declaredRecord = fixture("workflow-definition-only");
+  await openRecord(page, declaredRecord);
   await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "definition-only");
   const group = await page.evaluate(() => window.playground.explanation.groups[0]);
   expect(group.basis).toBe("declared");
-  await chooseGroup(page, group.id);
-  await expect(page.locator("#hierarchy-context")).toContainText("仅声明");
+  await expect(page.locator("#inspection-hierarchy")).toHaveCount(1);
+  await expect(page.locator("#inspection-hierarchy")).toBeHidden();
+  await expect(page.locator("#hierarchy-breadcrumbs [data-hierarchy-group]")).toHaveCount(0);
+  expect(await page.evaluate(() => window.playground.inspectionScope)).toEqual({ groupId: undefined, ungroupedOnly: false });
+  const declaredStep = page.locator("[data-inspection-node]");
+  await expect(declaredStep).toHaveCount(1);
+  await expect(declaredStep).toContainText("仅声明");
+  await declaredStep.click();
+  const selected = await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode);
+  const definition = declaredRecord.evidence[0].payload;
+  const originalNode = definition.workflow.nodes[0];
+  expect(selected).toMatchObject({ id: originalNode.id, path: [originalNode.id], component: originalNode.component,
+    basis: "declared", status: "declared", evidence: [],
+    input: { availability: "not-observed", items: [] }, output: { availability: "not-observed", items: [] } });
+  expect(group.nodeIds).toContain(selected.id);
+  // The snapshot anchors the definition and its scope, not a runtime event on
+  // this never-invoked node. Do not invent node evidence to retain a Raw link.
+  expect(group.evidenceEnvelopeIndexes).toEqual([0]);
+  expect(await page.evaluate(() => window.playground.explanation.run.result.evidenceEnvelopeIndexes)).toEqual([0]);
+  expect(await page.evaluate(() => window.playground.projection.document.definition)).toEqual(definition);
+  expect(await page.evaluate(() => window.playground.document)).toEqual(declaredRecord);
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.evidence)).toEqual([]);
+  expect(await page.evaluate(() => window.playground.linkedSelection.executionNodeId)).toBeUndefined();
   await expect(page.locator("#hierarchy-ungrouped")).toBeHidden();
   expect(await page.evaluate(() => window.playground.executionDAG)).toBeUndefined();
 });

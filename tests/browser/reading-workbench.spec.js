@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, mkdirSync } from "node:fs";
-import { openSample, openStepSearch, openRunInformation, openPasteDraft, selectAgentStep, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openSample, openStepSearch, openRunInformation, prepareWorkbenchExample, selectAgentStep, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${name}.json`, import.meta.url), "utf8"));
 const errors = new WeakMap();
@@ -24,6 +24,19 @@ async function importRecord(page, record) {
 }
 
 async function expectFirstStepSelected(page, kind) {
+  if (kind === "workflow") {
+    await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
+    await expect(page.locator('[data-inspection-node][aria-current="true"]')).toHaveCount(0);
+    await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+    expect(await page.evaluate(() => window.playground.linkedSelection.executionNodeId)).toBeUndefined();
+    const record = await page.evaluate(() => window.playground.document);
+    const indexes = await page.evaluate(() => [...window.playground.explanation.run.input.items,
+      ...window.playground.explanation.run.output.items].flatMap((item) => item.evidenceEnvelopeIndexes));
+    for (const index of indexes) await expectSelectedEvidence(page, index, record.evidence[index]);
+    expect(await page.locator("#node-detail [data-run-channel]").evaluateAll((channels) => channels.map((channel) => channel.dataset.runChannel))).toEqual(["input", "output"]);
+    await expect(page.locator("#node-detail .run-copy-value, #node-detail [data-run-expand], #close-details")).toHaveCount(0);
+    return;
+  }
   const row = page.locator(kind === "agent" ? "[data-trajectory-record]" : "[data-inspection-node]").first();
   const id = await row.getAttribute(kind === "agent" ? "data-trajectory-record" : "data-inspection-node");
   expect(id).toBeTruthy();
@@ -64,20 +77,14 @@ async function screenshot(page, testInfo, name) {
 }
 
 async function expectPathControls(page, kind) {
-  const graph = kind === "graph";
   await expect(page.locator("#path-region")).toHaveCount(1);
-  await expect(page.locator(`${graph ? "section" : "details"}#path-region`)).toBeVisible();
+  await expect(page.locator("section#path-region")).toBeVisible();
   await expect(page.locator("#diagram-tools")).toHaveCount(1);
-  await expect(page.locator(graph ? "#path-region > header #diagram-tools" : ".reader-tools > #diagram-tools")).toBeVisible();
-  if (graph) {
-    await expect(page.locator("#path-region > header > h2#graph-path-title")).toBeVisible();
-    await expect(page.locator("#path-region > summary")).toHaveCount(0);
-    await expect(page.locator(".reader-tools")).toBeHidden();
-  } else {
-    await expect(page.locator("#path-region")).toHaveAttribute("open");
-    await expect(page.locator("#path-region > summary")).toBeVisible();
-    await expect(page.locator("#graph-path-title")).toHaveCount(0);
-  }
+  await expect(page.locator("#path-region > header #diagram-tools")).toBeVisible();
+  await expect(page.locator("#path-region > header > h2#graph-path-title")).toBeVisible();
+  await expect(page.locator("#path-region > summary")).toHaveCount(0);
+  await expect(page.locator(".reader-tools")).toBeHidden();
+  if (kind === "workflow") await expect(page.locator("#graph-path-title")).toHaveText("流程");
 }
 
 for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 390, height: 844, name: "narrow" }]) {
@@ -87,11 +94,13 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
       await openSample(page, kind);
       await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe(kind);
       if (kind === "graph") expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe("success");
-      else await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
-      if (kind !== "workflow") {
-        await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
-        expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
-      } else await expect(page.locator("[data-run-capture]")).toHaveAttribute("data-run-capture", "complete");
+      else if (kind === "agent") await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
+      else {
+        expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("success");
+        await expect(page.locator('[data-run-result="success"]')).toHaveCount(0);
+      }
+      await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
+      expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
       await expectFirstStepSelected(page, kind);
       const output = page.locator(kind === "graph" ? '#node-detail [data-business-channel="output"] .business-value-text'
         : '[data-run-channel="output"] .run-result-value, [data-run-channel="output"] .run-result-preview').first();
@@ -101,7 +110,7 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
           main: rect(":is(#reading-main, .eino-agent-reader [data-reading-main])"), sidebar: rect("#reading-sidebar"), stage: rect(":is(.canvas-stage, .eino-agent-reader [data-reading-workspace])"), detail: rect(":is(#inspector-panel, .eino-agent-reader [data-step-panel])"), overflow: document.documentElement.scrollWidth > innerWidth + 1,
           channels: [...document.querySelectorAll("[data-run-channel]")].map((node) => node.dataset.runChannel) };
       });
-      expect(geometry.channels).toEqual(kind === "graph" ? [] : kind === "agent" ? ["input", "output"] : ["output", "input"]);
+      expect(geometry.channels).toEqual(kind === "graph" ? [] : ["input", "output"]);
       if (kind === "agent") {
         await expect(page.locator("#sample")).toBeVisible();
         await expect(page.locator("#sample")).toHaveAccessibleName("更换记录");
@@ -178,8 +187,10 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
         await expect(page.locator("#inspection-search")).toBeVisible();
       } else {
         await expectPathControls(page, kind);
-        await expect(output).toBeInViewport();
-        expect(geometry.result.bottom).toBeGreaterThanOrEqual(geometry.output.bottom);
+        await expect(page.locator("#global-summary")).toBeHidden();
+        await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+        await expect(output).toBeVisible();
+        for (const selector of ["#inspection-scope", "#open-raw", "#open-details", "#paste-record", "#node-detail .technical-disclosure"]) await expect(page.locator(selector)).toBeHidden();
         if (viewport.width >= 768) expect(geometry.sidebar.right).toBeLessThanOrEqual(geometry.main.left + 1);
         else expect(geometry.sidebar.top).toBeGreaterThanOrEqual(geometry.main.bottom - 1);
         await expect(page.locator("#inspection-search")).toBeVisible();
@@ -187,23 +198,13 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
       expect(geometry.overflow).toBe(false);
       if (kind !== "agent") await screenshot(page, testInfo, `workbench-${kind}-${viewport.name}`);
     }
-    const pathSummary = page.locator("#path-region > summary");
-    await pathSummary.click();
-    await expect(page.locator("#path-region")).not.toHaveAttribute("open");
-    await expect(page.locator("#dag")).toBeHidden();
-    await pathSummary.click();
-    await expect(page.locator("#path-region")).toHaveAttribute("open");
+    const pathTitle = page.locator("#graph-path-title");
+    await pathTitle.click();
     await expect(page.locator("#dag")).toBeVisible();
-    await pathSummary.click();
-    // Replacing a record in this page must reopen Workflow's disclosure.
     await openSample(page, "workflow", "workflow-parallel-join-success");
     await expectPathControls(page, "workflow");
     await expect(page.locator("#dag")).toBeVisible();
-    await pathSummary.click();
-    await expect(page.locator("#path-region")).not.toHaveAttribute("open");
-    // The existing Workflow editor opens Graph without reloading the page,
-    // exercising movement of the original canvas and its one control group.
-    await importRecord(page, fixture("graph-io-structured"));
+    await openSample(page, "graph");
     await expectPathControls(page, "graph");
     await expect(page.locator("#dag")).toBeVisible();
     await openSample(page, "workflow", "workflow-parallel-join-failed");
@@ -285,21 +286,34 @@ test("visible path zoom controls change only the viewport and remain keyboard op
   }
 });
 
-test("Workflow step selection preserves a pending paste draft without replacing the accepted record", { tag: "@P2" }, async ({ page }) => {
-  await open(page);
-  await openSample(page, "workflow");
-  const record = await page.evaluate(() => window.playground.document);
-  await openPasteDraft(page);
-  const draft = '{"next record":';
-  await page.locator("#snapshot-json").fill(draft);
-  await openStepSearch(page);
-  await page.locator("[data-inspection-node]").first().click();
-  await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toBeVisible();
-  await expect(page.locator("#open-details")).toHaveAttribute("aria-expanded", "true");
-  await expect(page.locator("#node-detail-tab")).toHaveAttribute("aria-selected", "true");
-  await openPasteDraft(page);
-  await expect(page.locator("#snapshot-json")).toHaveValue(draft);
-  expect(await page.evaluate(() => window.playground.document)).toEqual(record);
+test("Workflow step and whole-run reading stay distinct after language changes and a rejected replacement", { tag: "@P1" }, async ({ page }) => {
+  const record = fixture("workflow-io-success");
+  const rejected = await prepareWorkbenchExample(page, { ...record, schemaVersion: 999 }, { kind: "workflow" });
+  try {
+    await open(page);
+    await openSample(page, "workflow");
+    await expectFirstStepSelected(page, "workflow");
+    await openStepSearch(page);
+    await page.locator("[data-inspection-node]").first().click();
+    await expect(page.locator("#node-detail")).toBeVisible();
+    await expect(page.locator("[data-workflow-run]")).not.toHaveAttribute("aria-current", "true");
+    await expect(page.locator("#node-detail #run-result-summary")).toHaveCount(0);
+    const accepted = await page.evaluate(() => ({ record: window.playground.document,
+      execution: window.playground.executionDAG, selection: window.playground.linkedSelection }));
+    await page.locator('[data-language="en"]').click();
+    expect(await page.evaluate(() => ({ record: window.playground.document,
+      execution: window.playground.executionDAG, selection: window.playground.linkedSelection }))).toEqual(accepted);
+    await page.locator("#sample").selectOption(rejected.id);
+    await expect(page.locator("#import-status")).toHaveAttribute("data-error", "true");
+    expect(await page.evaluate(() => ({ record: window.playground.document,
+      execution: window.playground.executionDAG, selection: window.playground.linkedSelection }))).toEqual(accepted);
+    await expect(page.locator("#sample")).toHaveValue("workflow-io-success");
+    for (const selector of ["#open-raw", "#paste-record", "#snapshot-json", "#node-detail .technical-disclosure"]) await expect(page.locator(selector)).toBeHidden();
+    await openRunInformation(page);
+    await expect(page.locator("#node-detail [data-run-channel]")).toHaveCount(2);
+    expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(accepted.execution);
+    expect(await page.evaluate(() => window.playground.document)).toEqual(record);
+  } finally { await rejected.dispose(); }
 });
 
 test("narrow failed Agent opens its first step and restores focus when details are dismissed with Escape", { tag: "@P1" }, async ({ page }, testInfo) => {

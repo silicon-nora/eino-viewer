@@ -93,28 +93,12 @@ function trajectoryStep(page, id) {
 }
 
 async function openEvidence(page, index, expected) {
-  if (await page.evaluate(() => window.playground.objectKind !== "workflow")) {
-    await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure, :is(#node-detail, .eino-agent-reader [data-step-detail]) button[data-envelope-index]")).toHaveCount(0);
-    await expect(page.locator("#snapshot-json")).toBeHidden();
-    return expectSelectedEvidence(page, index, expected);
-  }
-  const disclosure = page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure").first();
-  if (await disclosure.getAttribute("open") === null) await disclosure.locator("summary").first().click();
-  const evidenceSelector = `[data-envelope-index="${index}"]`;
-  const action = page.locator(`:is(#node-detail, .eino-agent-reader [data-step-detail]) ${evidenceSelector}`);
-  const card = page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .evidence-card").filter({ has: page.locator(evidenceSelector) });
-  if (await card.getAttribute("open") === null) await card.locator("summary").first().click();
-  await action.click();
-  await expect(page.locator("#snapshot-json")).toBeVisible();
-  const selected = await page.locator("#snapshot-json").evaluate((editor) => ({
-    index: Number(editor.dataset.selectedEnvelopeIndex),
-    envelope: JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)),
-  }));
-  expect(selected).toEqual({ index, envelope: expected });
-  return selected.envelope;
+  await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .technical-disclosure, :is(#node-detail, .eino-agent-reader [data-step-detail]) button[data-envelope-index]")).toHaveCount(0);
+  await expect(page.locator("#snapshot-json")).toBeHidden();
+  return expectSelectedEvidence(page, index, expected);
 }
 
-test("Workflow failure displays only observed steps and preserves the declared successor in Raw", { tag: "@P0" }, async ({ page }) => {
+test("Workflow failure displays only observed steps and preserves the declared successor in its original evidence", { tag: "@P0" }, async ({ page }) => {
   const { record, errors } = await openMatrixRecord(page, "workflow-failed-successor");
   const state = await page.evaluate(() => ({
     nodes: window.playground.executionDAG.nodes,
@@ -134,9 +118,11 @@ test("Workflow failure displays only observed steps and preserves the declared s
   await expect(page.locator("#render-summary")).toContainText("2");
   const prepare = state.nodes.find(({ metadata }) => metadata.sourceNodePath[0] === "prepare");
   const failed = state.nodes.find(({ metadata }) => metadata.sourceNodePath[0] === "fail");
+  await expect(page.locator("[data-workflow-run]")).toHaveAttribute("aria-current", "true");
+  await pathStep(page, prepare.id).click();
   await expect(pathStep(page, prepare.id)).toHaveAttribute("aria-current", "true");
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe(prepare.id);
-  await expect(pathStep(page, prepare.id)).toContainText("成功");
+  await expect(pathStep(page, prepare.id)).not.toContainText("成功");
   await expect(pathStep(page, failed.id)).toContainText("失败");
   // The saved scope name and technical declaration legitimately contain
   // "after"; only executed step identities and their business values exclude it.

@@ -263,7 +263,7 @@ async function visiblePreviewLineCount(preview) {
 }
 
 for (const mode of ["workbench", "embedded", "portable"]) {
-  test(`${mode} folds wrap-only error text to six lines while preserving exact expansion, copy and source`, { tag: "@P1" }, async ({ page }) => {
+  test(`${mode} preserves exact wrap-only error text and its source in the supported reading presentation`, { tag: "@P1" }, async ({ page }) => {
     const { record, error } = wrappedErrorRecord();
     expect(error.length).toBe(240);
     expect(error).not.toContain("\n");
@@ -271,6 +271,19 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     await importRecord(page, mode, record);
     await page.locator(mode === "workbench" ? '[data-inspection-node="process"]' : '[data-step-list] [data-step-id="process"]').click();
     const { detail, issue, preview, expanded, full } = errorReading(page, mode);
+    if (mode === "workbench") {
+      await expect(full).toBeVisible();
+      await expect(full).toHaveText(error);
+      await expect(preview).toHaveCount(0);
+      await expect(expanded).toHaveCount(0);
+      await expect(detail.locator(".run-copy-value, .technical-disclosure, button[data-envelope-index]")).toHaveCount(0);
+      await setLocale(page, mode, "en");
+      await expect(full).toBeVisible();
+      await expect(full).toHaveText(error);
+      await expectSelectedEvidence(page, 0, record.evidence[0]);
+      await expectOriginal(page, mode, record);
+      return;
+    }
     await expect(expanded).not.toHaveAttribute("open");
     await expectSixLinePreview(preview);
     await expanded.locator(":scope > summary").click();
@@ -288,10 +301,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     const source = detail.locator('[data-envelope-index="0"]').first();
     await revealSource(source);
     await source.click();
-    if (mode === "workbench") {
-      expect(await page.locator("#snapshot-json").evaluate((editor) => JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd))))
-        .toEqual(record.evidence[0]);
-    } else expect(JSON.parse(await page.locator("[data-raw-envelope]").textContent())).toEqual(record.evidence[0]);
+    expect(JSON.parse(await page.locator("[data-raw-envelope]").textContent())).toEqual(record.evidence[0]);
     await expectOriginal(page, mode, record);
   });
 }
@@ -446,6 +456,11 @@ test("homepage opens real examples without requiring JSON and the current-type s
       await expect(first).toHaveAttribute("aria-pressed", "true");
       expect(await page.evaluate(() => window.playground.linkedSelection.trajectoryRecordId))
         .toBe(await first.getAttribute("data-trajectory-record"));
+    } else if (kind === "workflow") {
+      await expect(page.locator("[data-workflow-run]")).toHaveAttribute("aria-current", "true");
+      await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+      await expect(page.locator('[data-inspection-node][aria-current="true"]')).toHaveCount(0);
+      expect(await page.evaluate(() => window.playground.selectedNodeDetail)).toEqual({ workflowRun: true });
     } else {
       const first = page.locator("[data-inspection-node]").first();
       await expect(first).toHaveAttribute("aria-current", "true");
@@ -464,9 +479,11 @@ test("homepage opens real examples without requiring JSON and the current-type s
       await expect(page.locator("#record-actions, #scope-information, #global-summary, [data-replay-controls]")).toHaveCount(0);
       await expect(page.locator("#paste-record")).toBeHidden();
       await expect(page.locator("#open-raw")).toBeHidden();
-    } else if (kind === "graph") await expect(page.locator("#open-raw")).toBeHidden();
-    else await expect(page.locator("#open-raw")).toBeVisible();
-    if (kind === "graph") expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("success");
+    } else await expect(page.locator("#open-raw")).toBeHidden();
+    if (kind !== "agent") {
+      expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("success");
+      await expect(page.locator('#node-detail [data-run-result="success"]')).toHaveCount(0);
+    }
     else await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
     if (kind === "agent") {
       await expect(page.locator('.eino-agent-reader [data-agent-trajectory]')).toBeVisible();
@@ -1124,6 +1141,7 @@ test("workbench preserves an exact selected declaration path through language ch
   await setLocale(page, "workbench", "en");
   await expect.poll(() => page.evaluate(() => window.playground.instance.getActiveNodePath())).toEqual(selected.path);
   expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(selected.selection);
-  await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "definition-only");
+  await expect(page.locator("#node-detail .step-state")).toContainText(/仅声明|Declared/);
+  expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("definition-only");
   await expectOriginal(page, "workbench", record);
 });

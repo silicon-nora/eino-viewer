@@ -52,34 +52,21 @@ async function expectRawEvidence(page, scope, record, index) {
     await expect(page.locator("#snapshot-json")).toBeHidden();
     return;
   }
-  if (await page.evaluate(() => window.playground.objectKind !== "workflow")) {
-    if (await scope.getAttribute("id") === "node-detail") {
-      await expectSelectedEvidence(page, index, record.evidence[index]);
-      await expect(scope.locator("button[data-envelope-index]")).toHaveCount(0);
-      return;
-    }
-    const direction = await scope.getAttribute("data-run-channel");
-    const source = await page.evaluate(({ direction, index }) => {
-      const run = window.playground.explanation.run;
-      const items = direction ? run[direction].items : run.issues;
-      return { linked: items.some((item) => item.evidenceEnvelopeIndexes.includes(index)),
-        envelope: window.playground.document.evidence[index] };
-    }, { direction, index });
-    expect(source).toEqual({ linked: true, envelope: record.evidence[index] });
+  if (await scope.getAttribute("id") === "node-detail") {
+    await expectSelectedEvidence(page, index, record.evidence[index]);
     await expect(scope.locator("button[data-envelope-index]")).toHaveCount(0);
-    await expect(page.locator("#snapshot-json")).toBeHidden();
-    await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toBeVisible();
     return;
   }
-  const source = scope.locator(`[data-envelope-index="${index}"]`).first();
-  await revealSource(source);
-  await source.click();
-  await expect(page.locator("#snapshot-json")).toBeVisible();
-  const selected = await page.locator("#snapshot-json").evaluate((editor) => ({
-    index: Number(editor.dataset.selectedEnvelopeIndex),
-    envelope: JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)),
-  }));
-  expect(selected).toEqual({ index, envelope: record.evidence[index] });
+  const direction = await scope.getAttribute("data-run-channel");
+  const source = await page.evaluate(({ direction, index }) => {
+    const run = window.playground.explanation.run;
+    const items = direction ? run[direction].items : run.issues;
+    return { linked: items.some((item) => item.evidenceEnvelopeIndexes.includes(index)),
+      envelope: window.playground.document.evidence[index] };
+  }, { direction, index });
+  expect(source).toEqual({ linked: true, envelope: record.evidence[index] });
+  await expect(scope.locator("button[data-envelope-index]")).toHaveCount(0);
+  await expect(page.locator("#snapshot-json")).toBeHidden();
   await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toBeVisible();
 }
 
@@ -241,7 +228,7 @@ test("synthetic failure with partial capture stays literal, keyboard-accessible 
   record.evidence.find(({ kind }) => kind === "workflow.snapshot").payload.execution.nodes.find(({ status }) => status === "failed").errorMessage = unsafeText;
   record.evidence.find(({ kind, payload }) => kind === "run.lifecycle" && payload.state === "ended").payload.capture = "partial";
   record.diagnostics.push({ severity: "warning", code: "projection.truncated", path: "synthetic-ui-only", message: "Synthetic UI robustness: capture was limited." });
-  await page.evaluate(() => { window.__summaryScriptRan = false; });
+  await page.addInitScript(() => { window.__summaryScriptRan = false; });
   await page.setViewportSize({ width: 390, height: 844 });
   await importRecord(page, record);
   const summary = page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])");
@@ -258,14 +245,13 @@ test("synthetic failure with partial capture stays literal, keyboard-accessible 
     const dimensions = await page.evaluate(() => ({ width: window.innerWidth, scrollWidth: document.documentElement.scrollWidth }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.width + 1);
   }
-  const evidence = summary.locator('[data-run-issue="error"] [data-envelope-index]').first();
-  await revealSource(evidence);
-  await evidence.focus();
-  await expect(evidence).toBeFocused();
+  const failure = summary.locator('[data-run-issue="error"] [data-run-issue-step]').first();
+  await failure.focus();
+  await expect(failure).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#snapshot-json")).toBeVisible();
-  const selected = await page.locator("#snapshot-json").evaluate((editor) => JSON.parse(editor.value.slice(editor.selectionStart, editor.selectionEnd)));
-  expect(selected).toEqual(record.evidence[0]);
+  await expect(page.locator("#node-detail")).toContainText(unsafeText);
+  await expectSelectedEvidence(page, 0, record.evidence[0]);
+  await expect(page.locator("#snapshot-json")).toBeHidden();
   expect(await page.evaluate(() => window.__summaryScriptRan)).toBe(false);
 });
 

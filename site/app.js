@@ -817,27 +817,25 @@ ui.readingMain.append(document.querySelector(".reader-tools"), ui.scopeResultSum
   document.querySelector(".canvas-host"), document.querySelector(".canvas-footer"));
 ui.stage.append(ui.inspector);
 ui.readingSidebar.append(ui.workflowControls);
-ui.pathRegion = document.createElement("details");
+ui.pathRegion = document.createElement("section");
 ui.pathRegion.id = "path-region";
-ui.pathRegion.open = true;
-const pathHeading = document.createElement("summary");
-pathHeading.dataset.i18n = "pathView";
-pathHeading.textContent = "Path";
 const pathCanvas = document.querySelector(".canvas-host");
 pathCanvas.before(ui.pathRegion);
-ui.pathRegion.append(pathHeading, pathCanvas);
-// Graph has a fixed reading panel. Keep Workflow's existing disclosure and
-// move the same canvas/controls between shells without duplicating listeners.
-const workflowPathRegion = ui.pathRegion;
-const graphPathRegion = document.createElement("section");
-graphPathRegion.id = "path-region";
+// Graph and Workflow share the same fixed reading shell and controls.
+const graphPathRegion = ui.pathRegion;
 graphPathRegion.setAttribute("aria-labelledby", "graph-path-title");
 const graphPathHeader = document.createElement("header");
 graphPathHeader.className = "graph-path-header";
 const graphPathTitle = document.createElement("h2");
 graphPathTitle.id = "graph-path-title";
 graphPathHeader.append(graphPathTitle);
-graphPathRegion.append(graphPathHeader);
+graphPathRegion.append(graphPathHeader, pathCanvas);
+const workflowRunEntry = document.createElement("button");
+workflowRunEntry.type = "button";
+workflowRunEntry.className = "workflow-run-entry inspection-item";
+workflowRunEntry.dataset.workflowRun = "";
+workflowRunEntry.hidden = true;
+ui.inspectionResults.before(workflowRunEntry);
 
 let workflowAPI;
 let einoAPI;
@@ -972,11 +970,19 @@ async function loadEinoAPI() {
   return import(versionedAssetURL("eino-viewer.js", base).href);
 }
 
+const fixtureSourceText = new WeakMap();
 async function fixture(name) {
   const base = configuredBase("eino-viewer-fixture-base", "../fixtures/");
   const response = await fetch(versionedAssetURL(name, base), { cache: "no-store" });
   if (!response.ok) throw new Error(`Unable to load ${name}: ${response.status}`);
-  return response.json();
+  // Keep original numeric lexemes and malformed input until the selected
+  // record crosses the same safe parser as every other viewer entry.
+  const text = await response.text();
+  let value;
+  try { value = JSON.parse(text); } catch { value = {}; }
+  if (!value || typeof value !== "object") value = {};
+  fixtureSourceText.set(value, text);
+  return value;
 }
 
 function fixtureItem(id, label, document, note = "", expected = "valid", expectedCode = "") {
@@ -1453,8 +1459,8 @@ function selectedFixture(kind = currentObjectKind, id = ui.sample.value) {
 function loadSelectedFixture({ fit = true, kind = currentObjectKind, id = ui.sample.value } = {}) {
   const item = selectedFixture(kind, id);
   if (!item) return;
-  const documentValue = currentFixtureDocument(item);
-  if (!applyDocument({ fit, text: JSON.stringify(documentValue, null, 2), fixtureItem: item, expectedKind: kind })) {
+  const text = fixtureSourceText.get(item.document) ?? JSON.stringify(currentFixtureDocument(item), null, 2);
+  if (!applyDocument({ fit, text, fixtureItem: item, expectedKind: kind })) {
     populateSamples({ preserve: true });
   }
 }
@@ -1641,8 +1647,8 @@ function setInspectorOpen(open, { returnFocus = false } = {}) {
 
 function inspectorPanel(panel, { focus = false, reveal = true } = {}) {
   if (inspectorPresentationLocked) return;
-  const readingOnly = currentObjectKind !== "workflow";
-  // Agent and Graph read saved values; only Workflow retains the raw editor.
+  const readingOnly = true;
+  // Every workbench reads saved values; editing belongs outside this surface.
   if (readingOnly) panel = "node";
   const showNode = panel === "node";
   ui.inspectorTabs.hidden = readingOnly;
@@ -2258,80 +2264,6 @@ function evidenceReadingLabel(item) {
   return translate("sourceRecord");
 }
 
-function appendTechnicalDetails(parent, explanationNode, relationships, evidence) {
-  if (currentObjectKind !== "workflow") return;
-  const disclosure = htmlElement("details", "technical-disclosure");
-  disclosure.append(htmlElement("summary", "", translate("technicalDetails")));
-  const body = htmlElement("div", "technical-disclosure-body");
-  const relationshipSection = htmlElement("section", "node-detail-section");
-  relationshipSection.append(htmlElement("h4", "", translate("nodeRelationships")));
-  if (!relationships.length) {
-    relationshipSection.append(htmlElement("p", "node-detail-note", translate("nodeNoRelationships")));
-  } else {
-    const list = htmlElement("div", "relationship-list");
-    // A root call can relate to thousands of steps. Keep its folded technical
-    // content out of the initial reading DOM; preserve every row on expansion.
-    let populated = false;
-    disclosure.addEventListener("toggle", () => {
-      if (!disclosure.open || !disclosure.isConnected || populated) return;
-      populated = true;
-      for (const relationship of relationships) {
-        const row = htmlElement("div", "relationship-row");
-        const rowBody = htmlElement("div", "");
-        rowBody.append(htmlElement("strong", "", relationship.label || relationship.peer));
-        row.append(htmlElement("b", "", relationship.direction === "IN" ? "←" : "→"), rowBody);
-        rowBody.append(htmlElement("code", "", relationship.peer));
-        list.append(row);
-      }
-    });
-    relationshipSection.append(list);
-  }
-  if (relationships.length) body.append(relationshipSection);
-
-  const evidenceSection = htmlElement("section", "node-detail-section");
-  evidenceSection.append(htmlElement("h4", "", translate("explanationEvidence")));
-  if (!evidence.length) {
-    evidenceSection.append(htmlElement("p", "node-detail-note", translate("nodeNoEvidence")));
-  } else {
-    const list = htmlElement("div", "evidence-list");
-    for (const item of evidence) {
-      const card = htmlElement("details", "evidence-card");
-      const summary = htmlElement("summary", "");
-      summary.append(
-        htmlElement("span", "evidence-index", String(item.envelopeIndex + 1).padStart(2, "0")),
-        htmlElement("strong", "", evidenceReadingLabel(item)),
-      );
-      const evidenceBody = htmlElement("div", "evidence-body");
-      evidenceBody.append(jsonTree(item.payload ?? item.envelope?.payload, "payload"));
-      const action = htmlElement("button", "evidence-action", translate("openRawRecord"));
-      action.type = "button";
-      action.dataset.envelopeIndex = String(item.envelopeIndex);
-      evidenceBody.append(action);
-      card.append(summary, evidenceBody);
-      list.append(card);
-    }
-    evidenceSection.append(list);
-  }
-  body.append(evidenceSection);
-
-  const factsSection = htmlElement("section", "node-detail-section technical-facts");
-  factsSection.append(htmlElement("h4", "", translate("nodeMetadata")));
-  const facts = htmlElement("dl", "node-facts");
-  appendNodeFact(facts, "ID", explanationNode.id);
-  appendReadingCopy(factsSection, explanationNode.id);
-  appendNodeFact(facts, translate("nodeKind"), explanationNode.kind);
-  if (explanationNode.component) appendNodeFact(facts, translate("nodeComponent"), explanationNode.component);
-  appendRecordedTimingFacts(facts, explanationNode.timing);
-  appendNodeFact(facts, translate("explanationBasis"), explanationNode.basis === "observed" ? translate("explanationObserved") : translate("explanationDeclared"));
-  const correlation = explanationNode.technical?.correlation || {};
-  factsSection.append(facts);
-  if (Object.keys(correlation).length) factsSection.append(jsonTree(correlation, translate("nodeCorrelation")));
-  const metadata = explanationNode.technical?.metadata;
-  if (metadata && Object.keys(metadata).length) factsSection.append(jsonTree(metadata, "metadata"));
-  body.append(factsSection);
-  disclosure.append(body);
-  parent.append(disclosure);
-}
 
 function fallbackExplanation(renderedNode, executionNode, relationships, evidence) {
   const status = executionNode?.status || renderedNode.status || "declared";
@@ -2381,7 +2313,7 @@ function renderExplanationNode(explanationNode, { renderedNode, executionNode, a
   if (currentInvocationLabels.has(explanationNode.id)) heading.append(htmlElement("span", "heading-fact", currentInvocationLabels.get(explanationNode.id)));
   hero.append(heading);
   if (presentation.role) hero.append(htmlElement("small", "", presentation.role));
-  if (currentObjectKind === "graph" ? !confirmedStepSuccess(stateNode) : stateNode.status !== "declared") hero.append(htmlElement("p", `step-state ${stateNode.status}`, stepStatusLabel(stateNode)));
+  if (!confirmedStepSuccess(stateNode)) hero.append(htmlElement("p", `step-state ${stateNode.status}`, stepStatusLabel(stateNode)));
   if (!["input", "output"].includes(explanationNode.kind)) hero.append(htmlElement("p", "step-duration", recordedTimingText(explanationNode.timing)));
   if (presentation.value && !presentation.showFlow) {
     hero.append(htmlElement("p", "source-primary-value", presentation.value));
@@ -2389,16 +2321,10 @@ function renderExplanationNode(explanationNode, { renderedNode, executionNode, a
   content.append(hero);
   appendGraphVisitPicker(content, explanationNode.id);
   const identity = currentIdentityLabels.get(explanationNode.id);
-  if (identity && currentObjectKind === "graph") {
+  if (identity && currentObjectKind !== "agent") {
     const label = htmlElement("p", "step-reading-identity", identity);
     label.title = identity;
     content.append(label);
-  } else if (identity && currentObjectKind !== "agent") {
-    const disclosure = htmlElement("details", "step-identity");
-    disclosure.dataset.stepIdentity = "";
-    disclosure.append(htmlElement("summary", "", `${currentLanguage === "zh" ? "身份" : "Identity"} · ${previewRecordedText(identity, 72)}`), htmlElement("pre", "", identity));
-    appendReadingCopy(disclosure, identity);
-    content.append(disclosure);
   }
 
   appendStepScopeContext(content, currentInspection?.getNodeGroups(explanationNode.id) || [], {
@@ -2413,8 +2339,6 @@ function renderExplanationNode(explanationNode, { renderedNode, executionNode, a
   } : undefined;
   if (presentation.showFlow) appendCompactFlow(content, explanationNode, { omitError: Boolean(reason), issue });
   else if (issue) appendTrajectoryValue(content, issue.label, issue.item.value, issue.item);
-
-  appendTechnicalDetails(content, explanationNode, relationships, evidence);
 
   ui.nodeDetail.replaceChildren(content);
   rememberDisclosures(ui.nodeDetail, `step:${explanationNode.id}`);
@@ -2505,6 +2429,8 @@ function readingStepsPage(query, options = {}) {
 }
 
 function markInspectionSelection() {
+  if (selectedNodeDetail?.workflowRun) workflowRunEntry.setAttribute("aria-current", "true");
+  else workflowRunEntry.removeAttribute("aria-current");
   for (const button of ui.inspectionResults.querySelectorAll("[data-inspection-node]")) {
     const active = button.dataset.inspectionNode === (selectedNodeDetail?.explanationNode?.id || selectedExecutionNodeId);
     if (active) button.setAttribute("aria-current", "true");
@@ -2541,9 +2467,8 @@ function renderInspectionResults() {
     ui.inspectionResults.replaceChildren();
     return;
   }
-  // Graph has one step list. Never retain an invisible filter when switching
-  // records, languages, or scopes; Workflow keeps its inspection controls.
-  if (currentObjectKind === "graph") ui.inspectionScope.value = "steps";
+  // One step list per reader; never retain a hidden evidence/status filter.
+  ui.inspectionScope.value = "steps";
   const scope = ui.inspectionScope.value;
   const isSteps = scope === "steps" || scope === "issues";
   const range = inspectionRange();
@@ -2560,7 +2485,7 @@ function renderInspectionResults() {
       action.dataset.inspectionNode = item.id;
       const presentation = sourcePresentation(item);
       const facts = [currentInvocationLabels.get(item.id), presentation.role,
-        currentObjectKind === "graph" && confirmedStepSuccess(item) ? undefined : stepStatusLabel(item)].filter(Boolean);
+        confirmedStepSuccess(item) ? undefined : stepStatusLabel(item)].filter(Boolean);
       if (Number.isFinite(item.timing?.durationMs)) facts.push(timingText(item.timing));
       action.append(htmlElement("strong", "", presentation.name || item.label), htmlElement("small", "", facts.join(" · ")));
       const identity = currentIdentityLabels.get(item.id);
@@ -2580,8 +2505,14 @@ function renderInspectionResults() {
   ui.inspectionPrevious.disabled = page.offset === 0;
   ui.inspectionNext.disabled = page.offset + page.limit >= page.total;
   ui.inspectionNextIssue.disabled = !inspectionIssues().length && !currentInspection.searchSteps("", { ...range, issuesOnly: true, limit: 1 }).total;
-  ui.inspectionNextIssue.hidden = currentObjectKind === "graph";
-  ui.inspectionCount.closest("nav").hidden = currentObjectKind === "graph" && page.total <= page.limit;
+  ui.inspectionNextIssue.hidden = true;
+  ui.inspectionCount.closest("nav").hidden = page.total <= page.limit;
+  workflowRunEntry.hidden = currentObjectKind !== "workflow" || !currentExplanation?.run;
+  if (!workflowRunEntry.hidden) {
+    const run = currentExplanation.run;
+    workflowRunEntry.replaceChildren(htmlElement("strong", "", translate("runResultTitle")),
+      htmlElement("small", "", [run.result.state !== "success" && run.result.label, timingText(run.timing)].filter(Boolean).join(" · ")));
+  }
   if (!page.total && ui.inspectionSearch.value) ui.inspectionResults.append(htmlElement("li", "search-empty", translate("noSearchResults")));
   ui.clearSearch.hidden = Boolean(page.total || !ui.inspectionSearch.value);
   markInspectionSelection();
@@ -2646,7 +2577,7 @@ function renderHierarchyNavigation() {
     ui.hierarchy.prepend(ui.hierarchyBreadcrumbs);
   }
   ui.hierarchy.hidden = !groups.length;
-  if (currentObjectKind === "graph" && hasSingleGraphScope() && !inspectionGroupId && !inspectionUngrouped) {
+  if (hasSingleGraphScope() && !inspectionGroupId && !inspectionUngrouped) {
     ui.hierarchy.hidden = true;
     ui.hierarchyBreadcrumbs.replaceChildren();
     ui.hierarchyGroups.replaceChildren();
@@ -2717,22 +2648,6 @@ function rebuildInspection() {
   currentScopeReading = currentExplanation ? buildScopeReading(currentProjection.document, currentExplanation, { ...inspectionRange(), locale: currentLanguage }) : undefined;
 }
 
-function appendRunEvidence(container, indexes = []) {
-  if (currentObjectKind !== "workflow") return;
-  const valid = [...new Set(indexes)].filter((index) => Number.isSafeInteger(index) && sourceEnvelope(index));
-  if (!valid.length) return;
-  const disclosure = htmlElement("details", "run-sources");
-  disclosure.append(htmlElement("summary", "", translate("runSources", { count: valid.length })));
-  const links = htmlElement("div", "run-result-evidence");
-  for (const index of valid) {
-    const button = htmlElement("button", "", translate("runResultEvidence", { index: index + 1 }));
-    button.type = "button";
-    button.dataset.envelopeIndex = String(index);
-    links.append(button);
-  }
-  disclosure.append(links);
-  container.append(disclosure);
-}
 
 function runValueText(value) {
   return typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -2744,11 +2659,11 @@ function createRunChannel(direction, title) {
   return section;
 }
 
-function appendRunValue(container, item, { local = false, fold = false } = {}) {
+function appendRunValue(container, item, { local = false, fold = false, copy = true } = {}) {
   const block = htmlElement("div", "run-result-item");
   block.dataset.availability = item.availability;
   // Retain a body's unique original source without adding a technical action.
-  if (currentObjectKind === "graph" && item.evidenceEnvelopeIndexes?.length === 1) {
+  if (item.evidenceEnvelopeIndexes?.length === 1) {
     const index = item.evidenceEnvelopeIndexes[0];
     if (Number.isSafeInteger(index) && sourceEnvelope(index)) block.dataset.envelopeIndex = String(index);
   }
@@ -2775,20 +2690,20 @@ function appendRunValue(container, item, { local = false, fold = false } = {}) {
     value.dataset.availability = item.availability;
     if (fold) appendFoldableValue(block, value, shown, { isText });
     else block.append(value);
-    const copy = htmlElement("button", "run-copy-value", translate("runCopyValue"));
-    copy.type = "button";
-    if (local) copy.dataset.scopeCopyIndex = String(scopeSummaryCopyValues.push(raw) - 1);
-    else copy.dataset.runCopyIndex = String(runSummaryCopyValues.push(raw) - 1);
-    block.append(copy);
+    if (copy) {
+      const button = htmlElement("button", "run-copy-value", translate("runCopyValue"));
+      button.type = "button";
+      if (local) button.dataset.scopeCopyIndex = String(scopeSummaryCopyValues.push(raw) - 1);
+      else button.dataset.runCopyIndex = String(runSummaryCopyValues.push(raw) - 1);
+      block.append(button);
+    }
   }
-  appendRunEvidence(block, item.evidenceEnvelopeIndexes);
   container.append(block);
 }
 
 function renderScopeResultSummary() {
   const scope = currentScopeReading;
   const scoped = Boolean(scope && scope.mode !== "all" && !scope.topLevel);
-  if (currentObjectKind === "workflow" && ui.globalSummary.dataset.scoped !== String(scoped)) ui.globalSummary.open = !scoped;
   ui.globalSummary.dataset.scoped = String(scoped);
   ui.globalSummaryTitle.textContent = currentObjectKind === "agent" ? translate("runInformation")
     : `${translate("scopeBackToResult")} · ${currentExplanation?.run?.result.label || ""}`;
@@ -2811,15 +2726,16 @@ function renderScopeResultSummary() {
   header.append(global);
   const status = htmlElement("p", "scope-result-state", scope.result.label);
   status.dataset.scopeResult = scope.result.state;
-  ui.scopeResultSummary.append(header, status);
+  ui.scopeResultSummary.append(header);
+  if (currentObjectKind !== "workflow" || scope.result.state !== "success") ui.scopeResultSummary.append(status);
   const exchange = htmlElement("div", "run-result-exchange");
-  for (const direction of ["output", "input"]) {
+  for (const direction of currentObjectKind === "workflow" ? ["input", "output"] : ["output", "input"]) {
     const channel = scope[direction];
     const section = createRunChannel(direction, translate(direction === "input" ? "scopeInput" : "scopeOutput"));
     section.dataset.scopeChannel = direction;
     section.dataset.availability = channel.availability;
     if (!channel.items.length) section.append(htmlElement("small", "run-value-state", translate("runMissingValue")));
-    for (const item of channel.items) appendRunValue(section, item, { local: true });
+    for (const item of channel.items) appendRunValue(section, item, { local: true, copy: currentObjectKind !== "workflow" });
     exchange.append(section);
   }
   const issues = htmlElement("div", "run-result-issues");
@@ -2832,7 +2748,7 @@ function renderScopeResultSummary() {
     item.dataset.scopeIssueOrigin = callerBoundary ? "caller" : "local";
     const label = callerBoundary ? issue.recovered ? "scopeCallerHandledError" : "scopeCallerError" : issue.recovered ? "runRecoveredIssue" : "runStepIssue";
     item.append(htmlElement("h3", "", `${translate(label)}${node ? ` · ${sourcePresentation(node).title}` : ""}`));
-    appendRunValue(item, issueReadingValue(issue), { local: true, fold: true });
+    appendRunValue(item, issueReadingValue(issue), { local: true, fold: currentObjectKind !== "workflow", copy: currentObjectKind !== "workflow" });
     if (node) {
       const locate = htmlElement("button", "issue-locate", translate("locateIssue"));
       locate.type = "button";
@@ -2844,17 +2760,11 @@ function renderScopeResultSummary() {
   }
   if (scope.result.state === "failed") ui.scopeResultSummary.append(issues, exchange);
   else ui.scopeResultSummary.append(exchange, issues);
-  if (currentObjectKind !== "agent") {
+  if (currentObjectKind === "graph") {
     const note = htmlElement("div", "scope-path-note");
     note.append(htmlElement("strong", "", translate(scope.execution ? "scopePath" : "scopeDeclaredPath", { count: scope.nodeIds.length })));
     if (scope.boundary.total) note.append(htmlElement("p", "", translate("scopeBoundary", { incoming: scope.boundary.incoming.length, outgoing: scope.boundary.outgoing.length })));
     ui.scopeResultSummary.append(note);
-  }
-  if (scope.group && currentObjectKind === "workflow") {
-    const identity = htmlElement("details", "step-identity");
-    identity.append(htmlElement("summary", "", currentLanguage === "zh" ? "调用身份" : "Call identity"), htmlElement("pre", "", scope.group.id));
-    appendReadingCopy(identity, scope.group.id);
-    ui.scopeResultSummary.append(identity);
   }
   rememberDisclosures(ui.scopeResultSummary, `scope:${scope.group?.id || scope.mode}`);
 }
@@ -2862,61 +2772,40 @@ function renderScopeResultSummary() {
 function renderRunResultSummary(explanation) {
   const run = explanation?.run;
   ui.runResultSummary.replaceChildren();
+  ui.runResultSummary.setAttribute("aria-label", translate("runResultTitle"));
   runSummaryCopyValues = [];
-  // The real root step is Graph's single entry for overall input/output.
-  const showSummary = Boolean(run) && currentObjectKind !== "graph";
-  ui.runResultSummary.hidden = !showSummary;
-  ui.globalSummary.hidden = !showSummary;
+  ui.globalSummary.hidden = true;
+  ui.runResultSummary.hidden = currentObjectKind !== "workflow" || !run;
   document.body.classList.toggle("has-run", Boolean(run));
-  if (!showSummary) return;
-  const header = htmlElement("header", "run-result-heading");
-  header.append(htmlElement("h2", "", currentObjectKind === "agent" ? translate("runAgentOutputTitle")
-    : `${{ graph: "Graph", workflow: "Workflow" }[currentObjectKind]} · ${translate("runResultTitle")}`));
-  const status = htmlElement("div", "run-result-states");
-  const resultLabel = htmlElement("span", "run-result-state", run.result.label);
-  resultLabel.dataset.runResult = run.result.state;
-  const captureLabel = htmlElement("span", "run-capture-state", run.capture.label);
-  captureLabel.setAttribute("aria-label", `${translate("runCaptureTitle")} · ${run.capture.label}`);
-  captureLabel.dataset.runCapture = run.capture.status;
-  status.append(resultLabel);
-  if (run.capture.status !== "complete") status.append(captureLabel);
-  const duration = htmlElement("span", "run-duration", `${translate("runDuration")} · ${timingText(run.timing)}`);
-  duration.dataset.runDuration = "";
-  status.append(duration);
-  header.append(status);
-  ui.runResultSummary.append(header);
-  const information = htmlElement("details", "run-result-timing run-information");
-  information.append(htmlElement("summary", "", translate("runInformation")));
-  const facts = htmlElement("dl", "node-facts");
-  if (explanation.runId) appendNodeFact(facts, "Run ID", explanation.runId);
-  if (Number.isFinite(run.timing?.startedAtMs)) appendNodeFact(facts, `${translate("timingStart")} (UTC)`, timingTimestamp(run.timing.startedAtMs));
-  if (Number.isFinite(run.timing?.finishedAtMs)) appendNodeFact(facts, `${translate("timingEnd")} (UTC)`, timingTimestamp(run.timing.finishedAtMs));
-  information.append(facts);
-  appendRunEvidence(information, run.timing?.evidenceEnvelopeIndexes);
-  if (run.capture.status === "complete") information.append(captureLabel);
-  if (run.capture.limitations.length) {
-    const diagnostics = htmlElement("details", "run-diagnostics");
-    diagnostics.append(htmlElement("summary", "", translate("recordDiagnostics")));
-    const list = htmlElement("ul", "run-result-limitations");
-    for (const text of run.capture.limitations) list.append(htmlElement("li", "", text));
-    diagnostics.append(list);
-    information.append(diagnostics);
+  if (ui.runResultSummary.hidden) return;
+  const hero = htmlElement("div", "node-detail-hero");
+  hero.append(htmlElement("h3", "", currentProjection.document.definition?.workflow?.name || translate("runResultTitle")));
+  if (run.result.state !== "success") {
+    const status = htmlElement("p", `step-state ${run.result.state}`, run.result.label);
+    status.dataset.runResult = run.result.state;
+    hero.append(status);
   }
-
-  const exchange = htmlElement("div", "run-result-exchange");
-  const outputTitles = { agent: "runAgentOutputTitle", graph: "runGraphOutputTitle", workflow: "runWorkflowOutputTitle" };
-  for (const direction of ["output", "input"]) {
+  if (run.capture.status !== "complete") {
+    const capture = htmlElement("p", "step-state", run.capture.label);
+    capture.dataset.runCapture = run.capture.status;
+    hero.append(capture);
+  }
+  const duration = htmlElement("p", "step-duration", recordedTimingText(run.timing));
+  duration.dataset.runDuration = "";
+  hero.append(duration);
+  ui.runResultSummary.append(hero);
+  const exchange = htmlElement("div", "business-content");
+  for (const direction of ["input", "output"]) {
     const channel = run[direction];
-    const section = createRunChannel(direction, translate(direction === "input" ? "runInputTitle"
-      : outputTitles[currentProjection?.document.kind] || "runOutputTitle"));
+    const section = htmlElement("section", "node-detail-section explanation-channel run-result-channel");
+    section.append(htmlElement("h4", "", translate(direction === "input" ? "nodeInput" : "nodeOutput")));
     section.dataset.runChannel = direction;
     section.dataset.availability = channel.availability;
     if (!channel.items.length) section.append(htmlElement("small", "run-value-state", translate("runMissingValue")));
-    for (const item of channel.items) appendRunValue(section, item);
+    for (const item of channel.items) appendRunValue(section, item, { copy: false });
     exchange.append(section);
   }
   ui.runResultSummary.append(exchange);
-
   if (run.issues.length) {
     const issues = htmlElement("div", "run-result-issues");
     for (const issue of run.issues) {
@@ -2927,9 +2816,8 @@ function renderRunResultSummary(explanation) {
         : issue.recovered ? "runRecoveredIssue" : issue.scope === "step" && run.result.state === "success" ? "localFailureRunSucceeded"
           : issue.scope === "step" ? "runStepIssue" : "runResultIssue";
       const sourceNode = issue.scope === "step" && explanation.nodes.find(({ id }) => id === issue.nodeId);
-      const stepLabel = sourceNode && sourcePresentation(sourceNode).title;
-      item.append(htmlElement("h3", "", `${translate(title)}${stepLabel ? ` · ${stepLabel}` : ""}`));
-      appendRunValue(item, issueReadingValue(issue), { fold: true });
+      item.append(htmlElement("h4", "", [translate(title), sourceNode && sourcePresentation(sourceNode).name].filter(Boolean).join(" · ")));
+      appendRunValue(item, issueReadingValue(issue), { copy: false });
       if (issue.nodeId && explanation.nodes.some(({ id }) => id === issue.nodeId)) {
         const locate = htmlElement("button", "issue-locate", translate("locateIssue"));
         locate.type = "button";
@@ -2939,15 +2827,22 @@ function renderRunResultSummary(explanation) {
       }
       issues.append(item);
     }
-    if (["failed", "cancelled", "interrupted"].includes(run.result.state)) ui.runResultSummary.insertBefore(issues, exchange);
-    else {
-      const disclosure = htmlElement("details", "run-issue-disclosure");
-      disclosure.append(htmlElement("summary", "", translate("runIssues", { count: run.issues.length })), issues);
-      ui.runResultSummary.append(disclosure);
-    }
+    // Input stays first. Failures precede the missing/output channel.
+    exchange.insertBefore(issues, exchange.querySelector('[data-run-channel="output"]'));
   }
-  if (currentObjectKind === "workflow") ui.runResultSummary.append(information);
-  rememberDisclosures(ui.runResultSummary, "run");
+}
+
+// A navigation entry for recorded run I/O, never a fabricated execution node.
+function selectWorkflowRun({ activate = true } = {}) {
+  if (currentObjectKind !== "workflow" || !currentExplanation?.run) return;
+  clearLinkedSelection();
+  workflowInstance?.setActiveNodePath(null);
+  selectedRenderedNode = undefined;
+  selectedNodeDetail = { workflowRun: true };
+  selectedPathIsPrompt = true;
+  ui.nodeDetail.replaceChildren(ui.runResultSummary);
+  markInspectionSelection();
+  inspectorPanel("node", { reveal: activate });
 }
 
 function renderExplanationOverview(explanation, { activate = false } = {}) {
@@ -2977,27 +2872,6 @@ function renderExplanationOverview(explanation, { activate = false } = {}) {
   section.append(list);
   if (highlights.length > 100) section.append(htmlElement("p", "node-detail-note", translate("overviewLimited")));
   content.append(section);
-  if (currentObjectKind === "workflow") {
-  const disclosure = htmlElement("details", "technical-disclosure overview-technical");
-  disclosure.append(htmlElement("summary", "", translate("technicalDetails")));
-  const technicalBody = htmlElement("div", "technical-disclosure-body");
-  const facts = htmlElement("dl", "node-facts explanation-stats");
-  appendNodeFact(facts, translate("explainedNodes"), highlights.length);
-  appendNodeFact(facts, translate("nodeRelationships"), scopedIds ? currentScopeReading.execution?.edges.length ?? 0 : explanation.statistics.edgeCount);
-  appendNodeFact(facts, "TOOL CALLS", scopedIds ? explanation.nodes.filter((node) => scopedIds.has(node.id) && node.kind === "tool").length : explanation.statistics.toolCallCount);
-  appendNodeFact(facts, translate("explanationEvidence"), scopedIds ? currentScopeReading.evidenceEnvelopeIndexes.length : explanation.statistics.evidenceCount);
-  technicalBody.append(facts);
-  if (explanation.limitations?.length) {
-    const limits = htmlElement("section", "node-detail-section explanation-limits");
-    limits.append(htmlElement("h4", "", translate("explanationLimits")));
-    const listElement = htmlElement("ul", "");
-    for (const limitation of explanation.limitations) listElement.append(htmlElement("li", "", limitation));
-    limits.append(listElement);
-    technicalBody.append(limits);
-  }
-  disclosure.append(technicalBody);
-  content.append(disclosure);
-  }
   ui.nodeDetail.replaceChildren(content);
   selectedNodeDetail = undefined;
   selectedRenderedNode = undefined;
@@ -3180,12 +3054,18 @@ function readingPresentationSnapshot(snapshot) {
 function mountWorkflow(snapshot) {
   workflowInstance = workflowAPI.createWorkflowDAG(ui.host, {
     snapshot: readingPresentationSnapshot(snapshot),
-    direction: currentDirection,
+    direction: currentObjectKind === "workflow" ? "DOWN" : currentDirection,
     theme: readingGraphTheme(),
     locale: rendererLocales[currentLanguage],
     expanded: subgraphPaths(snapshot.workflow),
     activeNodePath: null,
-    nodeLabelFormatter: workflowNodeLabel,
+    ...(currentObjectKind === "workflow" ? { interaction: { tooltipOnHover: false, pinTooltipOnNodeClick: false } } : {}),
+    nodeLabelFormatter: (node) => {
+      if (currentObjectKind !== "workflow") return workflowNodeLabel(node);
+      const presentation = node.metadata?.einoViewerPresentation;
+      return [presentation?.name || node.name || node.id,
+        [presentation?.identity, presentation?.state, presentation?.timing].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
+    },
     accessibilityLabelFormatter: (summary, visible) => workflowAccessibilityLabel(summary, visible, currentLanguage),
     onNodeClick(node) {
       const members = currentObjectKind === "graph" && currentGraphReading?.memberIdsByNodeId.get(node.id);
@@ -3715,16 +3595,17 @@ function appendTrajectoryValue(parent, label, value, options = {}) {
   const item = htmlElement("div", "trajectory-detail-value");
   if (options.direction) item.dataset.businessChannel = options.direction;
   item.append(htmlElement("small", "", label));
-  appendBusinessValue(item, value, { fold: !options.direction, ...options });
+  appendBusinessValue(item, value, { fold: currentObjectKind !== "workflow" && !options.direction,
+    copy: currentObjectKind !== "workflow", ...options });
   parent.append(item);
   return item;
 }
 
 function appendStepScopeContext(content, groups) {
   if (!currentInspection?.groupCount) return;
-  if (currentObjectKind === "graph" && hasSingleGraphScope()) return;
+  if (hasSingleGraphScope()) return;
   const context = htmlElement("section", "step-scope-context");
-  context.append(htmlElement("small", "", currentObjectKind === "graph" ? "Graph" : translate("hierarchyStepScope")));
+  context.append(htmlElement("small", "", currentObjectKind === "graph" ? "Graph" : "Workflow"));
   for (const group of groups) {
     const action = htmlElement("button", "", currentInspection.getGroupPath(group.id).map(({ label }) => label).join(" / "));
     action.type = "button";
@@ -3738,6 +3619,11 @@ function appendStepScopeContext(content, groups) {
 function selectInitialReadingDetail() {
   // Start from the real reading order, without simulating a click, moving focus
   // or scrolling the page to a lower details panel on narrow screens.
+  if (currentObjectKind === "workflow" && currentExplanation?.run) {
+    selectWorkflowRun({ activate: false });
+    setInspectorOpen(true);
+    return true;
+  }
   const first = currentInspection && readingSteps("", inspectionRange())[0];
   if (!first) return false;
   selectInspectionStep(first.id, undefined, { activate: false });
@@ -3749,29 +3635,20 @@ function selectInitialReadingDetail() {
 function updateRunViewTabs() {
   ui.runViewTabs.hidden = true;
   const graphReading = currentObjectKind === "graph";
-  const pathRegion = graphReading ? graphPathRegion : workflowPathRegion;
-  if (ui.pathRegion !== pathRegion) {
-    ui.pathRegion.replaceWith(pathRegion);
-    pathRegion.append(pathCanvas);
-    ui.pathRegion = pathRegion;
-  }
-  const heading = graphReading ? graphPathTitle : pathHeading;
-  heading.dataset.i18n = currentObjectKind === "agent" ? "trajectoryView" : graphReading
-    ? currentGraphTopology ? "graphFlow" : "graphCallsView" : "pathView";
+  const heading = graphPathTitle;
+  heading.dataset.i18n = graphReading && !currentGraphTopology ? "graphCallsView" : "graphFlow";
   heading.textContent = translate(heading.dataset.i18n);
-  ui.readerTools.hidden = graphReading;
-  if (graphReading) {
-    if (ui.diagramTools.parentElement !== graphPathHeader) graphPathHeader.append(ui.diagramTools);
-  } else if (ui.diagramTools.parentElement !== ui.readerTools) ui.runViewTabs.after(ui.diagramTools);
+  ui.readerTools.hidden = true;
+  if (ui.diagramTools.parentElement !== graphPathHeader) graphPathHeader.append(ui.diagramTools);
   ui.workbench.dataset.readingKind = currentObjectKind;
   const agentReading = currentObjectKind === "agent";
-  const readingOnly = currentObjectKind !== "workflow";
+  const readingOnly = true;
   ui.openDetails.hidden = readingOnly;
   ui.openRaw.hidden = readingOnly;
   ui.pasteRecord.hidden = readingOnly;
-  if (currentObjectKind === "graph") ui.workflowControls.hidden = true;
+  ui.workflowControls.hidden = true;
   const inspectionTitle = ui.inspection.querySelector(":scope > summary");
-  inspectionTitle.dataset.i18n = agentReading ? "agentInspectionTitle" : currentObjectKind === "graph" ? "graphInspectionTitle" : "inspectionTitle";
+  inspectionTitle.dataset.i18n = agentReading ? "agentInspectionTitle" : "graphInspectionTitle";
   inspectionTitle.textContent = translate(inspectionTitle.dataset.i18n);
   const searchLabel = ui.inspectionSearch.closest("label").querySelector("span");
   searchLabel.dataset.i18n = readingOnly ? "agentInspectionSearch" : "inspectionSearch";
@@ -3783,8 +3660,8 @@ function updateRunViewTabs() {
   ui.inspectionScope.replaceChildren(...inspectionOptions.filter((option) => !readingOnly || ["steps", "issues"].includes(option.value)));
   for (const option of ui.inspectionScope.options) option.textContent = translate(option.dataset.i18n);
   ui.inspectionScope.value = currentObjectKind === "graph" || readingOnly && !["steps", "issues"].includes(inspectionMode) ? "steps" : inspectionMode;
-  ui.inspectionScope.closest("label").hidden = currentObjectKind === "graph";
-  ui.inspectionScope.disabled = currentObjectKind === "graph";
+  ui.inspectionScope.closest("label").hidden = true;
+  ui.inspectionScope.disabled = true;
   inspectorPanel(ui.editorWrap.hidden ? "node" : "raw", { reveal: false });
   if (agentReading) {
     ui.readingSidebar.remove();
@@ -3792,7 +3669,7 @@ function updateRunViewTabs() {
     if (ui.scopeResultSummary.hidden) ui.scopeResultSummary.remove();
   } else {
     if (ui.readingSidebar.parentElement !== ui.stage) ui.stage.prepend(ui.readingSidebar);
-    ui.globalSummary.append(ui.runResultSummary);
+    if (!selectedNodeDetail?.workflowRun) ui.globalSummary.append(ui.runResultSummary);
     ui.stage.before(ui.globalSummary);
     ui.pathRegion.before(ui.scopeResultSummary);
     ui.runResultSummary.classList.remove("agent-reading-content");
@@ -3955,6 +3832,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   const previousLock = inspectorPresentationLocked;
   const previousPanel = ui.editorWrap.hidden ? "node" : "raw";
   const previousSelection = selectedNodeDetail?.explanationNode?.id;
+  const previousRunSelection = selectedNodeDetail?.workflowRun;
   const previousDefinitionId = selectedNodeDetail?.graphDefinitionNodeId;
   const previousEdgeId = selectedNodeDetail?.graphEdgeId;
   if (scopeOnly) inspectorPresentationLocked = true;
@@ -3997,7 +3875,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
   renderScopeResultSummary();
   if (projected.kind === "graph") ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(500, currentGraphTopology
     ? currentGraphTopology.nodes.length * 105 : (currentGraphReading?.execution.nodes.length ?? scopeSize) * 85))}px`);
-  else ui.workbench.style.removeProperty("--graph-reading-height");
+  else ui.workbench.style.setProperty("--graph-reading-height", `${Math.min(1200, Math.max(500, scopeSize * 95))}px`);
   const emptyScope = scopeSize === 0;
   if (emptyScope || scopeSize > 500 && !largeVisualRequested) {
     graphTopologyInstance?.destroy();
@@ -4075,6 +3953,7 @@ function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } 
       activateReadingPath(node.id, node.path);
     }
   }
+  if (previousRunSelection) selectWorkflowRun({ activate: false });
   updateRunViewTabs();
   updateSignalBus(currentDocument);
   showRunState(currentDocument, currentRunView === "trajectory" ? currentTrajectory : visibleExecution);
@@ -4144,7 +4023,6 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   document.body.classList.add("has-record");
   ui.inspection.open = true;
   ui.inspectionScope.value = "steps";
-  workflowPathRegion.open = true;
   largeVisualRequested = false;
   editorRangeCache = undefined;
   inspectionOffset = 0;
@@ -4216,6 +4094,7 @@ ui.openRaw.addEventListener("click", () => {
   ui.rawRecordsTab.focus();
 });
 ui.inspector.addEventListener("keydown", (event) => {
+  if (currentObjectKind === "workflow") return;
   if (event.key === "Escape") {
     event.preventDefault();
     setInspectorOpen(false, { returnFocus: true });
@@ -4304,6 +4183,10 @@ ui.inspectionResults.addEventListener("click", (event) => {
     selectInspectionStep(step.dataset.inspectionNode, step);
   }
   if (evidence) locateEnvelopeInEditor(Number(evidence.dataset.inspectionEvidence));
+});
+workflowRunEntry.addEventListener("click", () => {
+  if (inspectionGroupId || inspectionUngrouped) selectInspectionGroup(undefined);
+  selectWorkflowRun();
 });
 ui.inspectionNextIssue.addEventListener("click", () => {
   const issues = inspectionIssues();
@@ -4413,8 +4296,9 @@ ui.scopeResultSummary.addEventListener("click", async (event) => {
   const issue = event.target.closest("[data-run-issue-step]");
   if (issue) { jumpToInspectionStep(issue.dataset.runIssueStep); return; }
   if (event.target.closest("[data-scope-global-result]")) {
-    if (currentObjectKind === "graph") {
+    if (currentObjectKind === "graph" || currentObjectKind === "workflow") {
       selectInspectionGroup(undefined, { focus: true });
+      if (currentObjectKind === "workflow") selectWorkflowRun();
       return;
     }
     ui.globalSummary.open = true;

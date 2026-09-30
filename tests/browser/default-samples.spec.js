@@ -31,11 +31,15 @@ for (const sample of defaults) {
       expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe("success");
       await expect(page.locator("#global-summary")).toBeHidden();
       await expect(page.locator("#run-result-summary")).toBeEmpty();
-    } else await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
-    if (sample.kind !== "workflow") {
-      await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
-      expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
-    } else await expect(page.locator("[data-run-capture]")).toHaveAttribute("data-run-capture", "complete");
+    } else if (sample.kind === "agent") await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
+    else {
+      expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("success");
+      await expect(page.locator('[data-run-result="success"]')).toHaveCount(0);
+      await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
+      await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+    }
+    await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
+    expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
     expect(await page.evaluate(() => window.playground.document)).toEqual(record);
     const run = await page.evaluate(() => window.playground.explanation.run);
     await openRunInformation(page);
@@ -102,7 +106,12 @@ test("complex real Graph and Workflow examples require explicit selection and pr
       expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe(state);
       if (state === "failed") await expect(page.locator("#node-detail .step-state.failed")).toBeVisible();
       else await expect(page.locator("#node-detail .step-state.success")).toHaveCount(0);
-    } else await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result]")).toHaveAttribute("data-run-result", state);
+    } else {
+      expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe(state);
+      await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
+      if (state === "failed") await expect(page.locator("#node-detail [data-run-result]")).toHaveAttribute("data-run-result", "failed");
+      else await expect(page.locator('#node-detail [data-run-result="success"]')).toHaveCount(0);
+    }
     expect(await page.evaluate(() => window.playground.document)).toEqual(readFixture(`recorder-matrix/${id}.json`));
     // Merely focusing the current-type selector does not replace the record.
     const accepted = await page.evaluate(() => window.playground.document);

@@ -1,15 +1,12 @@
 import { expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { projectEinoViewerDocument } from "../../src/viewer.js";
 
 export async function revealSource(button) {
   const containers = await button.locator("xpath=ancestor::details").all();
   for (const container of containers) {
     if (await container.getAttribute("open") === null) await container.locator(":scope > summary").click();
   }
-}
-
-export async function editCopy(page) {
-  if (await page.locator("#snapshot-json").getAttribute("readonly") !== null) await page.locator("#edit-json").click();
 }
 
 export async function openStepSearch(page) {
@@ -39,6 +36,12 @@ export async function openRecordPicker(page) {
 }
 
 export async function openRunInformation(page) {
+  if (await page.evaluate(() => window.playground.objectKind === "workflow")) {
+    await openReadingDirectory(page);
+    await page.locator("button[data-workflow-run]").click();
+    await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+    return;
+  }
   if (await page.evaluate(() => window.playground.objectKind === "graph")) {
     if (await page.evaluate(() => window.playground.scopeReading?.mode !== "all")) {
       const all = page.locator('#hierarchy-breadcrumbs [data-hierarchy-group=""]');
@@ -141,7 +144,12 @@ export async function openDetails(page) {
     await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toBeVisible();
     return;
   }
-  if (await page.evaluate(() => window.playground.objectKind === "graph")) {
+  if (await page.evaluate(() => ["graph", "workflow"].includes(window.playground.objectKind))) {
+    if (await page.locator('[data-workflow-run][aria-current="true"]').count()) {
+      await page.locator("[data-workflow-run]").click();
+      await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+      return;
+    }
     const selected = page.locator('[data-inspection-node][aria-current="true"]');
     await expect(selected).toHaveCount(1);
     await revealSource(selected);
@@ -153,24 +161,7 @@ export async function openDetails(page) {
   await button.click();
 }
 
-export async function openRaw(page) {
-  expect(await page.evaluate(() => window.playground.objectKind), "Only the unchanged Workflow workbench retains the Raw operation").toBe("workflow");
-  const button = page.locator("#open-raw");
-  await revealSource(button);
-  await button.click();
-}
-
-export async function openPasteDraft(page) {
-  expect(await page.evaluate(() => window.playground.objectKind), "Only Workflow exposes the raw editor").toBe("workflow");
-  await openRaw(page);
-  const button = page.locator("#paste-record");
-  await revealSource(button);
-  await button.click();
-  await expect(page.locator("#snapshot-json")).toBeVisible();
-  await expect(page.locator("#snapshot-json")).toBeEditable();
-}
-
-// The Agent and Graph workbench intentionally has no raw-source UI. Verify the current
+// The workbench intentionally has no raw-source UI. Verify the current
 // real UI selection owns the exact original envelope; do not open a hidden tab
 // or substitute a document-only equality check for the association assertion.
 export async function expectSelectedEvidence(page, index, expected) {
@@ -182,8 +173,19 @@ export async function expectSelectedEvidence(page, index, expected) {
       stepId: detail?.explanationNode?.id || detail?.executionNode?.id,
       trajectoryId: detail?.trajectoryRecord?.id, kind: window.playground.objectKind,
       definitionOnly: !window.playground.executionDAG && detail?.explanationNode?.basis === "declared",
-      title: detail?.presentation?.name || detail?.presentation?.title };
+      title: detail?.presentation?.name || detail?.presentation?.title,
+      runSelected: document.querySelector('[data-workflow-run][aria-current="true"]') !== null,
+      runIndexes: [...new Set([...(window.playground.explanation?.run?.input?.items || []),
+        ...(window.playground.explanation?.run?.output?.items || []),
+        ...(window.playground.explanation?.run?.issues || [])].flatMap((item) => item.evidenceEnvelopeIndexes || []))] };
   }, index);
+  if (actual.kind === "workflow" && actual.runSelected) {
+    expect(actual.runIndexes).toContain(index);
+    await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+    await expect(page.locator('[data-workflow-run][aria-current="true"]')).toHaveCount(1);
+    expect(actual.envelope).toEqual(expected);
+    return actual.envelope;
+  }
   expect(actual.indexes).toContain(index);
   expect(actual.selection.evidenceIndexes).toContain(index);
   if (actual.trajectoryId) {
@@ -229,11 +231,13 @@ export async function openExamples(page) {
 
 export async function openSample(page, kind = "agent", id = defaultSamples[kind]) {
   const opening = page.locator("#record-opening");
-  if (!await opening.isVisible() && await page.evaluate(() => window.playground.objectKind) !== kind) {
+  if (!await opening.isVisible() && (await page.evaluate(() => window.playground.objectKind) !== kind
+    || fixtureOverrides.get(page)?.id === id)) {
     const locale = await page.evaluate(() => window.playground.language);
     await page.locator(".identity").click();
     await page.waitForFunction(() => window.playground?.ready);
     await expect(opening).toBeVisible();
+    fixtureOverrides.delete(page);
     expect(await page.evaluate(() => window.playground.language)).toBe(locale);
   }
   if (await opening.isVisible()) await page.locator(`[data-example-kind=${JSON.stringify(kind)}]`).click();
@@ -247,19 +251,44 @@ export async function openSample(page, kind = "agent", id = defaultSamples[kind]
   await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(expected);
 }
 
-// Display fixtures enter through the existing Workflow raw-copy editor.
-// File import is intentionally absent from the workbench. This does not claim
-// that an Agent or Graph can reject an import in place; those cases use a bad example.
-export async function openWorkbenchRecord(page, recordOrText) {
+const fixtureOverrides = new WeakMap();
+const primarySamples = { agent: "agent-weather-workflow", graph: "graph-multistep-loop-success", workflow: "workflow-parallel-join-success" };
+const rejectedSamples = { agent: "agent-weather-failure", graph: "graph-multistep-loop-failed", workflow: "workflow-parallel-join-failed" };
+
+// Configure a real catalog response before the page loads. Rejection tests first
+// open an accepted example, then choose this prepared alternative on that page;
+// this preserves a genuine user selection without a hidden application hook.
+export async function prepareWorkbenchExample(page, recordOrText, { kind, id } = {}) {
   const text = typeof recordOrText === "string" ? recordOrText : JSON.stringify(recordOrText);
-  const state = await page.evaluate(() => ({ opened: Boolean(window.playground.document), kind: window.playground.objectKind }));
-  if (!state.opened || state.kind !== "workflow") await openSample(page, "workflow");
-  await openRaw(page);
-  await editCopy(page);
-  await page.locator("#snapshot-json").fill(text);
-  await page.locator("#apply-json").click();
-  // apply is synchronous: malformed/invalid drafts legitimately leave the old
-  // record in place. Callers keep their exact success or rejection assertions.
+  let parsed;
+  try { parsed = JSON.parse(text); } catch { /* A malformed response is a real catalog failure. */ }
+  const projection = parsed === undefined ? undefined : projectEinoViewerDocument(parsed);
+  kind ||= projection?.ok ? projection.document.kind : ["agent", "graph", "workflow"].includes(parsed?.source) ? parsed.source : "workflow";
+  id ||= rejectedSamples[kind];
+  const file = sampleFiles[id] || `recorder-matrix/${id}.json`;
+  const resource = new RegExp(`/fixtures/${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\?|$)`);
+  const handler = (route) => route.fulfill({ contentType: "application/json", body: text });
+  await page.route(resource, handler);
+  return { kind, id, dispose: () => page.unroute(resource, handler) };
+}
+
+// Display fixtures enter through a real example response and homepage choice.
+// Each call deliberately opens a fresh page: in-place rejection tests must use
+// prepareWorkbenchExample before opening their accepted page, then the selector.
+export async function openWorkbenchRecord(page, recordOrText) {
+  let parsed;
+  try { parsed = typeof recordOrText === "string" ? JSON.parse(recordOrText) : structuredClone(recordOrText); } catch { /* Real malformed response. */ }
+  const projection = parsed === undefined ? undefined : projectEinoViewerDocument(parsed);
+  const kind = projection?.ok ? projection.document.kind : ["agent", "graph", "workflow"].includes(parsed?.source) ? parsed.source : "workflow";
+  const prepared = await prepareWorkbenchExample(page, recordOrText, { kind, id: primarySamples[kind] });
+  try {
+    await page.reload();
+    await page.waitForFunction(() => window.playground?.ready);
+    await page.locator(`[data-open-example=${JSON.stringify(prepared.id)}]`).click();
+    fixtureOverrides.set(page, { id: prepared.id });
+  } finally {
+    await prepared.dispose();
+  }
 }
 
 export async function expectAgentTrajectory(page) {
