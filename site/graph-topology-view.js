@@ -12,10 +12,10 @@ const EDGE_CLEARANCE = 2;
 let instanceSequence = 0;
 
 const text = {
-  zh: { definition: "连线：流程定义", basis: "流程定义", connection: "流程连接", branch: "条件分支", diagram: "Graph 结构", start: "开始", end: "结束",
+  zh: { basis: "流程定义", connection: "流程连接", branch: "条件分支", diagram: "Graph 结构", start: "开始", end: "结束",
     boundary: "结构边界", declared: "仅定义", unobserved: "未观测到执行", calls: (count) => `执行 ${count} 次`,
     states: { failed: "失败", cancelled: "已取消", incomplete: "结果未记录", running: "结束未记录", skipped: "已跳过", interrupted: "已中断" } },
-  en: { definition: "Connections: flow definition", basis: "Flow definition", connection: "Flow connection", branch: "Conditional branch", diagram: "Graph structure", start: "Start", end: "End",
+  en: { basis: "Flow definition", connection: "Flow connection", branch: "Conditional branch", diagram: "Graph structure", start: "Start", end: "End",
     boundary: "Structure boundary", declared: "Definition only", unobserved: "No execution observed", calls: (count) => `${count} ${count === 1 ? "call" : "calls"}`,
     states: { failed: "failed", cancelled: "cancelled", incomplete: "result not recorded", running: "end not recorded", skipped: "skipped", interrupted: "interrupted" } },
 };
@@ -294,13 +294,6 @@ export function createGraphTopologyView(host, model, options = {}) {
   const signature = JSON.stringify([model.nodes.map(({ id }) => id), model.edges.map(({ id, from, to, kind }) => [id, from, to, kind])]);
   const wrapper = dom.createElement("div");
   wrapper.className = "graph-topology";
-  const legend = dom.createElement("div");
-  legend.className = "graph-topology-legend";
-  const definitionLabel = dom.createElement("span"), branchLabel = dom.createElement("span");
-  definitionLabel.className = "graph-topology-definition-label";
-  branchLabel.className = "graph-topology-branch-label";
-  legend.append(definitionLabel, branchLabel);
-  branchLabel.hidden = !model.edges.some(({ kind }) => kind === "branch");
   const svg = svgElement(dom, "svg", { "data-graph-topology": "", role: "group", preserveAspectRatio: "xMidYMid meet" });
   const defs = svgElement(dom, "defs"), markerId = `eino-graph-topology-arrow-${++instanceSequence}`;
   for (const [state, color] of [["neutral", "#8292a4"], ["active", "#2758c7"]]) {
@@ -348,7 +341,7 @@ export function createGraphTopologyView(host, model, options = {}) {
     group.append(title, box, name, facts); svg.append(group);
     elements.set(node.id, { group, title, name, facts, structural });
   }
-  wrapper.append(svg, legend);
+  wrapper.append(svg);
   host.replaceChildren(wrapper);
 
   function nodeText(node) {
@@ -365,8 +358,6 @@ export function createGraphTopologyView(host, model, options = {}) {
   function renderLabels() {
     const t = text[locale];
     svg.setAttribute("aria-label", model.name ? `${model.name} · ${t.diagram}` : t.diagram);
-    definitionLabel.textContent = t.definition;
-    branchLabel.textContent = t.branch;
     for (const { group, title, edge } of edgeElements.values()) {
       const from = nodeText(nodeById.get(edge.from)).name, to = nodeText(nodeById.get(edge.to)).name;
       const label = `${from} → ${to} · ${edge.kind === "branch" ? t.branch : t.connection} · ${t.basis}`;

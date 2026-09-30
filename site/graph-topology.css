@@ -2,10 +2,6 @@
 .workbench[data-reading-kind="graph"] .graph-topology { position: relative; width: 100%; height: 100%; min-width: 0; overflow: hidden; background: #f3f6fa; color: #172536; font: 14px/1.5 var(--body); }
 .workbench[data-reading-kind="graph"] .graph-topology > svg { display: block; width: 100%; height: 100%; overflow: hidden; touch-action: pan-y; cursor: grab; font-family: var(--body); }
 .workbench[data-reading-kind="graph"] .graph-topology.is-panning > svg { cursor: grabbing; }
-.workbench[data-reading-kind="graph"] .graph-topology-legend { position: absolute; top: 12px; left: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 6px 16px; max-width: 100%; padding: 4px 0; color: #526275; font: 12px/1.5 var(--body); pointer-events: none; }
-.workbench[data-reading-kind="graph"] .graph-topology-legend > span { display: inline-flex; align-items: center; gap: 7px; background: #f3f6fa; overflow-wrap: anywhere; }
-.workbench[data-reading-kind="graph"] .graph-topology-legend > span::before { content: ""; flex: 0 0 18px; width: 18px; height: 0; border-top: 1.5px solid #8292a4; }
-.workbench[data-reading-kind="graph"] .graph-topology-branch-label::before { border-top-style: dashed !important; }
 .workbench[data-reading-kind="graph"] .graph-topology-edge-control { cursor: pointer; outline: none; }
 .workbench[data-reading-kind="graph"] .graph-topology-edge { stroke: #8292a4; stroke-width: 1.75; pointer-events: none; }
 .workbench[data-reading-kind="graph"] .graph-topology-edge[data-edge-kind="branch"] { stroke-dasharray: 6 5; }

@@ -63,7 +63,7 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
   await expect(first.locator('[data-graph-edge="parallel-self"]')).toHaveAttribute("data-edge-direction", "self");
   await expect(first.locator('[data-graph-edge="return"]')).toHaveAttribute("data-edge-direction", "return");
   await expect(first.locator('[data-graph-edge="branch"]')).toHaveAttribute("data-edge-direction", "forward");
-  await expect(first.locator(".graph-topology-legend")).toContainText("Conditional branch");
+  await expect(page.locator(".graph-topology-legend")).toHaveCount(0);
   expect(await page.evaluate(() => window.__topologyInjected)).toBeUndefined();
 
   const geometry = await first.evaluate((host) => {
@@ -126,11 +126,13 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     const restored = state.controls.restoreViewerViewport(state.first, saved);
     state.first.setActiveEdge("return");
     state.first.setLocale("zh");
+    const legendsAfterZh = document.querySelectorAll(".graph-topology-legend").length;
     state.first.setLocale("en");
     return { selected, restored, clicks: state.clicks, edgeClicks: state.edgeClicks,
+      legendCounts: [legendsAfterZh, document.querySelectorAll(".graph-topology-legend").length],
       viewport: state.controls.captureViewerViewport(state.first), saved };
   });
-  expect(edgeSelection).toMatchObject({ selected: true, restored: true, clicks: [[], []], edgeClicks: [[], []] });
+  expect(edgeSelection).toMatchObject({ selected: true, restored: true, clicks: [[], []], edgeClicks: [[], []], legendCounts: [0, 0] });
   expect(edgeSelection.viewport).toEqual(edgeSelection.saved);
   await expect(first.locator('[data-graph-edge-control="return"]')).toHaveAttribute("aria-pressed", "true");
   await expect(first.locator('[data-graph-node][aria-pressed="true"]')).toHaveCount(0);
