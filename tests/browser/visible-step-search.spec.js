@@ -209,7 +209,7 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       await openRecord(page, mode, data);
       for (const locale of ["zh", "en"]) {
         if (locale === "en") await english(page, mode, data);
-        await issuesOnly(page, mode, false);
+        if (mode !== "workbench") await issuesOnly(page, mode, false);
         // Expected status sets come from real callback end/error records.
         await expectSearch(page, mode, "成功", succeeded);
         await expectSearch(page, mode, "失败", failed);
@@ -227,9 +227,14 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         await expect(row(page, mode, prepare.node.id)).toHaveCount(0);
         await expectSearch(page, mode, prepare.node.id, [prepare]);
         await expectSearch(page, mode, "杭州一日路线", []);
-        await issuesOnly(page, mode, true);
-        await expectSearch(page, mode, locale === "zh" ? "evaluate 第 2 次" : "evaluate Call 2", outcome === "failed" ? [second] : []);
-        await expectSearch(page, mode, "成功", []);
+        if (mode === "workbench") {
+          await expectSearch(page, mode, locale === "zh" ? "evaluate 第 2 次 失败" : "evaluate Call 2 失败", outcome === "failed" ? [second] : []);
+          await expectSearch(page, mode, "成功", succeeded);
+        } else {
+          await issuesOnly(page, mode, true);
+          await expectSearch(page, mode, locale === "zh" ? "evaluate 第 2 次" : "evaluate Call 2", outcome === "failed" ? [second] : []);
+          await expectSearch(page, mode, "成功", []);
+        }
         await expectSearch(page, mode, "失败", failed);
       }
       await expectOriginal(page, mode, data);

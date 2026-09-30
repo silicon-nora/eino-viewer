@@ -18,7 +18,7 @@ test("saved Graph record has truthful elapsed time and searchable source-backed 
   await page.setViewportSize({ width: 1560, height: 980 });
   await openRecord(page, record);
   await openRunInformation(page);
-  await expect(page.locator("[data-run-duration]")).toHaveText("耗时 · 496 ms");
+  await expect(page.locator("#node-detail .step-duration")).toHaveText("耗时 · 496 ms");
   await openStepSearch(page);
   const indexBounds = await page.locator("#run-inspection").boundingBox();
   const mainBounds = await page.locator(":is(#reading-main, .eino-agent-reader [data-reading-main])").boundingBox();
@@ -62,7 +62,8 @@ test("error navigation and a legacy record never invent duration", { tag: "@P0" 
   legacy.evidence = legacy.evidence.filter(({ kind, payload }) => kind !== "run.lifecycle" && !(kind === "callback.event" && payload.address.length === 1));
   await openWorkbenchRecord(page, legacy);
   await openRunInformation(page);
-  await expect(page.locator("[data-run-duration]")).toHaveText("耗时 · 未记录");
+  expect(await page.evaluate(() => window.playground.explanation.run.timing.durationMs)).toBeUndefined();
+  await expect(page.locator("#global-summary")).toBeHidden();
 });
 
 test("definition-only Graph clicks preserve definition evidence in the workbench", { tag: "@P0" }, async ({ page }) => {

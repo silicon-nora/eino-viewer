@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { projectEinoViewerDocument } from "../../src/viewer.js";
 import { explainExecutionDAG } from "../../src/explanation.js";
-import { openStepSearch, openReadingDirectory, openScopeInformation, revealSource, expectSelectedEvidence, selectAgentStep, openAgentScope, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { openStepSearch, openReadingDirectory, openScopeInformation, openRunInformation, revealSource, expectSelectedEvidence, selectAgentStep, openAgentScope, openWorkbenchRecord } from "../helpers/workbench-ui.js";
 import { agentReader, agentDetail, agentBoundary, selectAgentReaderStep, openAgentReaderScope, expectAgentAPIEvidence } from "../helpers/agent-reader-ui.js";
 
 const root = new URL("../../", import.meta.url);
@@ -227,13 +227,19 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         await importRecord(page, mode, record);
         if (id === "graph-io-structured") {
           for (const direction of ["input", "output"]) {
-            const rootSelector = mode === "workbench" ? "#run-result-summary" : "[data-run-summary]";
-            const rootValue = page.locator(`${rootSelector} [data-run-channel="${direction}"] [data-run-value]`);
+            if (mode === "workbench") await openRunInformation(page);
+            const rootValue = page.locator(mode === "workbench"
+              ? `#node-detail [data-business-channel="${direction}"] > .business-value`
+              : `[data-run-summary] [data-run-channel="${direction}"] [data-run-value]`);
             await revealSource(rootValue);
             await expect(rootValue).toBeVisible();
             await expect(rootValue).toHaveAttribute("data-availability", expected);
             const item = explained.run[direction].items[0];
             const index = item.evidenceEnvelopeIndexes[0];
+            if (mode === "workbench") {
+              expect(JSON.parse(await rootValue.locator(".business-value-text").textContent())).toEqual(record.evidence[index].payload.body);
+              await expectSelectedEvidence(page, index, record.evidence[index]);
+            }
             const node = explained.nodes.find((entry) => entry[direction].items.some((value) => value.evidenceEnvelopeIndexes.includes(index)));
             await selectStep(page, mode, node.id);
             const stepValue = page.locator(mode === "workbench" ? `#node-detail [data-business-channel="${direction}"] > .business-value` : `[data-step-detail] [data-run-channel="${direction}"] .erv-value`).first();

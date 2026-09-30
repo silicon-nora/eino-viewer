@@ -44,7 +44,9 @@ test("unavailable example resources show loading or failure without restoring re
         await expect(page.locator("#record-kind")).toHaveText("Graph");
         await expect(page.locator("#sample")).toHaveValue("graph-multistep-loop-success");
         await expect(page.locator("#sample")).toHaveAccessibleName("Change record");
-        await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
+        await expect(page.locator("#global-summary")).toBeHidden();
+        await expect(page.locator("#run-result-summary")).toBeEmpty();
+        expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe("success");
         await page.screenshot({ path: testInfo.outputPath(`${mode}-selected.png`) });
       }
     } finally {

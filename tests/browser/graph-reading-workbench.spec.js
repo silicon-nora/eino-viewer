@@ -43,6 +43,29 @@ async function open(page, fixture, viewport = { width: 1280, height: 720 }) {
   await page.waitForLoadState("networkidle");
 }
 
+async function expectSelectedRoot(page, fixture) {
+  const root = fixture.nodes[0], detail = page.locator("#node-detail");
+  await expect(detail).toBeVisible();
+  await expect(row(page, root.id)).toHaveAttribute("aria-current", "true");
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toEqual(root);
+  const sources = fixture.record.evidence.map((envelope, index) => ({ envelope, index }))
+    .filter(({ envelope }) => envelope.kind === "component.io" && !envelope.payload.nodePath?.length);
+  const directions = ["input", "output"].filter((direction) =>
+    sources.some(({ envelope }) => envelope.payload.direction === direction));
+  expect(await detail.locator("[data-business-channel]").evaluateAll((channels) =>
+    channels.map((channel) => channel.dataset.businessChannel))).toEqual(directions);
+  for (const direction of ["input", "output"]) {
+    const source = sources.find(({ envelope }) => envelope.payload.direction === direction);
+    const value = detail.locator(`[data-business-channel="${direction}"] .business-value-text`);
+    if (source) {
+      await expect(value).toBeVisible();
+      expect(JSON.parse(await value.textContent())).toEqual(source.envelope.payload.body);
+      await expectSelectedEvidence(page, source.index, fixture.record.evidence[source.index]);
+    } else await expect(value).toHaveCount(0);
+  }
+  await expect(detail.locator("[data-business-channel] .run-copy-value, [data-business-channel] .run-result-preview, [data-business-channel] .run-result-expanded, [data-graph-visit]")).toHaveCount(0);
+}
+
 async function expectSelectedVisit(page, fixture, visit) {
   const detail = page.locator("#node-detail");
   await expect(detail).toBeVisible();
@@ -383,6 +406,11 @@ async function expectConnectionsInteractive(page, fixture) {
 }
 
 async function expectQuietControls(page) {
+  await expect(page.locator("#global-summary")).toBeHidden();
+  await expect(page.locator("#run-result-summary")).toBeEmpty();
+  await expect(page.locator("label:has(#inspection-scope)")).toBeHidden();
+  await expect(page.locator("#inspection-scope")).toBeHidden();
+  await expect(page.locator("#inspection-scope")).toHaveValue("steps");
   await expect(page.locator("#open-raw, #raw-records-tab, #node-detail-tab, #close-details, #inspection-next-issue").filter({ visible: true })).toHaveCount(0);
   await expect(page.locator('#inspection-scope option[value="evidence"], #inspection-scope option[value="unassigned"]')).toHaveCount(0);
   await expect(page.locator("#hierarchy-directory")).toBeHidden();
@@ -396,44 +424,24 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
   for (const outcome of ["success", "failed"]) {
     const fixture = loopRecord(outcome);
     await open(page, fixture);
-    const summary = page.locator("#global-summary");
-    if (outcome === "success") await expect(summary).not.toHaveAttribute("open");
-    else await expect(summary).toHaveAttribute("open");
-    await expect(summary.locator(":scope > summary")).toContainText(/整次结果/);
-    await expect(summary.locator(":scope > summary")).toContainText(/耗时/);
-    await expect(row(page, fixture.nodes[0].id)).toHaveAttribute("aria-current", "true");
-    expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toEqual(fixture.nodes[0]);
+    await expectSelectedRoot(page, fixture);
     await expectQuietControls(page);
     await expectLogicalGraph(page, fixture, outcome);
-    if (outcome === "success") {
-      await summary.locator(":scope > summary").click();
-      await expectQuietControls(page);
-      for (const direction of ["input", "output"]) {
-        const source = fixture.record.evidence.find((envelope) => envelope.kind === "component.io"
-          && !envelope.payload.nodePath?.length && envelope.payload.direction === direction);
-        const value = page.locator(`#run-result-summary [data-run-channel="${direction}"] [data-run-value]`);
-        await expect(value).toBeVisible();
-        expect(JSON.parse(await value.textContent())).toEqual(source.payload.body);
-      }
-      await summary.locator(":scope > summary").click();
-    }
     await openStepSearch(page);
     for (const [index, visit] of fixture.visits.entries()) await expect(row(page, visit.node.id)).toContainText(`第 ${index + 1} 次`);
 
     const second = fixture.visits[1];
     if (outcome === "failed") {
       await page.locator("#inspection-search").fill("no matching loop visit");
-      const issue = page.locator(`#run-result-summary [data-issue-step=${JSON.stringify(second.node.id)}]`);
-      await expect(issue).toHaveCount(1);
-      await issue.click();
-      await expect(page.locator("#inspection-search")).toHaveValue("");
-      await expect(page.locator("#node-detail")).toContainText("route evaluation unavailable at round 2");
-      await page.locator("#inspection-scope").selectOption("issues");
       await expect(row(page, fixture.visits[0].node.id)).toHaveCount(0);
-    } else {
-      await page.locator("#inspection-search").fill("evaluate");
-      await row(page, second.node.id).click();
+      await expect(row(page, second.node.id)).toHaveCount(0);
     }
+    await page.locator("#inspection-search").fill("evaluate");
+    await expect(row(page, fixture.visits[0].node.id)).toBeVisible();
+    await expect(row(page, second.node.id)).toBeVisible();
+    if (outcome === "failed") await expect(row(page, second.node.id)).toContainText("失败");
+    await row(page, second.node.id).click();
+    if (outcome === "failed") await expect(page.locator("#node-detail")).toContainText("route evaluation unavailable at round 2");
     await expectSelectedVisit(page, fixture, second);
     expect(second.io.find(({ envelope }) => envelope.payload.direction === "input").envelope.payload.body.round).toBe(2);
     await expect(page.locator("#node-detail .node-detail-hero h3")).toContainText("第 2 次");
@@ -443,28 +451,25 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     for (const visit of [fixture.visits.at(-1), fixture.visits[0], second]) {
       await page.locator("select[data-graph-visit]").selectOption(visit.node.id);
       await expectSelectedVisit(page, fixture, visit);
-      if (outcome === "failed" && visit === fixture.visits[0]) await expect(page.locator("#inspection-scope")).toHaveValue("steps");
+      await expect(page.locator("#inspection-scope")).toHaveValue("steps");
     }
 
     const before = await page.evaluate(() => ({ selection: window.playground.linkedSelection,
       scope: window.playground.inspectionScope, document: window.playground.document }));
     const query = await page.locator("#inspection-search").inputValue();
-    const filter = await page.locator("#inspection-scope").inputValue();
     await page.locator('[data-language="en"]').click();
     await expect(page.locator("#inspection-search")).toHaveValue(query);
-    await expect(page.locator("#inspection-scope")).toHaveValue(filter);
+    await expectQuietControls(page);
     expect(await page.evaluate(() => ({ selection: window.playground.linkedSelection,
       scope: window.playground.inspectionScope, document: window.playground.document }))).toEqual(before);
     await expect(page.locator("#node-detail .node-detail-hero h3")).toContainText("Call 2");
     await expect(page.locator("select[data-graph-visit]")).toHaveAccessibleName("Execution");
     await expectSelectedVisit(page, fixture, second);
-    if (outcome === "success") await expect(summary).not.toHaveAttribute("open");
-    else await expect(summary).toHaveAttribute("open");
     // Coming from another logical node has a deterministic choice: the real
     // failed call wins when present; otherwise the first recorded call wins.
     await page.locator("#inspection-search").fill("");
-    await page.locator("#inspection-scope").selectOption("steps");
     await row(page, fixture.nodes[0].id).click();
+    await expectSelectedRoot(page, fixture);
     await activateLogicalEvaluate(page, fixture);
     const preferred = outcome === "failed" ? second : fixture.visits[0];
     await expectSelectedVisit(page, fixture, preferred);
@@ -510,13 +515,26 @@ test("Graph workbench keeps the path primary and complete details reachable at f
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
     await open(page, fixture, viewport);
     await expectQuietControls(page);
-    await expect(page.locator("#global-summary")).not.toHaveAttribute("open");
-    await expect(page.locator("#global-summary > summary")).toBeInViewport();
+    await expectSelectedRoot(page, fixture);
     await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
     await expect(page.locator("#dag")).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await page.screenshot({ path: `.artifacts/graph-reading-${viewport.width}-initial.png` });
 
+    await openStepSearch(page);
+    await row(page, fixture.nodes[0].id).focus();
+    await page.keyboard.press("Enter");
+    await expectSelectedRoot(page, fixture);
+    if (viewport.width < 1200) await expect(page.locator("#editor-title")).toBeInViewport();
+    for (const direction of ["input", "output"]) {
+      const value = page.locator(`#node-detail [data-business-channel="${direction}"] .business-value-text`);
+      await value.scrollIntoViewIfNeeded();
+      await expect(value).toBeInViewport();
+      const layout = await value.evaluate((element) => ({ height: element.clientHeight,
+        scroll: element.scrollHeight, clamp: getComputedStyle(element).webkitLineClamp }));
+      expect(layout.clamp).toBe("none");
+      expect(layout.scroll).toBeLessThanOrEqual(layout.height + 1);
+    }
     await openStepSearch(page);
     const selected = row(page, fixture.visits[1].node.id);
     await selected.focus();

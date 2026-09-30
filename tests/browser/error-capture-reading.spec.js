@@ -237,10 +237,13 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         await openRecord(page, mode, data);
         if (mode === "workbench") await openRunInformation(page);
         const isAgent = fixture.startsWith("agent-");
+        const graphWorkbench = mode === "workbench" && !isAgent;
         const reference = page.locator(isAgent
           ? `[data-run-issue-step=${JSON.stringify(data.node.id)}]` : `[data-envelope-index="${data.sourceIndex}"]`);
-        const issue = page.locator(isAgent ? ".eino-agent-reader [data-run-summary] .run-result-issue" : mode === "workbench" ? "#run-result-summary .run-result-issue" : "[data-run-issues] > div").filter({ has: reference });
-        await expectErrorValue(page, mode, issue, variant);
+        if (graphWorkbench) await selectStep(page, mode, data.node.id);
+        const issue = graphWorkbench ? detail(page, mode).locator(".trajectory-detail-value").filter({ has: page.locator("small", { hasText: /^错误$/ }) })
+          : page.locator(isAgent ? ".eino-agent-reader [data-run-summary] .run-result-issue" : "[data-run-issues] > div").filter({ has: reference });
+        await expectErrorValue(page, mode, issue, variant, { step: graphWorkbench });
         await expectSource(page, mode, issue, data);
         await selectStep(page, mode, data.node.id);
         const stepError = isAgent || mode === "workbench" ? detail(page, mode).locator(".trajectory-detail-value").filter({ has: page.locator("small", { hasText: /^错误$/ }) }) : detail(page, mode).locator(":scope > .erv-issues");

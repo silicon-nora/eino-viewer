@@ -39,6 +39,33 @@ export async function openRecordPicker(page) {
 }
 
 export async function openRunInformation(page) {
+  if (await page.evaluate(() => window.playground.objectKind === "graph")) {
+    if (await page.evaluate(() => window.playground.scopeReading?.mode !== "all")) {
+      const all = page.locator('#hierarchy-breadcrumbs [data-hierarchy-group=""]');
+      await revealSource(all);
+      await all.click();
+    }
+    await openStepSearch(page);
+    const rootId = await page.evaluate(() => {
+      const { explanation, document: record } = window.playground;
+      const sources = Array.isArray(record) ? record : record.evidence || [record];
+      const root = explanation.nodes.find((node) => node.evidence.some(({ envelopeIndex }) => {
+        const source = sources[envelopeIndex];
+        return source?.kind === "callback.event" && source.payload.run?.component === "Graph" && !source.payload.nodePath?.length;
+      }));
+      return (root || explanation.nodes[0])?.id;
+    });
+    expect(rootId).toBeTruthy();
+    // The root result is read through its real step, including on later visits.
+    // Declaration-only and legacy records without a root retain their first step.
+    await page.locator("#inspection-search").fill(rootId);
+    const root = page.locator(`[data-inspection-node=${JSON.stringify(rootId)}]`);
+    await expect(root).toBeVisible();
+    await root.click();
+    await page.locator("#inspection-search").fill("");
+    await expect(page.locator("#node-detail")).toBeVisible();
+    return;
+  }
   const summary = page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])");
   if (await page.evaluate(() => window.playground.objectKind === "agent")) {
     if (await page.evaluate(() => window.playground.scopeReading?.mode !== "all")) {

@@ -466,7 +466,8 @@ test("homepage opens real examples without requiring JSON and the current-type s
       await expect(page.locator("#open-raw")).toBeHidden();
     } else if (kind === "graph") await expect(page.locator("#open-raw")).toBeHidden();
     else await expect(page.locator("#open-raw")).toBeVisible();
-    await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
+    if (kind === "graph") expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("success");
+    else await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
     if (kind === "agent") {
       await expect(page.locator('.eino-agent-reader [data-agent-trajectory]')).toBeVisible();
       await expect(page.locator("#run-view-tabs")).toBeHidden();
@@ -898,22 +899,29 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       await openReader(page, mode);
       const record = fixture("graph-io-structured");
       await importRecord(page, mode, record);
-      const output = page.locator(mode === "workbench" ? ':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"]' : '[data-run-summary] [data-run-channel="output"]');
+      const output = page.locator(mode === "workbench" ? '#node-detail [data-business-channel="output"]' : '[data-run-summary] [data-run-channel="output"]');
       if (mode === "workbench") {
-        await expect(page.locator("#global-summary")).not.toHaveAttribute("open");
+        await expect(page.locator("#global-summary")).toBeHidden();
+        await expect(page.locator("#run-result-summary")).toBeEmpty();
         await expect(page.locator("#dag")).toBeVisible();
-        await openRunInformation(page);
+        await expect(page.locator("[data-inspection-node]").first()).toHaveAttribute("aria-current", "true");
         await output.scrollIntoViewIfNeeded();
       }
       await expect(output).toBeInViewport();
       if (mode === "workbench") {
-        const recorded = record.evidence.find((entry) => entry.kind === "component.io"
-          && entry.payload.component === "Graph" && entry.payload.direction === "output").payload.body;
         await expect(output.locator(".run-result-preview, [data-run-expand], .run-result-expanded")).toHaveCount(0);
-        const full = output.locator("pre[data-run-value]");
+        const full = output.locator(".business-value-text");
         await expect(full).toBeVisible();
-        expect(JSON.parse(await full.textContent())).toEqual(recorded);
         expect(await full.evaluate((element) => getComputedStyle(element).webkitLineClamp)).toBe("none");
+        for (const direction of ["input", "output"]) {
+          const index = record.evidence.findIndex((entry) => entry.kind === "component.io"
+            && entry.payload.component === "Graph" && entry.payload.direction === direction);
+          expect(index).toBeGreaterThanOrEqual(0);
+          const value = page.locator(`#node-detail [data-business-channel="${direction}"] .business-value-text`);
+          await expect(value).toBeVisible();
+          expect(JSON.parse(await value.textContent())).toEqual(record.evidence[index].payload.body);
+          await expectSelectedEvidence(page, index, record.evidence[index]);
+        }
       } else {
         const structuredPreview = output.locator("pre.erv-value-preview");
         await expectSixLinePreview(structuredPreview);

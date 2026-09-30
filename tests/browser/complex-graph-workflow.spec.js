@@ -66,13 +66,7 @@ async function expectJSONValue(value, expected) {
 async function expectEvidence(page, mode, container, record, index) {
   if (mode === "workbench" && record.source === "graph") {
     await expect(container.locator("button[data-envelope-index], .technical-disclosure")).toHaveCount(0);
-    const direction = await container.getAttribute("data-run-channel");
-    if (direction) {
-      expect(await page.evaluate(({ direction, index }) => ({
-        linked: window.playground.explanation.run[direction].items.some((item) => item.evidenceEnvelopeIndexes.includes(index)),
-        envelope: window.playground.document.evidence[index],
-      }), { direction, index })).toEqual({ linked: true, envelope: record.evidence[index] });
-    } else await expectSelectedEvidence(page, index, record.evidence[index]);
+    await expectSelectedEvidence(page, index, record.evidence[index]);
     return;
   }
   const button = container.locator(`[data-envelope-index="${index}"]`).first();
@@ -134,20 +128,29 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       expect(nodes).toHaveLength(inputs.length + (scenario.source === "graph" ? 1 : 0));
       expect(owned.filter(({ status }) => status === "failed")).toHaveLength(scenario.error ? 1 : 0);
       await openRecord(page, mode, scenario, record);
-      const summary = page.locator(mode === "workbench" ? "#run-result-summary" : "[data-run-summary]");
+      const graphWorkbench = mode === "workbench" && scenario.source === "graph";
+      const summary = page.locator(graphWorkbench ? "#node-detail" : mode === "workbench" ? "#run-result-summary" : "[data-run-summary]");
       const outcome = page.locator(`[data-run-result="${scenario.error ? "failed" : "success"}"]`).first();
-      if (mode === "workbench" && scenario.source === "graph" && !scenario.error) await expect(outcome).toBeHidden();
+      if (graphWorkbench) {
+        expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe(scenario.error ? "failed" : "success");
+        if (scenario.error) await expect(summary.locator(".step-state.failed")).toBeVisible();
+        else await expect(summary.locator(".step-state.success")).toHaveCount(0);
+      }
       else await expect(outcome).toBeVisible();
       for (const direction of ["input", "output"]) {
         const source = entries.find(({ envelope }) => envelope.kind === "component.io" && !envelope.payload.nodePath?.length
           && envelope.payload.address?.length === 1 && envelope.payload.direction === direction);
-        const channel = summary.locator(`[data-run-channel="${direction}"]`);
-        if (!source) { await expect(channel.locator("[data-run-value]")).toHaveCount(0); continue; }
-        await expectJSONValue(channel.locator("[data-run-value]"), source.envelope.payload.body);
-        await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true,
-          value: { writeText: async (value) => { window.complexCopied = value; } } }));
-        await channel.locator(mode === "workbench" ? "[data-run-copy-index]" : "[data-copy-value]").click();
-        expect(JSON.parse(await page.evaluate(() => window.complexCopied))).toEqual(source.envelope.payload.body);
+        const channel = summary.locator(`[${graphWorkbench ? "data-business-channel" : "data-run-channel"}="${direction}"]`);
+        const value = channel.locator(graphWorkbench ? ".business-value-text" : "[data-run-value]");
+        if (!source) { await expect(value).toHaveCount(0); continue; }
+        await expectJSONValue(value, source.envelope.payload.body);
+        if (graphWorkbench) await expect(channel.locator(".run-copy-value")).toHaveCount(0);
+        else {
+          await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true,
+            value: { writeText: async (value) => { window.complexCopied = value; } } }));
+          await channel.locator(mode === "workbench" ? "[data-run-copy-index]" : "[data-copy-value]").click();
+          expect(JSON.parse(await page.evaluate(() => window.complexCopied))).toEqual(source.envelope.payload.body);
+        }
         await expectEvidence(page, mode, channel, record, source.index);
       }
       if (scenario.source === "workflow") await expectWorkflowEdges(page, mode, scenario, nodes);

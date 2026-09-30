@@ -1669,13 +1669,6 @@ textarea { background: var(--ice); color: var(--ink); border-color: var(--line);
 
 /* Graph's workbench review keeps the recorded path central; other readers stay unchanged. */
 .workbench[data-reading-kind="graph"] { --ink: #172536; --ink-soft: #526275; --line: #d8e0e8; --paper: #fff; --ice: #f3f6fa; --blue: #2758c7; font: 14px/1.5 var(--body); }
-.workbench[data-reading-kind="graph"] .global-summary { margin: 0; border-bottom: 1px solid var(--line); background: var(--paper); }
-.workbench[data-reading-kind="graph"] .global-summary > summary { display: list-item; padding: 12px 24px; color: var(--ink-soft); font: 500 13px/1.6 var(--body); list-style-position: inside; overflow-wrap: anywhere; cursor: pointer; }
-.workbench[data-reading-kind="graph"] .global-summary > summary::marker { color: var(--blue); }
-.workbench[data-reading-kind="graph"] .graph-summary-meta { margin-left: 16px; color: var(--ink-soft); font: 12px/1.6 var(--body); }
-.workbench[data-reading-kind="graph"] .global-summary > summary:hover { color: var(--ink); background: #f7f9fc; }
-.workbench[data-reading-kind="graph"] .global-summary[open] > summary { border-bottom: 1px solid var(--line); }
-.workbench[data-reading-kind="graph"] .run-result-summary { padding: 16px 24px 24px; }
 .workbench[data-reading-kind="graph"] .run-result-heading h2 { font: 650 16px/1.5 var(--body); }
 .workbench[data-reading-kind="graph"] .run-result-exchange { gap: 24px; }
 .workbench[data-reading-kind="graph"] .run-result-channel { min-width: 0; }
@@ -1760,8 +1753,6 @@ textarea { background: var(--ice); color: var(--ink); border-color: var(--line);
 }
 @container workbench (max-width: 767px) {
   .workbench[data-reading-kind="graph"] .canvas-stage { display: flex; flex-direction: column; }
-  .workbench[data-reading-kind="graph"] .global-summary > summary { padding: 12px 16px; }
-  .workbench[data-reading-kind="graph"] .run-result-summary { padding: 16px; }
   .workbench[data-reading-kind="graph"] .run-result-exchange { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .workbench[data-reading-kind="graph"] .reading-main { order: 0; }
   .workbench[data-reading-kind="graph"] .reading-sidebar { order: 1; padding: 16px; border-right: 0; border-top: 1px solid var(--line); }

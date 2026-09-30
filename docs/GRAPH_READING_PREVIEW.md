@@ -167,3 +167,11 @@ Owner 随后确认 `finish` 与 `fallback` 是对等逻辑分支，不应因本�
 日志：`.artifacts/graph-arrows-focused.log`、`.artifacts/graph-arrows-regression.log`、`.artifacts/graph-arrows-check.log`、`.artifacts/graph-arrows-js.log`、`.artifacts/graph-arrows-matrix.log`。[修正前](../.artifacts/graph-arrows-before.png)、[同视口修正后](../.artifacts/graph-arrows-after-viewport.png)、[完整画面](../.artifacts/graph-arrows-after.png)。实际成功／失败记录及返回线鼠标选择已走查。Agent、Workflow、嵌入／离线、Recorder、公开 API 与上游仓库未改。
 
 保留边界：多个跨层连接仍可能共享部分外侧绕线；高密度多重边的端口空间有限，本次不宣称任意数量的平行箭头均不会重叠。节点排布规则与所有执行事实不因绘图修正改变。
+
+#### 整次结果单入口与步骤列表精简
+
+Owner 确认流程图后，移除 Graph 顶部重复的「整次结果」摘要，保留左侧真实根步骤作为整次输入输出入口，并继续默认选中；正文、原始错误、耗时及来源均由右侧详情展示。去掉「执行步骤／异常步骤」筛选框，保留搜索和完整步骤列表，语言／范围／记录切换不会残留隐藏筛选。子范围原先跳向顶部摘要的按钮改为「全部步骤」，直接回到全范围。三栏、流程图及其他入口不变。
+
+本次只迁移现有测试的入口操作，没有新增用例：根结果原值与来源断言改到真实根步骤详情；已移除摘要的复制操作及徽章不再作为 UI 契约，执行／采集事实仍核对原始模型。最终一次三浏览器完整回归 **603 / 603** 通过（6.3 分钟），无失败、重试或跳过；23 个 JS 测试入口、语法与类型检查通过，32 场景严格检查保留既有四项采集限制。成功／失败记录、错误步骤及语言切换已实际浏览器走查。
+
+日志：`.artifacts/graph-simple-full.log`、`.artifacts/graph-simple-check.log`、`.artifacts/graph-simple-js.log`、`.artifacts/graph-simple-matrix.log`；[当前页面](../.artifacts/graph-simple-after.png)。没有改 Recorder、记录格式、公共 API、Agent／Workflow／嵌入／离线界面或上游仓库。

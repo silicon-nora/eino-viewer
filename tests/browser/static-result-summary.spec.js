@@ -29,12 +29,16 @@ async function importRecord(page, record) {
   await openWorkbenchRecord(page, record);
   await expect.poll(() => page.evaluate(() => window.playground.document?.runId)).toBe(record.runId);
   await openRunInformation(page);
-  await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toBeVisible();
+  await expect(resultView(page)).toBeVisible();
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
 }
 
 function channel(page, direction) {
-  return page.locator(`:is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="${direction}"]`);
+  return page.locator(`[data-reading-kind="graph"] #node-detail [data-business-channel="${direction}"], :is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="${direction}"]`);
+}
+
+function resultView(page) {
+  return page.locator('[data-reading-kind="graph"] #node-detail, :is([data-reading-kind="workflow"] #run-result-summary, .eino-agent-reader [data-run-summary])');
 }
 
 async function runSummary(page) {
@@ -42,6 +46,12 @@ async function runSummary(page) {
 }
 
 async function expectRawEvidence(page, scope, record, index) {
+  if (await page.evaluate(() => window.playground.objectKind === "graph")) {
+    await expectSelectedEvidence(page, index, record.evidence[index]);
+    await expect(scope.locator("button[data-envelope-index]")).toHaveCount(0);
+    await expect(page.locator("#snapshot-json")).toBeHidden();
+    return;
+  }
   if (await page.evaluate(() => window.playground.objectKind !== "workflow")) {
     if (await scope.getAttribute("id") === "node-detail") {
       await expectSelectedEvidence(page, index, record.evidence[index]);
@@ -167,10 +177,10 @@ test("legacy Graph metadata completeness does not imply captured input or final 
   expect(summary.output.availability).toBe("not-observed");
   expect(summary.capture.limitations.length).toBeGreaterThan(0);
   const message = record.evidence.find(({ kind, payload }) => kind === "callback.event" && payload.phase === "error").payload.error.message;
-  await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toContainText(message);
+  await expect(page.locator("#node-detail")).toContainText(message);
   await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-capture="complete"]')).toBeHidden();
-  await expect(channel(page, "input").locator(".run-value-state")).toHaveText("未记录");
-  await expect(channel(page, "output").locator(".run-value-state")).toHaveText("未记录");
+  await expect(channel(page, "input").locator(".business-value-state")).toHaveText("未记录");
+  await expect(channel(page, "output").locator(".business-value-text")).toHaveCount(0);
 });
 
 test("legacy Workflow node output is not presented as the root run result", { tag: ["@P0", "@data-matrix"] }, async ({ page }) => {
@@ -198,7 +208,8 @@ test("derived definition-only Graph remains viewable without claiming execution 
   expect(summary.capture.status).toBe("unknown");
   expect(summary.input.availability).toBe("not-observed");
   expect(summary.output.availability).toBe("not-observed");
-  await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="definition-only"]')).toBeVisible();
+  await expect(page.locator("#global-summary")).toBeHidden();
+  await expect(page.locator("#run-result-summary")).toBeEmpty();
   const graph = page.locator("#dag svg[data-graph-topology]");
   await expect(graph).toBeVisible();
   await expect(graph.locator('[data-graph-node="retry"]')).toBeVisible();
@@ -217,7 +228,7 @@ test("derived definition-only Graph remains viewable without claiming execution 
   await graph.locator('[data-graph-node="retry"]').click();
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) h3")).toHaveText("Retry forever");
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).not.toContainText("成功");
-  await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toContainText("没有执行记录");
+  await expect(page.locator("#node-detail .step-state")).toContainText("仅声明");
   await expectRawEvidence(page, page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])"), record, 0);
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
 });
@@ -312,8 +323,9 @@ for (const scenario of [
       expect(summary[direction].items).toHaveLength(1);
       expect(summary[direction].items[0]).toMatchObject({ value: envelope.payload.body, availability: scenario.availability });
       expect(summary[direction].items[0].evidenceEnvelopeIndexes).toContain(index);
-      const value = channel(page, direction).locator("[data-run-value]");
-      await expect(value).toHaveAttribute("data-availability", scenario.availability);
+      const graph = scenario.id.startsWith("graph-");
+      const value = channel(page, direction).locator(graph ? ".business-value-text" : "[data-run-value]");
+      await expect(graph ? channel(page, direction).locator(".business-value") : value).toHaveAttribute("data-availability", scenario.availability);
       const shown = envelope.payload.body === "" ? '""' : typeof envelope.payload.body === "string"
         ? envelope.payload.body : JSON.stringify(envelope.payload.body, null, 2);
       expect(await value.textContent()).toBe(shown);
@@ -356,6 +368,7 @@ for (const scenario of [
       expect((await runSummary(page)).input).toEqual(summary.input);
       expect((await runSummary(page)).output).toEqual(summary.output);
     }
+    if (scenario.id.startsWith("graph-")) await openRunInformation(page);
     for (const direction of ["input", "output"]) {
       await expectRawEvidence(page, channel(page, direction), record, rootIO(record, direction).index);
     }
@@ -390,10 +403,14 @@ for (const id of ["graph-io-failed", "graph-io-cancelled", "workflow-io-failed"]
     expect(summary.output.availability).toBe("not-observed");
     expect(summary.output.items).toHaveLength(0);
     expect(summary.issues.length).toBeGreaterThan(0);
-    await expect(page.locator(`:is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="${expectedState}"]`)).toBeVisible();
-    await expect(channel(page, "input").locator("[data-run-value]")).toHaveText(rootIO(record, "input").envelope.payload.body);
-    await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])")).toContainText(summary.issues[0].message);
-    await expectRawEvidence(page, page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary])"), record, summary.issues[0].evidenceEnvelopeIndexes[0]);
+    const graph = id.startsWith("graph-");
+    if (graph) await expect(page.locator("#node-detail .step-state.failed")).toBeVisible();
+    else await expect(page.locator(`:is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="${expectedState}"]`)).toBeVisible();
+    await expect(channel(page, "input").locator(graph ? ".business-value-text" : "[data-run-value]")).toHaveText(rootIO(record, "input").envelope.payload.body);
+    await expect(resultView(page)).toContainText(summary.issues[0].message);
+    const issueIndex = graph ? record.evidence.findIndex(({ kind, payload }) => kind === "callback.event" && payload.phase === "error" && !payload.nodePath?.length)
+      : summary.issues[0].evidenceEnvelopeIndexes[0];
+    await expectRawEvidence(page, resultView(page), record, issueIndex);
   });
 }
 
@@ -407,9 +424,10 @@ test("oversized Graph output is explicitly omitted, not rendered as empty, null 
   expect(summary.output.items[0]).toMatchObject({ availability: "not-observed", reason: "size_limit" });
   expect(Object.hasOwn(summary.output.items[0], "value")).toBe(false);
   expect(Object.hasOwn(envelope.payload, "body")).toBe(false);
-  await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result="success"]')).toBeHidden();
-  await expect(page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-capture="partial"]')).toBeVisible();
-  await expect(channel(page, "output").locator("[data-run-value]")).toHaveCount(0);
+  await expect(page.locator("#node-detail .step-state.success")).toHaveCount(0);
+  await expect(page.locator("#global-summary")).toBeHidden();
+  await expect(channel(page, "output").locator(".business-value-text")).toHaveCount(0);
+  await expect(channel(page, "output").locator(".business-value")).toHaveAttribute("data-availability", "not-observed");
   await expect(channel(page, "output")).toContainText("超出大小限制");
   await screenshot(page, testInfo, "graph-omitted-result");
   await expectRawEvidence(page, channel(page, "output"), record, index);
@@ -425,7 +443,7 @@ test("Graph redaction remains visible and no root, node or raw record reveals th
     expect(summary[direction].availability).toBe("redacted");
     expect(summary[direction].items[0]).toMatchObject({ value: envelope.payload.body, availability: "redacted" });
     await expect(channel(page, direction)).toContainText("[REDACTED]");
-    await expect(channel(page, direction).locator("[data-run-value]")).toHaveAttribute("data-availability", "redacted");
+    await expect(channel(page, direction).locator(".business-value")).toHaveAttribute("data-availability", "redacted");
     await expectRawEvidence(page, channel(page, direction), record, index);
   }
   expect(JSON.stringify(record)).not.toContain("NEVER_EXPORT_PRIVATE_TOKEN");
@@ -433,7 +451,7 @@ test("Graph redaction remains visible and no root, node or raw record reveals th
   await expect(page.locator("body")).not.toContainText("NEVER_EXPORT_PRIVATE_TOKEN");
 });
 
-test("long Graph output shows its full value by default and preserves the original for copying and Raw", { tag: "@P1" }, async ({ page }) => {
+test("long Graph output shows its full value by default with its original selected source", { tag: "@P1" }, async ({ page }) => {
   const record = await openRecord(page, "graph-io-long");
   const { index, envelope } = rootIO(record, "output");
   const expected = envelope.payload.body;
@@ -443,17 +461,8 @@ test("long Graph output shows its full value by default and preserves the origin
   expect(summary.capture.status).toBe("complete");
   const output = channel(page, "output");
   await expect(output.locator(".run-result-preview, [data-run-expand]")).toHaveCount(0);
-  await expect(output.locator("[data-run-value]")).toBeVisible();
-  expect(await output.locator("[data-run-value]").textContent()).toBe(expected);
-  await page.evaluate(() => {
-    window.__copiedSummary = undefined;
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
-      writeText: async (text) => { window.__copiedSummary = text; },
-    } });
-  });
-  await output.locator("[data-run-copy-index]").click();
-  expect(await page.evaluate(() => window.__copiedSummary)).toBe(expected);
-  await expect(output.locator("[data-run-value]")).toBeVisible();
-  expect(await output.locator("[data-run-value]").textContent()).toBe(expected);
+  await expect(output.locator(".business-value-text")).toBeVisible();
+  expect(await output.locator(".business-value-text").textContent()).toBe(expected);
+  await expect(output.locator(".run-copy-value, [data-run-copy-index]")).toHaveCount(0);
   await expectRawEvidence(page, output, record, index);
 });

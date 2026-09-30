@@ -608,7 +608,9 @@ test("a declared flat Graph stays the original SVG cycle without a redundant roo
   expect(before.explanation.groups).toHaveLength(1);
   await expect(page.locator("#hierarchy-directory")).toBeHidden();
   await expect(scopeBox(page)).toBeHidden();
-  await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "definition-only");
+  await expect(page.locator("#global-summary")).toBeHidden();
+  await expect(page.locator("#run-result-summary")).toBeEmpty();
+  await expect(page.locator("#node-detail .step-state")).toContainText("仅声明");
   await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
   await expect(page.locator("#dag canvas")).toHaveCount(0);
   const rendered = await topologyFacts(page);

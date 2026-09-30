@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { editCopy, openStepSearch, openRecordActions, openWorkbenchRecord, openRunInformation } from "../helpers/workbench-ui.js";
+import { editCopy, openStepSearch, openRecordActions, openWorkbenchRecord, openRunInformation, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 import { openPasteEditor } from "../helpers/run-viewer-ui.js";
 
 const safeText = readFileSync(new URL("../../fixtures/input-boundaries/graph-safe-integers.json", import.meta.url), "utf8");
@@ -32,15 +32,13 @@ async function workbench(page) {
   await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(safeRecord);
 }
 
-test("workbench accepts real safe integers without changing values, text types, copy or source", { tag: "@P0" }, async ({ page }) => {
+test("workbench accepts real safe integers without changing values, text types or selected source", { tag: "@P0" }, async ({ page }) => {
   await workbench(page);
   await openRunInformation(page);
-  const output = page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"]');
-  expect(JSON.parse(await output.locator("[data-run-value]").textContent())).toEqual(rootBody);
-  await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (text) => { window.copied = text; } } }));
-  await output.locator("[data-run-copy-index]").click();
-  expect(JSON.parse(await page.evaluate(() => window.copied))).toEqual(rootBody);
-  await expect(output.locator("button[data-envelope-index]")).toHaveCount(0);
+  const output = page.locator('#node-detail [data-business-channel="output"]');
+  expect(JSON.parse(await output.locator(".business-value-text").textContent())).toEqual(rootBody);
+  await expect(output.locator("button[data-envelope-index], .run-copy-value")).toHaveCount(0);
+  await expectSelectedEvidence(page, 9, safeRecord.evidence[9]);
   expect(await page.evaluate(() => ({
     indexes: window.playground.explanation.run.output.items[0].evidenceEnvelopeIndexes,
     envelope: window.playground.document.evidence[9],

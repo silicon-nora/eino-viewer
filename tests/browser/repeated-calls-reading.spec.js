@@ -96,7 +96,7 @@ async function checkKeyboardLabel(page, mode, id, expected, logical) {
 
 for (const mode of ["workbench", "embedded", "portable"]) {
   for (const outcome of ["success", "failed"]) {
-    test(`${mode} ${outcome} keeps real repeated Graph call numbers stable through search, failure filters and language`, { tag: "@P0" }, async ({ page }) => {
+    test(`${mode} ${outcome} keeps real repeated Graph call numbers stable through search, failure selection and language`, { tag: "@P0" }, async ({ page }) => {
       const text = readFileSync(new URL(`fixtures/recorder-matrix/graph-multistep-loop-${outcome}.json`, root), "utf8");
       const record = JSON.parse(text);
       // Source invocation IDs select nodes; numbering is asserted independently
@@ -126,10 +126,13 @@ for (const mode of ["workbench", "embedded", "portable"]) {
         expect(JSON.parse(await page.locator("[data-raw-envelope]").textContent())).toEqual(second.input.envelope);
       }
       if (outcome === "failed") {
-        if (mode === "workbench") await page.locator("#inspection-scope").selectOption("issues");
-        else await page.locator("[data-issues-only]").check();
-        await search(page, mode).fill("");
+        if (mode === "workbench") await search(page, mode).fill("evaluate 第 2 次 失败");
+        else {
+          await page.locator("[data-issues-only]").check();
+          await search(page, mode).fill("");
+        }
         await expect(row(page, mode, second.node.id)).toContainText("第 2 次");
+        await expect(row(page, mode, second.node.id)).toContainText("失败");
         await expect(row(page, mode, visits[0].node.id)).toHaveCount(0);
       }
       await checkKeyboardLabel(page, mode, second.node.id, /第 2 次/, { id: visits[0].node.id,

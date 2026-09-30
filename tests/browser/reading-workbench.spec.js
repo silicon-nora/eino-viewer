@@ -69,20 +69,22 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
     for (const kind of ["agent", "graph", "workflow"]) {
       await openSample(page, kind);
       await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe(kind);
-      await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
+      if (kind === "graph") expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe("success");
+      else await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
       if (kind !== "workflow") {
         await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
         expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
       } else await expect(page.locator("[data-run-capture]")).toHaveAttribute("data-run-capture", "complete");
       await expectFirstStepSelected(page, kind);
-      const output = page.locator('[data-run-channel="output"] .run-result-value, [data-run-channel="output"] .run-result-preview').first();
+      const output = page.locator(kind === "graph" ? '#node-detail [data-business-channel="output"] .business-value-text'
+        : '[data-run-channel="output"] .run-result-value, [data-run-channel="output"] .run-result-preview').first();
       const geometry = await page.evaluate(() => {
         const rect = (selector) => document.querySelector(selector)?.getBoundingClientRect().toJSON();
         return { output: rect('[data-run-channel="output"]'), result: rect(":is(#run-result-summary, .eino-agent-reader [data-run-summary])"), tools: rect(".reader-tools"),
           main: rect(":is(#reading-main, .eino-agent-reader [data-reading-main])"), sidebar: rect("#reading-sidebar"), stage: rect(":is(.canvas-stage, .eino-agent-reader [data-reading-workspace])"), detail: rect(":is(#inspector-panel, .eino-agent-reader [data-step-panel])"), overflow: document.documentElement.scrollWidth > innerWidth + 1,
           channels: [...document.querySelectorAll("[data-run-channel]")].map((node) => node.dataset.runChannel) };
       });
-      expect(geometry.channels).toEqual(kind === "agent" ? ["input", "output"] : ["output", "input"]);
+      expect(geometry.channels).toEqual(kind === "graph" ? [] : kind === "agent" ? ["input", "output"] : ["output", "input"]);
       if (kind === "agent") {
         await expect(page.locator("#sample")).toBeVisible();
         await expect(page.locator("#sample")).toHaveAccessibleName("更换记录");
@@ -148,8 +150,10 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
         expect(Math.abs(shortGeometry.containerHeight - shortGeometry.height)).toBeLessThanOrEqual(1);
         expect(await page.evaluate(() => window.playground.document)).toEqual(shortRecord);
       } else if (kind === "graph") {
-        await expect(page.locator("#global-summary")).not.toHaveAttribute("open");
-        await expect(output).toBeHidden();
+        await expect(page.locator("#global-summary")).toBeHidden();
+        await expect(page.locator("#run-result-summary")).toBeEmpty();
+        await expect(output).toBeVisible();
+        expect(JSON.parse(await output.textContent())).toEqual(await page.evaluate(() => window.playground.explanation.run.output.items[0].value));
         await expect(page.locator("#dag")).toBeVisible();
         if (viewport.width >= 768) expect(geometry.sidebar.right).toBeLessThanOrEqual(geometry.main.left + 1);
         else expect(geometry.sidebar.top).toBeGreaterThanOrEqual(geometry.main.bottom - 1);

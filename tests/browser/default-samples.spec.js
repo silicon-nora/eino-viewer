@@ -27,7 +27,11 @@ for (const sample of defaults) {
     const record = readFixture(sample.file);
     await openSample(page, sample.kind, sample.id);
     await expect(page.locator("#sample")).toHaveValue(sample.id);
-    await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
+    if (sample.kind === "graph") {
+      expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe("success");
+      await expect(page.locator("#global-summary")).toBeHidden();
+      await expect(page.locator("#run-result-summary")).toBeEmpty();
+    } else await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "success");
     if (sample.kind !== "workflow") {
       await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
       expect(await page.evaluate(() => window.playground.explanation.run.capture.status)).toBe("complete");
@@ -37,8 +41,9 @@ for (const sample of defaults) {
     await openRunInformation(page);
 
     for (const direction of ["input", "output"]) {
-      const channel = page.locator(`:is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="${direction}"]`);
-      await expect(channel).toHaveAttribute("data-availability", "available");
+      const channel = page.locator(sample.kind === "graph" ? `#node-detail [data-business-channel="${direction}"]`
+        : `:is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="${direction}"]`);
+      await expect(sample.kind === "graph" ? channel.locator(".business-value") : channel).toHaveAttribute("data-availability", "available");
       expect(run[direction].items).toHaveLength(1);
       const item = run[direction].items[0];
       let expectedValue;
@@ -93,7 +98,11 @@ test("complex real Graph and Workflow examples require explicit selection and pr
     await expect(page.locator("#sample")).toHaveAccessibleName("更换记录");
     await expect(page.locator("#record-kind")).toHaveText(kind === "graph" ? "Graph" : "Workflow");
     await expect(page.locator("#record-picker, #viewer-kind, #example-picker, #open-examples, #record-file")).toHaveCount(0);
-    await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result]")).toHaveAttribute("data-run-result", state);
+    if (kind === "graph") {
+      expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.status)).toBe(state);
+      if (state === "failed") await expect(page.locator("#node-detail .step-state.failed")).toBeVisible();
+      else await expect(page.locator("#node-detail .step-state.success")).toHaveCount(0);
+    } else await expect(page.locator(":is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-result]")).toHaveAttribute("data-run-result", state);
     expect(await page.evaluate(() => window.playground.document)).toEqual(readFixture(`recorder-matrix/${id}.json`));
     // Merely focusing the current-type selector does not replace the record.
     const accepted = await page.evaluate(() => window.playground.document);

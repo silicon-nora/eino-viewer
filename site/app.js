@@ -2508,6 +2508,7 @@ function jumpToInspectionStep(id, trigger = document.activeElement, { scroll = t
     ui.inspector.scrollIntoView({ block: "start" });
     return;
   }
+  if (currentObjectKind === "graph") ui.inspectionScope.value = "steps";
   const mode = ui.inspectionScope.value;
   if (!["steps", "issues"].includes(mode) || mode === "issues" && !readingSteps("", { ...inspectionRange(), issuesOnly: true }).some((node) => node.id === id)) ui.inspectionScope.value = "steps";
   const options = { ...inspectionRange(), issuesOnly: ui.inspectionScope.value === "issues" };
@@ -2528,6 +2529,9 @@ function renderInspectionResults() {
     ui.inspectionResults.replaceChildren();
     return;
   }
+  // Graph has one step list. Never retain an invisible filter when switching
+  // records, languages, or scopes; Workflow keeps its inspection controls.
+  if (currentObjectKind === "graph") ui.inspectionScope.value = "steps";
   const scope = ui.inspectionScope.value;
   const isSteps = scope === "steps" || scope === "issues";
   const range = inspectionRange();
@@ -2776,15 +2780,6 @@ function renderScopeResultSummary() {
   ui.globalSummary.dataset.scoped = String(scoped);
   ui.globalSummaryTitle.textContent = currentObjectKind === "agent" ? translate("runInformation")
     : `${translate("scopeBackToResult")} · ${currentExplanation?.run?.result.label || ""}`;
-  if (currentObjectKind === "graph") {
-    const run = currentExplanation?.run;
-    const facts = [run?.result.state !== "success" && run?.result.label,
-      run?.capture.status !== "complete" && run?.capture.label,
-      run?.result.state === "success" && run?.issues.length && translate("runIssues", { count: run.issues.length }),
-      `${translate("runDuration")} · ${timingText(run?.timing)}`].filter(Boolean);
-    ui.globalSummaryTitle.replaceChildren(htmlElement("strong", "", translate("scopeBackToResult")),
-      htmlElement("span", "graph-summary-meta", facts.join(" · ")));
-  }
   scopeSummaryCopyValues = [];
   ui.scopeResultSummary.replaceChildren();
   ui.scopeResultSummary.hidden = !scope || scope.mode === "all" || scope.topLevel;
@@ -2798,7 +2793,7 @@ function renderScopeResultSummary() {
   heading.append(htmlElement("small", "", translate(scope.mode === "unassigned" ? "hierarchyUngrouped" : topLevel ? "scopeTopLevel" : "scopeResultTitle")),
     htmlElement("h2", "", scope.group?.label || translate("hierarchyUngrouped")));
   header.append(heading);
-  const global = htmlElement("button", "", translate("scopeBackToResult"));
+  const global = htmlElement("button", "", translate(currentObjectKind === "graph" ? "hierarchyAll" : "scopeBackToResult"));
   global.type = "button";
   global.dataset.scopeGlobalResult = "";
   header.append(global);
@@ -2856,17 +2851,18 @@ function renderRunResultSummary(explanation) {
   const run = explanation?.run;
   ui.runResultSummary.replaceChildren();
   runSummaryCopyValues = [];
-  ui.runResultSummary.hidden = !run;
-  ui.globalSummary.hidden = !run;
+  // The real root step is Graph's single entry for overall input/output.
+  const showSummary = Boolean(run) && currentObjectKind !== "graph";
+  ui.runResultSummary.hidden = !showSummary;
+  ui.globalSummary.hidden = !showSummary;
   document.body.classList.toggle("has-run", Boolean(run));
-  if (!run) return;
+  if (!showSummary) return;
   const header = htmlElement("header", "run-result-heading");
   header.append(htmlElement("h2", "", currentObjectKind === "agent" ? translate("runAgentOutputTitle")
     : `${{ graph: "Graph", workflow: "Workflow" }[currentObjectKind]} · ${translate("runResultTitle")}`));
   const status = htmlElement("div", "run-result-states");
   const resultLabel = htmlElement("span", "run-result-state", run.result.label);
   resultLabel.dataset.runResult = run.result.state;
-  resultLabel.hidden = currentObjectKind === "graph" && run.result.state === "success";
   const captureLabel = htmlElement("span", "run-capture-state", run.capture.label);
   captureLabel.setAttribute("aria-label", `${translate("runCaptureTitle")} · ${run.capture.label}`);
   captureLabel.dataset.runCapture = run.capture.status;
@@ -3762,7 +3758,9 @@ function updateRunViewTabs() {
   const inspectionMode = ui.inspectionScope.value;
   ui.inspectionScope.replaceChildren(...inspectionOptions.filter((option) => !readingOnly || ["steps", "issues"].includes(option.value)));
   for (const option of ui.inspectionScope.options) option.textContent = translate(option.dataset.i18n);
-  ui.inspectionScope.value = readingOnly && !["steps", "issues"].includes(inspectionMode) ? "steps" : inspectionMode;
+  ui.inspectionScope.value = currentObjectKind === "graph" || readingOnly && !["steps", "issues"].includes(inspectionMode) ? "steps" : inspectionMode;
+  ui.inspectionScope.closest("label").hidden = currentObjectKind === "graph";
+  ui.inspectionScope.disabled = currentObjectKind === "graph";
   inspectorPanel(ui.editorWrap.hidden ? "node" : "raw", { reveal: false });
   if (agentReading) {
     ui.readingSidebar.remove();
@@ -4151,7 +4149,6 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   ui.sample.value = fixtureItem?.id || "";
   updateRecordLabel();
   renderCurrentDocument({ fit });
-  if (next.kind === "graph") ui.globalSummary.open = ["failed", "cancelled", "interrupted"].includes(currentExplanation?.run?.result.state);
   if (next.kind !== "agent" && !selectInitialReadingDetail()) setInspectorOpen(false);
   window.scrollTo({ top: 0 });
   ui.domainView.scrollTop = 0;
@@ -4392,6 +4389,10 @@ ui.scopeResultSummary.addEventListener("click", async (event) => {
   const issue = event.target.closest("[data-run-issue-step]");
   if (issue) { jumpToInspectionStep(issue.dataset.runIssueStep); return; }
   if (event.target.closest("[data-scope-global-result]")) {
+    if (currentObjectKind === "graph") {
+      selectInspectionGroup(undefined, { focus: true });
+      return;
+    }
     ui.globalSummary.open = true;
     ui.runResultSummary.scrollIntoView({ block: "start", behavior: "instant" });
     ui.runResultSummary.focus({ preventScroll: true });

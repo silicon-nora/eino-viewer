@@ -86,10 +86,10 @@ test("root results distinguish ambiguous strings from JSON primitives without ch
     entry.payload.body = value;
     await openRecord(page, record);
     await openRunInformation(page);
-    const result = page.locator(':is(#run-result-summary, .eino-agent-reader [data-run-summary]) [data-run-channel="output"] .run-result-item');
+    const result = page.locator('#node-detail [data-business-channel="output"] .business-value');
     await expect(result).toHaveAttribute("data-value-type", value === null ? "null" : typeof value);
-    await expect(result.locator("[data-run-value]")).toHaveText(value === "" ? '""' : typeof value === "string" ? value : JSON.stringify(value, null, 2));
-    if (["null", "0", "false"].includes(value)) await expect(result.locator(".run-value-state")).toHaveText("文本");
+    await expect(result.locator(".business-value-text")).toHaveText(value === "" ? '""' : typeof value === "string" ? value : JSON.stringify(value, null, 2));
+    if (["null", "0", "false"].includes(value)) await expect(result.locator(".business-value-state")).toHaveText("文本");
     expect(await page.evaluate(() => window.playground.document)).toEqual(record);
   }
 });
