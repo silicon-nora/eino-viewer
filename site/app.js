@@ -3068,7 +3068,7 @@ function readingPresentationSnapshot(snapshot) {
 function mountWorkflow(snapshot) {
   workflowInstance = workflowAPI.createWorkflowDAG(ui.host, {
     snapshot: readingPresentationSnapshot(snapshot),
-    direction: currentObjectKind === "workflow" ? "DOWN" : currentDirection,
+    direction: currentDirection,
     theme: readingGraphTheme(),
     locale: rendererLocales[currentLanguage],
     expanded: subgraphPaths(snapshot.workflow),

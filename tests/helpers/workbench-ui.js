@@ -105,6 +105,18 @@ export async function selectAgentStep(page, nodeId) {
   return row;
 }
 
+function workflowCanvasState(element) {
+  const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
+  if (!cy) return { paths: [], focusedPath: undefined };
+  // The renderer serializes paths with JSON-pointer escaping. Read exact
+  // identities, including nested paths and individual IDs containing slashes.
+  const path = (node) => node.data("path") || node.id().split("/").map((part) =>
+    (part === "~2START" || part === "~2END" ? part.slice(2) : part).replaceAll("~1", "/").replaceAll("~0", "~"));
+  const focused = cy.nodes(".keyboard-focus").first();
+  return { paths: cy.nodes().filter((node) => !node.isParent()).map(path),
+    focusedPath: focused.empty() ? undefined : path(focused) };
+}
+
 // Navigate the actual published renderer keyboard interface. Read its focused
 // path to identify the target; never invoke a click callback or synthetic tap.
 export async function selectWorkflowStep(page, nodeId) {
@@ -120,23 +132,17 @@ export async function selectWorkflowStep(page, nodeId) {
   }, nodeId);
   const host = page.locator("#dag");
   await expect(host.locator("canvas").first()).toBeVisible();
+  // Scope changes update the existing canvas on a later animation frame.
+  // Its visibility alone does not prove that the requested scope is mounted.
+  await expect.poll(async () => (await host.evaluate(workflowCanvasState)).paths
+    .some((path) => JSON.stringify(path) === JSON.stringify(expectedPath)),
+  { message: `Workflow canvas contains the requested path ${JSON.stringify(expectedPath)}` }).toBe(true);
   await host.focus();
   await host.press("Home");
-  const count = await host.evaluate((element) => {
-    const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
-    return cy.nodes().filter((node) => !node.isParent()).length;
-  });
+  const count = (await host.evaluate(workflowCanvasState)).paths.length;
   let reached = false;
   for (let index = 0; index < count; index += 1) {
-    const focusedPath = await host.evaluate((element) => {
-      const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
-      const node = cy.nodes(".keyboard-focus").first();
-      if (node.empty()) return undefined;
-      // The renderer serializes paths with JSON-pointer escaping. This reads
-      // its actual focused identity, including nested and slash-containing IDs.
-      return node.data("path") || node.id().split("/").map((part) =>
-        (part === "~2START" || part === "~2END" ? part.slice(2) : part).replaceAll("~1", "/").replaceAll("~0", "~"));
-    });
+    const { focusedPath } = await host.evaluate(workflowCanvasState);
     if (JSON.stringify(focusedPath) === JSON.stringify(expectedPath)) { reached = true; break; }
     await host.press("ArrowRight");
   }

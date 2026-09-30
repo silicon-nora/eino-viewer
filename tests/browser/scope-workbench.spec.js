@@ -406,6 +406,18 @@ test("declared nested Workflow draws only its own subtree and maps clicks to the
   expect(renderedIds).toEqual(["shared"]);
   await selectWorkflowStep(page, "left/shared");
   await expect.poll(() => page.evaluate(() => window.playground.selectedNodeDetail?.explanationNode.id)).toBe("left/shared");
+  const selection = await page.evaluate(() => window.playground.linkedSelection);
+  // This real subtree renders only one node, so it cannot prove direction by
+  // geometry. Inspect the public renderer direction without inventing endpoints.
+  const expectRightwardSubtree = () => expect.poll(() => page.evaluate(() => window.playground.instance.getDirection())).toBe("RIGHT");
+  await expectRightwardSubtree();
+  for (const language of ["en", "zh"]) {
+    await page.locator(`[data-language="${language}"]`).click();
+    await expectRightwardSubtree();
+    expect(await page.evaluate(() => window.playground.scopeReading.definitionPathPrefix)).toEqual(["left"]);
+    expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(selection);
+    await expect.poll(() => page.evaluate(() => window.playground.instance.getActiveNodePath())).toEqual(["shared"]);
+  }
   expect(await canonicalState(page)).toEqual(before);
 });
 

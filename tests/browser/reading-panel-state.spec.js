@@ -17,6 +17,7 @@ async function open(page, viewport = { width: 1440, height: 1000 }, kind = "agen
   await selectWorkflowStep(page, "fast");
   await expect(page.locator(":is(#inspector-panel, .eino-agent-reader [data-step-panel])")).toBeVisible();
   await frames(page);
+  await expectRightwardWorkflow(page);
 }
 
 async function frames(page) {
@@ -28,6 +29,19 @@ async function zoom(page) {
     const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
     return cy?.zoom() ?? null;
   });
+}
+
+async function expectRightwardWorkflow(page) {
+  // Measure the mounted drawing, not the configured direction or source order.
+  // Both parallel branches must advance rightwards before their shared join.
+  const dependencies = [["prepare", "fast"], ["prepare", "slow"], ["fast", "join"], ["slow", "join"], ["join", "finish"]];
+  await expect.poll(() => page.locator("#dag").evaluate((host, edges) => {
+    const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
+    return edges.map(([from, to]) => {
+      const source = cy?.getElementById(from), target = cy?.getElementById(to);
+      return source?.length === 1 && target?.length === 1 && target.position("x") > source.position("x") + 1;
+    });
+  }, dependencies), { message: "Workflow's rendered dependencies flow from left to right" }).toEqual(dependencies.map(() => true));
 }
 
 test("selecting another step in an already open panel preserves manual graph zoom", { tag: "@P1" }, async ({ page }) => {
@@ -45,6 +59,7 @@ test("selecting another step in an already open panel preserves manual graph zoo
   const selected = await page.evaluate(() => window.playground.linkedSelection);
   await page.locator('[data-language="en"]').click();
   await frames(page);
+  await expectRightwardWorkflow(page);
   await expect(page.locator("#node-detail")).toBeVisible();
   await expect(page.locator("#open-details")).toBeHidden();
   expect(await zoom(page)).toBeCloseTo(manual, 8);
@@ -75,6 +90,7 @@ for (const viewport of [{ width: 1440, height: 1000, name: "desktop" }, { width:
       const baselineZoom = await zoom(page);
       await page.locator(`[data-language="${language}"]`).click();
       await frames(page);
+      await expectRightwardWorkflow(page);
       for (const selector of ["#raw-records-tab", "#open-raw", "#snapshot-json"]) await expect(page.locator(selector)).toBeHidden();
       await expect(page.locator("#node-detail")).toBeVisible();
       await expect(page.locator("section#path-region")).toBeVisible();
