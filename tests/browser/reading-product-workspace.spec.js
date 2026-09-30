@@ -8,7 +8,7 @@ import { trajectoryRecordValue } from "../../src/trajectory-reading.js";
 import { syntheticGraphRecord } from "../helpers/synthetic-record.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
 import { buildGraphTopology } from "../../site/graph-topology.js";
-import { openSample, revealSource, openRunInformation, expectSelectedEvidence, selectAgentStep, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { openSample, revealSource, openRunInformation, expectSelectedEvidence, selectAgentStep, selectWorkflowStep, openWorkbenchRecord } from "../helpers/workbench-ui.js";
 
 const root = new URL("../../", import.meta.url);
 const fixture = (id) => JSON.parse(readFileSync(new URL(`fixtures/recorder-matrix/${id}.json`, root), "utf8"));
@@ -269,7 +269,8 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     expect(error).not.toContain("\n");
     await openReader(page, mode);
     await importRecord(page, mode, record);
-    await page.locator(mode === "workbench" ? '[data-inspection-node="process"]' : '[data-step-list] [data-step-id="process"]').click();
+    if (mode === "workbench") await selectWorkflowStep(page, "process");
+    else await page.locator('[data-step-list] [data-step-id="process"]').click();
     const { detail, issue, preview, expanded, full } = errorReading(page, mode);
     if (mode === "workbench") {
       await expect(full).toBeVisible();
@@ -457,9 +458,9 @@ test("homepage opens real examples without requiring JSON and the current-type s
       expect(await page.evaluate(() => window.playground.linkedSelection.trajectoryRecordId))
         .toBe(await first.getAttribute("data-trajectory-record"));
     } else if (kind === "workflow") {
-      await expect(page.locator("[data-workflow-run]")).toHaveAttribute("aria-current", "true");
+      await expect(page.locator("[data-workflow-run]")).toBeHidden();
       await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
-      await expect(page.locator('[data-inspection-node][aria-current="true"]')).toHaveCount(0);
+      await expect(page.locator('#reading-sidebar, #run-inspection, #inspection-search, [data-inspection-node]')).toHaveCount(0);
       expect(await page.evaluate(() => window.playground.selectedNodeDetail)).toEqual({ workflowRun: true });
     } else {
       const first = page.locator("[data-inspection-node]").first();
@@ -765,10 +766,11 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     await openReader(page, mode);
     await importRecord(page, mode, record);
     const search = page.locator(mode === "workbench" ? "#inspection-search" : "[data-step-search]");
-    await search.fill("no matching step");
+    if (mode === "workbench") await expect(search).toHaveCount(0);
+    else await search.fill("no matching step");
     const summary = page.locator(mode === "workbench" ? ":is(#run-result-summary, .eino-agent-reader [data-run-summary])" : "[data-run-summary]");
     await summary.locator('[data-issue-step="process"]').click();
-    await expect(search).toHaveValue("");
+    if (mode !== "workbench") await expect(search).toHaveValue("");
     const detail = page.locator(mode === "workbench" ? ":is(#node-detail, .eino-agent-reader [data-step-detail])" : "[data-step-detail]");
     await expect(detail).toBeVisible();
     await expect(detail).toContainText("workflow upstream unavailable");
@@ -1135,7 +1137,7 @@ test("workbench preserves an exact selected declaration path through language ch
   await openReader(page, "workbench");
   const record = fixture("workflow-definition-only");
   await importRecord(page, "workbench", record);
-  await page.locator("[data-inspection-node]").first().click();
+  await selectWorkflowStep(page, "never-invoked");
   const selected = await page.evaluate(() => ({ path: window.playground.instance.getActiveNodePath(), selection: window.playground.linkedSelection }));
   expect(selected.path?.length).toBeGreaterThan(0);
   await setLocale(page, "workbench", "en");

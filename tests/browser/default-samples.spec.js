@@ -36,6 +36,8 @@ for (const sample of defaults) {
       expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe("success");
       await expect(page.locator('[data-run-result="success"]')).toHaveCount(0);
       await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
+      await expect(page.locator('[data-workflow-run]')).toBeHidden();
+      await expect(page.locator("#reading-sidebar, #inspection-search, [data-inspection-node]")).toHaveCount(0);
       await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
     }
     await expect(page.locator('[data-run-capture="complete"]')).toHaveCount(0);
@@ -109,6 +111,7 @@ test("complex real Graph and Workflow examples require explicit selection and pr
     } else {
       expect(await page.evaluate(() => window.playground.explanation.run.result.state)).toBe(state);
       await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
+      await expect(page.locator('[data-workflow-run]')).toBeHidden();
       if (state === "failed") await expect(page.locator("#node-detail [data-run-result]")).toHaveAttribute("data-run-result", "failed");
       else await expect(page.locator('#node-detail [data-run-result="success"]')).toHaveCount(0);
     }

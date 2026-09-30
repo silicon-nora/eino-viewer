@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { projectEinoViewerDocument } from "../../src/viewer.js";
 import { explainExecutionDAG } from "../../src/explanation.js";
 import { buildExecutionTrajectory } from "../../src/trajectory.js";
-import { openStepSearch, openReadingDirectory, revealSource, expectSelectedEvidence, openAgentScope, openRunInformation, selectAgentStep, openWorkbenchRecord } from "../helpers/workbench-ui.js";
+import { openStepSearch, openReadingDirectory, revealSource, expectSelectedEvidence, openAgentScope, openWorkflowScope, openRunInformation, selectAgentStep, selectWorkflowStep, openWorkbenchRecord } from "../helpers/workbench-ui.js";
 import { ensureDiagramVisible } from "../helpers/run-viewer-ui.js";
 import { agentReader, selectAgentReaderStep, openAgentReaderScope, showAgentGlobalResult, expectAgentAPIEvidence } from "../helpers/agent-reader-ui.js";
 
@@ -85,7 +85,7 @@ async function openRecord(page, mode, text) {
     }
   }
   await page.waitForLoadState("networkidle");
-  if (mode === "workbench" && record.source !== "agent") await openStepSearch(page);
+  if (mode === "workbench" && record.source === "graph") await openStepSearch(page);
 }
 
 async function expectIdentity(locator, target, mode) {
@@ -103,6 +103,11 @@ async function expectIdentity(locator, target, mode) {
 async function allSteps(page, mode) {
   if (await agentReader(page).count()) { await showAgentGlobalResult(agentReader(page)); return; }
   if (mode === "workbench") {
+    if (await page.evaluate(() => window.playground.objectKind === "workflow")) {
+      if (await page.evaluate(() => window.playground.scopeReading.mode !== "all")) await page.locator('#hierarchy-breadcrumbs [data-hierarchy-group=""]').click();
+      await expect(page.locator("#reading-sidebar, #inspection-search, [data-inspection-node]")).toHaveCount(0);
+      return;
+    }
     if (await page.evaluate(() => window.playground.objectKind === "agent")) {
       await openRunInformation(page);
       return;
@@ -119,6 +124,7 @@ async function chooseScope(page, mode, target) {
     if (target.group.parentId) await openAgentReaderScope(agentReader(page), target.group.id);
     return;
   }
+  if (mode === "workbench" && target.record.source === "workflow") return openWorkflowScope(page, target.group.id);
   if (mode === "workbench") await openReadingDirectory(page);
   const directory = page.locator(mode === "workbench" ? "#hierarchy-directory" : "[data-group-directory]");
   if (await directory.getAttribute("open") === null) await directory.locator(":scope > summary").click();
@@ -159,6 +165,12 @@ async function checkGraphIdentity(page, mode, target, select = true) {
     await expect(page.locator(mode === "workbench" ? "#dag canvas" : "[data-run-graph] canvas")).toHaveCount(0);
     return;
   }
+  if (mode === "workbench" && target.record.source === "workflow") {
+    await selectWorkflowStep(page, target.node.id);
+    await expectIdentity(title(page, mode, target), target, mode);
+    for (const pattern of target.patterns) await expect(page.locator("#dag")).toHaveAttribute("aria-label", pattern);
+    return;
+  }
   if (mode !== "workbench") {
     await ensureDiagramVisible(page.locator("[data-eino-run-viewer]"));
   }
@@ -195,10 +207,14 @@ function resultValue(text) {
 
 async function checkResultAndSource(page, mode, target, expectCollapsed = false) {
   const agentReading = Boolean(target.callId);
-  if (!agentReading) await search(page, mode).fill(target.node.id);
-  await expectIdentity(row(page, mode, target.node.id), target, mode);
-  if (agentReading) await selectAgentReaderStep(agentReader(page), target.node.id);
-  else await row(page, mode, target.node.id).click();
+  const workflowCanvas = mode === "workbench" && target.record.source === "workflow";
+  if (workflowCanvas) await selectWorkflowStep(page, target.node.id);
+  else {
+    if (!agentReading) await search(page, mode).fill(target.node.id);
+    await expectIdentity(row(page, mode, target.node.id), target, mode);
+    if (agentReading) await selectAgentReaderStep(agentReader(page), target.node.id);
+    else await row(page, mode, target.node.id).click();
+  }
   await expectIdentity(title(page, mode, target), target, mode);
   const values = agentReading ? detail(page, mode).locator(".trajectory-detail-value").filter({ has: page.locator("small", { hasText: /^(输出|Output)$/ }) }).locator(".business-value-text")
     : detail(page, mode).locator(mode === "workbench" ? '[data-business-channel="output"] .business-value-text' : '[data-run-channel="output"] [data-run-value]');
@@ -272,7 +288,7 @@ async function checkTrajectoryIdentity(page, targets) {
 
 for (const mode of ["workbench", "embedded", "portable"]) {
   for (const fixture of ["agent-parallel-same-tool", "agent-nested-parallel-scopes", "workflow-nested-names"]) {
-    test(`${mode} preserves source step identity for ${fixture} across scope, search and language`, { tag: "@P0" }, async ({ page }) => {
+    test(`${mode} preserves source step identity for ${fixture} across scope, selection and language`, { tag: "@P0" }, async ({ page }) => {
       const text = readFileSync(new URL(`fixtures/recorder-matrix/${fixture}.json`, root), "utf8");
       const record = JSON.parse(text);
       const workflow = fixture.startsWith("workflow-");
@@ -289,12 +305,19 @@ for (const mode of ["workbench", "embedded", "portable"]) {
           }, record);
         }
         await allSteps(page, mode);
-        for (const target of targets) await expectIdentity(row(page, mode, target.node.id), target, mode);
+        if (!(mode === "workbench" && workflow)) for (const target of targets) await expectIdentity(row(page, mode, target.node.id), target, mode);
         await checkGraphIdentity(page, mode, targets[0]);
         for (const target of targets) {
           await chooseScope(page, mode, target);
-          await expectIdentity(row(page, mode, target.node.id), target, mode);
-          for (const sibling of targets.filter(({ group }) => group.id !== target.group.id)) await expect(row(page, mode, sibling.node.id)).toHaveCount(0);
+          if (mode === "workbench" && workflow) {
+            expect(await page.evaluate(() => window.playground.scopeReading.nodeIds)).toContain(target.node.id);
+            for (const sibling of targets.filter(({ group }) => group.id !== target.group.id)) {
+              expect(await page.evaluate(() => window.playground.scopeReading.nodeIds)).not.toContain(sibling.node.id);
+            }
+          } else {
+            await expectIdentity(row(page, mode, target.node.id), target, mode);
+            for (const sibling of targets.filter(({ group }) => group.id !== target.group.id)) await expect(row(page, mode, sibling.node.id)).toHaveCount(0);
+          }
           await checkResultAndSource(page, mode, target, mode === "workbench" && fixture === "agent-parallel-same-tool" && locale === "zh");
           await checkGraphIdentity(page, mode, target, false);
         }

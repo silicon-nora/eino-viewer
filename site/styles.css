@@ -1699,14 +1699,12 @@ textarea { background: var(--ice); color: var(--ink); border-color: var(--line);
 .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-controls :is(input,select) { min-width: 0; width: 100%; min-height: 36px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font: 12px/1.5 var(--body); }
 .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-controls input::placeholder { color: var(--ink-soft); opacity: 1; }
 .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-results { display: grid; gap: 6px; max-height: min(1200px, max(480px, var(--graph-reading-height, 720px))); margin: 12px 0 0; padding: 3px; overflow: auto; overscroll-behavior: contain; }
-.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) :is(.inspection-item,.workflow-run-entry) { gap: 4px; min-height: 58px; padding: 10px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); text-align: left; }
-.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) :is(.inspection-item,.workflow-run-entry) strong { color: inherit; font: 600 13px/1.5 var(--body); overflow-wrap: anywhere; }
-.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) :is(.inspection-item,.workflow-run-entry) small { color: var(--ink-soft); font: 12px/1.5 var(--body); }
-.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) :is(.inspection-item,.workflow-run-entry):hover:not(:disabled) { border-color: var(--line); background: #eef3fd; }
-.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) :is(.inspection-item,.workflow-run-entry)[aria-current="true"] { border-color: var(--blue); background: #eef3fd; color: var(--blue); box-shadow: inset 3px 0 var(--blue); }
-.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) :is(.inspection-item,.workflow-run-entry)[aria-current="true"]:hover:not(:disabled) { border-color: var(--blue); }
-.workbench[data-reading-kind="workflow"] .workflow-run-entry { display: grid; width: calc(100% - 6px); margin: 12px 3px 0; overflow-wrap: anywhere; cursor: pointer; }
-.workbench[data-reading-kind="workflow"] .workflow-run-entry + .inspection-results { margin-top: 8px; }
+.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-item { gap: 4px; min-height: 58px; padding: 10px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); text-align: left; }
+.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-item strong { color: inherit; font: 600 13px/1.5 var(--body); overflow-wrap: anywhere; }
+.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-item small { color: var(--ink-soft); font: 12px/1.5 var(--body); }
+.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-item:hover:not(:disabled) { border-color: var(--line); background: #eef3fd; }
+.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-item[aria-current="true"] { border-color: var(--blue); background: #eef3fd; color: var(--blue); box-shadow: inset 3px 0 var(--blue); }
+.workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-item[aria-current="true"]:hover:not(:disabled) { border-color: var(--blue); }
 .workbench[data-reading-kind="workflow"] #node-detail .run-result-summary { padding: 8px 0; }
 .workbench[data-reading-kind="workflow"] #node-detail .run-result-item .run-result-value { padding: 12px; border: 0; border-radius: 6px; background: var(--ice); }
 .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-pagination { gap: 6px; padding: 12px 0 0; color: var(--ink-soft); font: 12px/1.5 var(--body); }
@@ -1761,4 +1759,23 @@ textarea { background: var(--ice); color: var(--ink); border-color: var(--line);
   .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .reading-sidebar { order: 1; padding: 16px; border-right: 0; border-top: 1px solid var(--line); }
   .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .protocol-panel { order: 2; padding: 16px; }
   .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) .inspection-results { max-height: min(720px, max(400px, var(--graph-reading-height, 720px))); }
+}
+
+/* Workflow is read directly from its flow; no reserved step-sidebar column. */
+.workbench[data-reading-kind="workflow"] .canvas-stage,
+.workbench[data-reading-kind="workflow"].has-inspector .canvas-stage { display: grid; grid-template-columns: minmax(0, 1fr); }
+.workbench[data-reading-kind="workflow"] .reading-main { grid-column: 1; grid-row: 1; }
+.workbench[data-reading-kind="workflow"] .protocol-panel { grid-column: 1; grid-row: 2; border-left: 0; border-top: 1px solid var(--line); }
+.workbench[data-reading-kind="workflow"] .inspector-content { position: static; }
+.workbench[data-reading-kind="workflow"] .reading-main > .hierarchy-breadcrumbs { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.workbench[data-reading-kind="workflow"] .workflow-detail-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; min-height: 46px; }
+.workbench[data-reading-kind="workflow"] .workflow-detail-header > div { min-width: 0; }
+.workbench[data-reading-kind="workflow"] .workflow-detail-header h2 { margin: 0; }
+.workbench[data-reading-kind="workflow"] .workflow-detail-header .workflow-run-entry { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: auto; min-width: 34px; min-height: 34px; max-width: 100%; margin: 0 0 0 auto; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--blue); font: 600 12px/1.5 var(--body); text-align: center; white-space: normal; cursor: pointer; }
+.workbench[data-reading-kind="workflow"] .workflow-detail-header .workflow-run-entry:hover:not(:disabled) { border-color: var(--blue); color: var(--blue-deep); background: #eef3fd; }
+.workbench[data-reading-kind="workflow"] .workflow-detail-header .workflow-run-entry:active:not(:disabled) { background: #e3ebfc !important; }
+@container workbench (min-width: 900px) {
+  .workbench[data-reading-kind="workflow"].has-inspector .canvas-stage { grid-template-columns: minmax(0, 1fr) 320px; }
+  .workbench[data-reading-kind="workflow"] .protocol-panel { grid-column: 2; grid-row: 1; border-top: 0; border-left: 1px solid var(--line); }
+  .workbench[data-reading-kind="workflow"] .inspector-content { position: sticky; top: 16px; }
 }

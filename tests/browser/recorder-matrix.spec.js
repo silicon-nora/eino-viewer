@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { expectAgentTrajectory, openDetails, openStepSearch, openWorkbenchRecord, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { expectAgentTrajectory, openDetails, openWorkbenchRecord, selectAgentStep, selectWorkflowStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const base = new URL("../../fixtures/recorder-matrix/", import.meta.url);
 const scenarios = JSON.parse(readFileSync(new URL("manifest.json", base), "utf8")).cases;
@@ -84,10 +84,6 @@ async function openMatrixRecord(page, id) {
   return { record, errors };
 }
 
-function pathStep(page, id) {
-  return page.locator(`#inspection-results [data-inspection-node=${JSON.stringify(id)}]`);
-}
-
 function trajectoryStep(page, id) {
   return page.locator(`[data-trajectory-record=${JSON.stringify(id)}]`);
 }
@@ -111,27 +107,25 @@ test("Workflow failure displays only observed steps and preserves the declared s
       { path: ["fail"], status: "failed" },
     ]));
   expect(state.renderedIds.sort()).toEqual(state.nodes.map(({ id }) => id).sort());
-  await openStepSearch(page);
-  await expect(page.locator("#inspection-results [data-inspection-node]")).toHaveCount(2);
-  await expect(page.locator("#inspection-results [data-inspection-node] strong")).toHaveText(["prepare", "fail"]);
+  await expect(page.locator("#reading-sidebar, #run-inspection, [data-inspection-node]")).toHaveCount(0);
+  expect(await page.locator("#dag").evaluate((host) => {
+    const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
+    return cy.nodes().map((node) => node.id()).filter((id) => !["start", "end"].includes(id)).sort();
+  })).toEqual(["fail", "prepare"]);
   await expect(page.locator("#render-status")).toHaveText("运行失败");
   await expect(page.locator("#render-summary")).toContainText("2");
   const prepare = state.nodes.find(({ metadata }) => metadata.sourceNodePath[0] === "prepare");
   const failed = state.nodes.find(({ metadata }) => metadata.sourceNodePath[0] === "fail");
-  await expect(page.locator("[data-workflow-run]")).toHaveAttribute("aria-current", "true");
-  await pathStep(page, prepare.id).click();
-  await expect(pathStep(page, prepare.id)).toHaveAttribute("aria-current", "true");
+  await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+  await selectWorkflowStep(page, prepare.id);
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe(prepare.id);
-  await expect(pathStep(page, prepare.id)).not.toContainText("成功");
-  await expect(pathStep(page, failed.id)).toContainText("失败");
+  await expect(page.locator("#node-detail .step-state")).toHaveCount(0);
   // The saved scope name and technical declaration legitimately contain
   // "after"; only executed step identities and their business values exclude it.
-  await expect(page.locator('#inspection-results [data-inspection-node="after"]')).toHaveCount(0);
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .node-detail-hero h3")).toHaveText("prepare");
   await expect(page.locator(':is(#node-detail, .eino-agent-reader [data-step-detail]) [data-business-channel="input"] .business-value-text')).toHaveText("request");
   await expect(page.locator(':is(#node-detail, .eino-agent-reader [data-step-detail]) [data-business-channel="output"] .business-value-text')).toHaveText("request/prepared");
-  await pathStep(page, failed.id).click();
-  await expect(pathStep(page, failed.id)).toHaveAttribute("aria-current", "true");
+  await selectWorkflowStep(page, failed.id);
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe(failed.id);
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toContainText("失败");
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toContainText("matrix planned validation failure");

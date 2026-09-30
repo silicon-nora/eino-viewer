@@ -41,6 +41,7 @@ const messages = {
     hierarchyGraph: "Graph calls",
     hierarchyWorkflow: "Workflow hierarchy",
     hierarchyAll: "All steps",
+    workflowAll: "Full flow",
     hierarchyUngrouped: "Unconfirmed scope",
     hierarchyUngroupedHint: "No invocation is guessed for these records. All original evidence is retained.",
     hierarchyContext: "{count} / {total} steps",
@@ -382,6 +383,7 @@ const messages = {
     hierarchyGraph: "Graph 调用层级",
     hierarchyWorkflow: "Workflow 编排层级",
     hierarchyAll: "全部步骤",
+    workflowAll: "全部流程",
     hierarchyUngrouped: "归属未确认",
     hierarchyUngroupedHint: "这些记录缺少明确的调用层级，不猜测归属，原始证据全部保留。",
     hierarchyContext: "{count} / {total} 步",
@@ -828,14 +830,17 @@ const graphPathHeader = document.createElement("header");
 graphPathHeader.className = "graph-path-header";
 const graphPathTitle = document.createElement("h2");
 graphPathTitle.id = "graph-path-title";
+graphPathTitle.tabIndex = -1;
 graphPathHeader.append(graphPathTitle);
 graphPathRegion.append(graphPathHeader, pathCanvas);
 const workflowRunEntry = document.createElement("button");
 workflowRunEntry.type = "button";
-workflowRunEntry.className = "workflow-run-entry inspection-item";
+workflowRunEntry.className = "workflow-run-entry";
 workflowRunEntry.dataset.workflowRun = "";
 workflowRunEntry.hidden = true;
-ui.inspectionResults.before(workflowRunEntry);
+const workflowDetailHeader = ui.inspector.querySelector(".inspector-content > header");
+workflowDetailHeader.classList.add("workflow-detail-header");
+workflowDetailHeader.append(workflowRunEntry);
 
 let workflowAPI;
 let einoAPI;
@@ -1680,7 +1685,7 @@ function inspectorPanel(panel, { focus = false, reveal = true } = {}) {
   }
   if (reveal) {
     setInspectorOpen(true);
-    if (ui.workbench.clientWidth < 1200) requestAnimationFrame(() => {
+    if (ui.workbench.clientWidth < (currentObjectKind === "workflow" ? 900 : 1200)) requestAnimationFrame(() => {
       if (!ui.inspector.hidden) ui.inspector.scrollIntoView({ block: "start" });
     });
   }
@@ -2429,6 +2434,8 @@ function readingStepsPage(query, options = {}) {
 }
 
 function markInspectionSelection() {
+  workflowRunEntry.hidden = currentObjectKind !== "workflow" || !currentExplanation?.run || Boolean(selectedNodeDetail?.workflowRun);
+  workflowRunEntry.textContent = translate("runResultTitle");
   if (selectedNodeDetail?.workflowRun) workflowRunEntry.setAttribute("aria-current", "true");
   else workflowRunEntry.removeAttribute("aria-current");
   for (const button of ui.inspectionResults.querySelectorAll("[data-inspection-node]")) {
@@ -2444,6 +2451,11 @@ function jumpToInspectionStep(id, trigger = document.activeElement, { scroll = t
   if (currentObjectKind === "agent") {
     selectInspectionStep(id, trigger);
     ui.inspector.scrollIntoView({ block: "start" });
+    return;
+  }
+  if (currentObjectKind === "workflow") {
+    selectInspectionStep(id, trigger, { activate });
+    if (scroll) ui.inspector.scrollIntoView({ block: "start" });
     return;
   }
   if (currentObjectKind === "graph") ui.inspectionScope.value = "steps";
@@ -2463,8 +2475,9 @@ function jumpToInspectionStep(id, trigger = document.activeElement, { scroll = t
 
 function renderInspectionResults() {
   if (!currentInspection) return;
-  if (currentObjectKind === "agent") {
+  if (currentObjectKind === "agent" || currentObjectKind === "workflow") {
     ui.inspectionResults.replaceChildren();
+    markInspectionSelection();
     return;
   }
   // One step list per reader; never retain a hidden evidence/status filter.
@@ -2507,12 +2520,6 @@ function renderInspectionResults() {
   ui.inspectionNextIssue.disabled = !inspectionIssues().length && !currentInspection.searchSteps("", { ...range, issuesOnly: true, limit: 1 }).total;
   ui.inspectionNextIssue.hidden = true;
   ui.inspectionCount.closest("nav").hidden = page.total <= page.limit;
-  workflowRunEntry.hidden = currentObjectKind !== "workflow" || !currentExplanation?.run;
-  if (!workflowRunEntry.hidden) {
-    const run = currentExplanation.run;
-    workflowRunEntry.replaceChildren(htmlElement("strong", "", translate("runResultTitle")),
-      htmlElement("small", "", [run.result.state !== "success" && run.result.label, timingText(run.timing)].filter(Boolean).join(" · ")));
-  }
   if (!page.total && ui.inspectionSearch.value) ui.inspectionResults.append(htmlElement("li", "search-empty", translate("noSearchResults")));
   ui.clearSearch.hidden = Boolean(page.total || !ui.inspectionSearch.value);
   markInspectionSelection();
@@ -2564,6 +2571,8 @@ function selectInspectionGroup(id, { ungrouped = false, focus = false } = {}) {
   if (currentObjectKind === "agent") ui.readingMain.scrollIntoView({ block: "start" });
   if (focus) {
     const target = visibleReadingTrigger(ui.hierarchyBreadcrumbs.querySelector('[aria-current="location"]'))
+      || (currentObjectKind === "workflow" && !inspectionGroupId && !inspectionUngrouped
+        ? visibleReadingTrigger(graphPathTitle) : undefined)
       || visibleReadingTrigger(ui.domainView.querySelector(".trajectory-view"));
     target?.focus({ preventScroll: true });
   }
@@ -2571,12 +2580,17 @@ function selectInspectionGroup(id, { ungrouped = false, focus = false } = {}) {
 
 function renderHierarchyNavigation() {
   const groups = currentExplanation?.groups || [];
-  if (currentObjectKind === "agent" && groups.length && (inspectionGroupId || inspectionUngrouped)) {
+  if ((currentObjectKind === "agent" || currentObjectKind === "workflow") && groups.length && (inspectionGroupId || inspectionUngrouped)) {
     ui.readingMain.prepend(ui.hierarchyBreadcrumbs);
   } else {
     ui.hierarchy.prepend(ui.hierarchyBreadcrumbs);
   }
   ui.hierarchy.hidden = !groups.length;
+  if (currentObjectKind === "workflow" && (!groups.length || !inspectionGroupId && !inspectionUngrouped)) {
+    ui.hierarchyBreadcrumbs.replaceChildren();
+    ui.hierarchyGroups.replaceChildren();
+    return;
+  }
   if (hasSingleGraphScope() && !inspectionGroupId && !inspectionUngrouped) {
     ui.hierarchy.hidden = true;
     ui.hierarchyBreadcrumbs.replaceChildren();
@@ -2595,10 +2609,10 @@ function renderHierarchyNavigation() {
     if (current) action.setAttribute("aria-current", "location");
     ui.hierarchyBreadcrumbs.append(action);
   };
-  addCrumb(translate("hierarchyAll"), undefined, !selected && !inspectionUngrouped);
+  addCrumb(translate(currentObjectKind === "workflow" ? "workflowAll" : "hierarchyAll"), undefined, !selected && !inspectionUngrouped);
   for (const group of path) addCrumb(group.label, group.id, group.id === selected.id);
   if (inspectionUngrouped) addCrumb(translate("hierarchyUngrouped"), undefined, true, true);
-  if (currentObjectKind === "agent") {
+  if (currentObjectKind === "agent" || currentObjectKind === "workflow") {
     ui.hierarchyGroups.replaceChildren();
     return;
   }
@@ -3668,7 +3682,8 @@ function updateRunViewTabs() {
     ui.globalSummary.remove();
     if (ui.scopeResultSummary.hidden) ui.scopeResultSummary.remove();
   } else {
-    if (ui.readingSidebar.parentElement !== ui.stage) ui.stage.prepend(ui.readingSidebar);
+    if (currentObjectKind === "workflow") ui.readingSidebar.remove();
+    else if (ui.readingSidebar.parentElement !== ui.stage) ui.stage.prepend(ui.readingSidebar);
     if (!selectedNodeDetail?.workflowRun) ui.globalSummary.append(ui.runResultSummary);
     ui.stage.before(ui.globalSummary);
     ui.pathRegion.before(ui.scopeResultSummary);
@@ -4187,6 +4202,7 @@ ui.inspectionResults.addEventListener("click", (event) => {
 workflowRunEntry.addEventListener("click", () => {
   if (inspectionGroupId || inspectionUngrouped) selectInspectionGroup(undefined);
   selectWorkflowRun();
+  ui.inspectorTitle.focus({ preventScroll: true });
 });
 ui.inspectionNextIssue.addEventListener("click", () => {
   const issues = inspectionIssues();

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openSample, openStepSearch } from "../helpers/workbench-ui.js";
+import { openSample, selectWorkflowStep } from "../helpers/workbench-ui.js";
 
 const errors = new WeakMap();
 test.beforeEach(async ({ page }) => {
@@ -14,8 +14,7 @@ async function open(page, viewport = { width: 1440, height: 1000 }, kind = "agen
   await page.goto("/.artifacts/pages/?lang=zh");
   await page.waitForFunction(() => window.playground?.ready);
   await openSample(page, kind, kind === "workflow" ? "workflow-parallel-join-success" : undefined);
-  await openStepSearch(page);
-  await page.locator("[data-inspection-node]").nth(1).click();
+  await selectWorkflowStep(page, "fast");
   await expect(page.locator(":is(#inspector-panel, .eino-agent-reader [data-step-panel])")).toBeVisible();
   await frames(page);
 }
@@ -38,7 +37,7 @@ test("selecting another step in an already open panel preserves manual graph zoo
   await page.locator("#zoom-out").click();
   await expect.poll(() => zoom(page)).toBeLessThan(fitted);
   const manual = await zoom(page);
-  await page.locator("[data-inspection-node]").nth(2).click();
+  await selectWorkflowStep(page, "slow");
   await frames(page);
   expect(await zoom(page)).toBeCloseTo(manual, 8);
   await expect(page.locator(":is(#inspector-panel, .eino-agent-reader [data-step-panel])")).toBeVisible();

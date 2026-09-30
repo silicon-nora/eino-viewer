@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, readFileSync } from "node:fs";
-import { openStepSearch, openReadingDirectory, openRunInformation, openScopeInformation, openAgentScope, openWorkbenchRecord, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openStepSearch, openReadingDirectory, openRunInformation, openScopeInformation, openAgentScope, openWorkflowScope, openWorkbenchRecord, selectAgentStep, selectWorkflowStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 import { expectedScopeTrajectoryIds } from "../helpers/run-viewer-ui.js";
 import { buildScopeReading } from "../../src/scope-reading.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
@@ -32,12 +32,17 @@ async function openRecord(page, record, revealSearch = true) {
     await expect(page.locator('.eino-agent-reader')).toBeVisible();
     expect(await page.evaluate(() => window.playground.validation.kind)).not.toBe("invalid");
   } else await expect(page.locator("#validation-result")).not.toHaveClass(/invalid/);
-  if (revealSearch && record.source !== "agent") await openStepSearch(page);
+  if (revealSearch && (record.source === "graph" || await page.evaluate(() => window.playground.objectKind === "graph"))) await openStepSearch(page);
 }
 
 async function chooseGroup(page, groupId) {
   if (await page.evaluate(() => window.playground.objectKind === "agent")) {
     await openAgentScope(page, groupId);
+    await expect(scopeBox(page)).toHaveAttribute("data-scope-id", groupId);
+    return;
+  }
+  if (await page.evaluate(() => window.playground.objectKind === "workflow")) {
+    await openWorkflowScope(page, groupId);
     await expect(scopeBox(page)).toHaveAttribute("data-scope-id", groupId);
     return;
   }
@@ -140,8 +145,11 @@ async function expectInducedGraph(page) {
             .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))) });
       }
     } else await expect.poll(() => graphState(page)).toEqual(expected);
-    const steps = await page.locator("[data-inspection-node]").evaluateAll((nodes) => nodes.map((node) => node.dataset.inspectionNode).sort());
-    expect(steps).toEqual(expected.nodes);
+    if (await page.evaluate(() => window.playground.objectKind === "workflow")) await expect(page.locator("[data-inspection-node], #reading-sidebar")).toHaveCount(0);
+    else {
+      const steps = await page.locator("[data-inspection-node]").evaluateAll((nodes) => nodes.map((node) => node.dataset.inspectionNode).sort());
+      expect(steps).toEqual(expected.nodes);
+    }
   }
 }
 
@@ -344,12 +352,21 @@ test("Workflow sibling scopes keep exact boundary IO and missing boundaries neve
   await openRecord(page, record);
   const groups = await page.evaluate(() => window.playground.explanation.groups);
   for (const side of ["left", "right"]) {
-    await chooseGroup(page, groups.find(({ label }) => label === side).id);
+    const group = groups.find(({ label }) => label === side);
+    await chooseGroup(page, group.id);
     await expectInducedGraph(page);
     await expect(scopeOutput(page)).toContainText(side === "left" ? 'request/left' : 'request/left/right');
-    await page.locator("[data-inspection-node]").click();
+    await selectWorkflowStep(page, group.nodeIds[0]);
     expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.technical.metadata.sourceNodePath)).toEqual([side, "shared"]);
   }
+  const selectedId = await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id);
+  await page.locator('#hierarchy-breadcrumbs [data-hierarchy-group=""]').focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#graph-path-title")).toBeFocused();
+  expect(await page.evaluate(() => window.playground.scopeReading.mode)).toBe("all");
+  await expect(page.locator("#hierarchy-breadcrumbs")).toHaveCount(0);
+  expect(await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id)).toBe(selectedId);
+  expect(await page.evaluate(() => window.playground.document)).toEqual(record);
   const withoutBoundary = fixture("workflow-nested-names");
   withoutBoundary.evidence = withoutBoundary.evidence.filter(({ kind, payload }) => kind !== "component.io" || payload.component !== "Workflow");
   await openRecord(page, withoutBoundary);
@@ -358,7 +375,8 @@ test("Workflow sibling scopes keep exact boundary IO and missing boundaries neve
   await expect(scopeOutput(page)).toHaveAttribute("data-availability", "not-observed");
   await expect(scopeOutput(page).locator("[data-run-value]")).toHaveCount(0);
   await expect(scopeBox(page).locator("[data-scope-result]")).toHaveAttribute("data-scope-result", "unknown");
-  await page.locator("[data-inspection-node]").click();
+  const nodeId = await page.evaluate(() => window.playground.scopeReading.nodeIds[0]);
+  await selectWorkflowStep(page, nodeId);
   await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toContainText("request/left");
 });
 
@@ -386,10 +404,7 @@ test("declared nested Workflow draws only its own subtree and maps clicks to the
     return cy.nodes().map((node) => node.id()).filter((id) => !["start", "end"].includes(id));
   });
   expect(renderedIds).toEqual(["shared"]);
-  await page.locator("#dag").evaluate((host) => {
-    const cy = [host, ...host.querySelectorAll("*")].map((node) => node._cyreg?.cy).find(Boolean);
-    cy.getElementById("shared").emit("tap");
-  });
+  await selectWorkflowStep(page, "left/shared");
   await expect.poll(() => page.evaluate(() => window.playground.selectedNodeDetail?.explanationNode.id)).toBe("left/shared");
   expect(await canonicalState(page)).toEqual(before);
 });
@@ -455,7 +470,7 @@ test("unassigned evidence stays visible without becoming one successful call and
   for (const { envelopeIndex } of unresolved[0].evidence) await expectSelectedEvidence(page, envelopeIndex, record.evidence[envelopeIndex]);
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
   await openRecord(page, fixture("workflow-definition-only"));
-  if (await page.locator("#hierarchy-directory").getAttribute("open") === null) await page.locator("#hierarchy-directory > summary").click();
+  await expect(page.locator("#hierarchy-directory, #reading-sidebar")).toHaveCount(0);
   await expect(page.locator("#hierarchy-ungrouped")).toBeHidden();
   await expect(scopeBox(page)).toBeHidden();
   await expect(page.locator("#dag canvas").first()).toBeVisible();

@@ -233,40 +233,37 @@ for (const mode of ["workbench", "embedded", "portable"]) {
     }
   });
 
-  test(`${mode} searches visible Workflow paths and preserves original Agent call identities in the trajectory`, { tag: ["@data-matrix", "@P1"] }, async ({ page }) => {
-    const workflow = fixture("workflow-nested-names");
-    const targets = workflow.entries.filter(({ envelope }) => envelope.kind === "component.io" && envelope.payload.direction === "output"
-      && envelope.payload.nodePath?.length === 2).map((entry) => owner(workflow, entry));
-    const left = targets.find(({ envelope }) => envelope.payload.nodePath[0] === "left");
-    const right = targets.find(({ envelope }) => envelope.payload.nodePath[0] === "right");
-    expect(targets).toHaveLength(2);
-    await openRecord(page, mode, workflow);
-    for (const locale of ["zh", "en"]) {
-      if (locale === "en") await english(page, mode, workflow);
-      if (mode !== "workbench") await issuesOnly(page, mode, false);
-      await chooseScope(page, mode, workflow, left);
-      await expectSearch(page, mode, "Shared step", [left]);
-      await expectSearch(page, mode, "Shared step left / shared", [left]);
-      await expectSearch(page, mode, "left/shared", [left]);
-      await expectSource(page, mode, left, "output");
-      await expectSearch(page, mode, "right/shared", []);
-      await expectSearch(page, mode, "request/left", []);
-      if (mode === "workbench") {
-        await expect(page.locator("#inspection-scope")).toBeHidden();
-        await expect(page.locator("#inspection-scope")).toBeDisabled();
-        await expectSearch(page, mode, "Shared step left / shared 失败", []);
-        await expectSearch(page, mode, "Shared step left / shared 成功", [left]);
-      } else {
+  test(`${mode} ${mode === "workbench" ? "preserves original Agent call identities in the trajectory" : "searches visible Workflow paths and preserves original Agent call identities in the trajectory"}`, { tag: ["@data-matrix", "@P1"] }, async ({ page }) => {
+    // Workflow workbench is canvas-only; search remains a real capability of
+    // the embedded and portable readers, which retain these exact checks.
+    if (mode !== "workbench") {
+      const workflow = fixture("workflow-nested-names");
+      const targets = workflow.entries.filter(({ envelope }) => envelope.kind === "component.io" && envelope.payload.direction === "output"
+        && envelope.payload.nodePath?.length === 2).map((entry) => owner(workflow, entry));
+      const left = targets.find(({ envelope }) => envelope.payload.nodePath[0] === "left");
+      const right = targets.find(({ envelope }) => envelope.payload.nodePath[0] === "right");
+      expect(targets).toHaveLength(2);
+      await openRecord(page, mode, workflow);
+      for (const locale of ["zh", "en"]) {
+        if (locale === "en") await english(page, mode, workflow);
+        await issuesOnly(page, mode, false);
+        await chooseScope(page, mode, workflow, left);
+        await expectSearch(page, mode, "Shared step", [left]);
+        await expectSearch(page, mode, "Shared step left / shared", [left]);
+        await expectSearch(page, mode, "left/shared", [left]);
+        await expectSource(page, mode, left, "output");
+        await expectSearch(page, mode, "right/shared", []);
+        await expectSearch(page, mode, "request/left", []);
         await issuesOnly(page, mode, true);
         await expectSearch(page, mode, "Shared step left / shared", []);
         await issuesOnly(page, mode, false);
+        await chooseScope(page, mode, workflow, right);
+        await expectSearch(page, mode, "left/shared", []);
+        await expectSearch(page, mode, "Shared step right/shared", [right]);
+        await expectSource(page, mode, right, "output");
       }
-      await chooseScope(page, mode, workflow, right);
-      await expectSearch(page, mode, "left/shared", []);
-      await expectSearch(page, mode, "Shared step right/shared", [right]);
-      await expectSource(page, mode, right, "output");
+      await expectOriginal(page, mode, workflow);
     }
-    await expectOriginal(page, mode, workflow);
 
     const agent = fixture("agent-parallel-same-tool");
     const tools = agent.entries.filter(({ envelope }) => envelope.kind === "component.io" && envelope.payload.component === "Tool"

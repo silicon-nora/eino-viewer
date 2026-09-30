@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, mkdirSync } from "node:fs";
-import { openStepSearch, openReadingDirectory, openRunInformation, openDetails, openAgentScope, openWorkbenchRecord, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openStepSearch, openReadingDirectory, openRunInformation, openDetails, openAgentScope, openWorkflowScope, openWorkbenchRecord, selectAgentStep, selectWorkflowStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const fixture = (id) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${id}.json`, import.meta.url), "utf8"));
 const errors = new WeakMap();
@@ -18,7 +18,7 @@ test.afterEach(async ({ page }) => { expect(errors.get(page)).toEqual([]); });
 async function openRecord(page, record, revealSearch = true) {
   await openWorkbenchRecord(page, record);
   await expect.poll(() => page.evaluate(() => window.playground.document.runId)).toBe(record.runId);
-  if (revealSearch && record.source !== "agent") await openStepSearch(page);
+  if (revealSearch && record.source === "graph") await openStepSearch(page);
 }
 
 async function chooseGroup(page, groupId, revealSearch = true) {
@@ -26,6 +26,7 @@ async function chooseGroup(page, groupId, revealSearch = true) {
     await openAgentScope(page, groupId);
     return;
   }
+  if (await page.evaluate(() => window.playground.objectKind === "workflow")) return openWorkflowScope(page, groupId);
   await openReadingDirectory(page);
   const path = await page.evaluate((id) => {
     const groups = window.playground.explanation.groups;
@@ -162,9 +163,10 @@ test("Workflow nesting and Graph revisits stay distinct, and definitions are nev
   await openRecord(page, fixture("workflow-nested-names"));
   const groups = await page.evaluate(() => window.playground.explanation.groups);
   for (const side of ["left", "right"]) {
-    await chooseGroup(page, groups.find(({ label }) => label === side).id);
-    await expect(page.locator("[data-inspection-node]")).toHaveCount(1);
-    await page.locator("[data-inspection-node]").click();
+    const group = groups.find(({ label }) => label === side);
+    await chooseGroup(page, group.id);
+    expect(await page.evaluate(() => window.playground.scopeReading.nodeIds)).toEqual(group.nodeIds);
+    await selectWorkflowStep(page, group.nodeIds[0]);
     const path = await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.technical.metadata.sourceNodePath);
     expect(path).toEqual([side, "shared"]);
   }
@@ -178,14 +180,11 @@ test("Workflow nesting and Graph revisits stay distinct, and definitions are nev
   await expect(page.locator("[data-run-result]")).toHaveAttribute("data-run-result", "definition-only");
   const group = await page.evaluate(() => window.playground.explanation.groups[0]);
   expect(group.basis).toBe("declared");
-  await expect(page.locator("#inspection-hierarchy")).toHaveCount(1);
-  await expect(page.locator("#inspection-hierarchy")).toBeHidden();
+  await expect(page.locator("#reading-sidebar, #inspection-hierarchy, #run-inspection, [data-inspection-node]")).toHaveCount(0);
   await expect(page.locator("#hierarchy-breadcrumbs [data-hierarchy-group]")).toHaveCount(0);
   expect(await page.evaluate(() => window.playground.inspectionScope)).toEqual({ groupId: undefined, ungroupedOnly: false });
-  const declaredStep = page.locator("[data-inspection-node]");
-  await expect(declaredStep).toHaveCount(1);
-  await expect(declaredStep).toContainText("仅声明");
-  await declaredStep.click();
+  await selectWorkflowStep(page, "never-invoked");
+  await expect(page.locator("#node-detail .step-state")).toContainText("仅声明");
   const selected = await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode);
   const definition = declaredRecord.evidence[0].payload;
   const originalNode = definition.workflow.nodes[0];

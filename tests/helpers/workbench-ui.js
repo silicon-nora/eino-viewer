@@ -10,7 +10,7 @@ export async function revealSource(button) {
 }
 
 export async function openStepSearch(page) {
-  expect(await page.evaluate(() => window.playground.objectKind), "Agent reading has no step search").not.toBe("agent");
+  expect(await page.evaluate(() => window.playground.objectKind), "Only Graph reading has a step search").toBe("graph");
   await openReadingDirectory(page);
   const directory = page.locator("#run-inspection");
   if (await directory.evaluate((element) => element.tagName === "DETAILS" && !element.open)) await directory.locator(":scope > summary").click();
@@ -18,7 +18,7 @@ export async function openStepSearch(page) {
 }
 
 export async function openReadingDirectory(page) {
-  expect(await page.evaluate(() => window.playground.objectKind), "Agent reading has no call or step directory").not.toBe("agent");
+  expect(await page.evaluate(() => window.playground.objectKind), "Only Graph reading has a call or step directory").toBe("graph");
   const directory = page.locator("#reading-sidebar");
   await revealSource(directory.locator(":scope > summary"));
   if (await directory.getAttribute("open") === null) await directory.locator(":scope > summary").click();
@@ -37,8 +37,7 @@ export async function openRecordPicker(page) {
 
 export async function openRunInformation(page) {
   if (await page.evaluate(() => window.playground.objectKind === "workflow")) {
-    await openReadingDirectory(page);
-    await page.locator("button[data-workflow-run]").click();
+    if (!await page.locator("#node-detail #run-result-summary").isVisible()) await page.locator("button[data-workflow-run]").click();
     await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
     return;
   }
@@ -106,6 +105,68 @@ export async function selectAgentStep(page, nodeId) {
   return row;
 }
 
+// Navigate the actual published renderer keyboard interface. Read its focused
+// path to identify the target; never invoke a click callback or synthetic tap.
+export async function selectWorkflowStep(page, nodeId) {
+  expect(await page.evaluate(() => window.playground.objectKind)).toBe("workflow");
+  if (await page.evaluate((id) => window.playground.scopeReading?.mode !== "all"
+    && !window.playground.scopeReading.nodeIds.includes(id), nodeId)) {
+    await page.locator('#hierarchy-breadcrumbs [data-hierarchy-group=""]').click();
+  }
+  const expectedPath = await page.evaluate((id) => {
+    const node = window.playground.explanation.nodes.find((entry) => entry.id === id);
+    if (!node) throw new Error(`Unknown recorded Workflow node ${id}`);
+    return node.path.slice(window.playground.scopeReading?.definitionPathPrefix?.length || 0);
+  }, nodeId);
+  const host = page.locator("#dag");
+  await expect(host.locator("canvas").first()).toBeVisible();
+  await host.focus();
+  await host.press("Home");
+  const count = await host.evaluate((element) => {
+    const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
+    return cy.nodes().filter((node) => !node.isParent()).length;
+  });
+  let reached = false;
+  for (let index = 0; index < count; index += 1) {
+    const focusedPath = await host.evaluate((element) => {
+      const cy = [element, ...element.querySelectorAll("*")].map((item) => item._cyreg?.cy).find(Boolean);
+      const node = cy.nodes(".keyboard-focus").first();
+      if (node.empty()) return undefined;
+      // The renderer serializes paths with JSON-pointer escaping. This reads
+      // its actual focused identity, including nested and slash-containing IDs.
+      return node.data("path") || node.id().split("/").map((part) =>
+        (part === "~2START" || part === "~2END" ? part.slice(2) : part).replaceAll("~1", "/").replaceAll("~0", "~"));
+    });
+    if (JSON.stringify(focusedPath) === JSON.stringify(expectedPath)) { reached = true; break; }
+    await host.press("ArrowRight");
+  }
+  expect(reached, `Workflow canvas keyboard navigation reaches the exact path ${JSON.stringify(expectedPath)}`).toBe(true);
+  await host.press("Enter");
+  await expect.poll(() => page.evaluate(() => window.playground.selectedNodeDetail?.explanationNode?.id)).toBe(nodeId);
+  await expect.poll(() => page.evaluate(() => window.playground.instance.getActiveNodePath())).toEqual(expectedPath);
+  await expect(page.locator("#node-detail")).toBeVisible();
+  return host;
+}
+
+export async function openWorkflowScope(page, groupId) {
+  expect(await page.evaluate(() => window.playground.objectKind)).toBe("workflow");
+  if (await page.evaluate((id) => window.playground.scopeReading?.group?.id === id, groupId)) return;
+  const nodeId = await page.evaluate((id) => {
+    const explanation = window.playground.explanation;
+    const group = explanation.groups.find((entry) => entry.id === id);
+    const candidates = explanation.nodes.filter((node) => group?.nodeIds.includes(node.id));
+    return candidates.find((node) => !candidates.some((child) => child.path.length > node.path.length
+      && node.path.every((part, index) => child.path[index] === part)))?.id;
+  }, groupId);
+  expect(nodeId, `Workflow scope ${groupId} has a real selectable node`).toBeTruthy();
+  await selectWorkflowStep(page, nodeId);
+  const action = page.locator(`#node-detail [data-hierarchy-group=${JSON.stringify(groupId)}]`);
+  await expect(action).toBeVisible();
+  await action.click();
+  await expect.poll(() => page.evaluate(() => window.playground.scopeReading?.group?.id)).toBe(groupId);
+  await expect(page.locator('#hierarchy-breadcrumbs [aria-current="location"]')).toHaveAttribute("data-hierarchy-group", groupId);
+}
+
 export async function openAgentScope(page, groupId) {
   expect(await page.evaluate(() => window.playground.objectKind)).toBe("agent");
   if (await page.evaluate((id) => window.playground.inspectionScope.groupId === id
@@ -144,12 +205,13 @@ export async function openDetails(page) {
     await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail])")).toBeVisible();
     return;
   }
-  if (await page.evaluate(() => ["graph", "workflow"].includes(window.playground.objectKind))) {
+  if (await page.evaluate(() => window.playground.objectKind === "workflow")) {
     if (await page.locator('[data-workflow-run][aria-current="true"]').count()) {
-      await page.locator("[data-workflow-run]").click();
       await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
-      return;
-    }
+    } else await selectWorkflowStep(page, await page.evaluate(() => window.playground.selectedNodeDetail.explanationNode.id));
+    return;
+  }
+  if (await page.evaluate(() => window.playground.objectKind === "graph")) {
     const selected = page.locator('[data-inspection-node][aria-current="true"]');
     await expect(selected).toHaveCount(1);
     await revealSource(selected);
@@ -174,6 +236,8 @@ export async function expectSelectedEvidence(page, index, expected) {
       trajectoryId: detail?.trajectoryRecord?.id, kind: window.playground.objectKind,
       definitionOnly: !window.playground.executionDAG && detail?.explanationNode?.basis === "declared",
       title: detail?.presentation?.name || detail?.presentation?.title,
+      rendererPath: window.playground.objectKind === "workflow" ? window.playground.instance?.getActiveNodePath() : undefined,
+      localPath: detail?.explanationNode?.path?.slice(window.playground.scopeReading?.definitionPathPrefix?.length || 0),
       runSelected: document.querySelector('[data-workflow-run][aria-current="true"]') !== null,
       runIndexes: [...new Set([...(window.playground.explanation?.run?.input?.items || []),
         ...(window.playground.explanation?.run?.output?.items || []),
@@ -203,6 +267,10 @@ export async function expectSelectedEvidence(page, index, expected) {
       expect(actual.title).toBeTruthy();
       await expect(page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) .node-detail-hero h3")).toHaveAttribute("title", actual.title);
       await expect(page.locator("[data-inspection-node]")).toHaveCount(0);
+    } else if (actual.kind === "workflow") {
+      expect(actual.rendererPath).toEqual(actual.localPath);
+      await expect(page.locator("#node-detail")).toBeVisible();
+      await expect(page.locator("#reading-sidebar, [data-inspection-node]")).toHaveCount(0);
     } else await expect(page.locator(`[data-inspection-node=${JSON.stringify(actual.stepId)}]`)).toHaveAttribute("aria-current", "true");
   }
   expect(actual.envelope).toEqual(expected);

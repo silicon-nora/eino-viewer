@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { mkdirSync, readFileSync } from "node:fs";
 import { projectEinoViewerDocument } from "../../src/viewer.js";
-import { openStepSearch, openWorkbenchRecord, openRunInformation, revealSource, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openStepSearch, selectWorkflowStep, openWorkbenchRecord, openRunInformation, revealSource, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const root = new URL("../../", import.meta.url);
 const cases = [
@@ -47,6 +47,10 @@ async function openRecord(page, mode, scenario, record) {
 
 async function selectStep(page, mode, id) {
   if (mode === "workbench") {
+    if (await page.evaluate(() => window.playground.objectKind === "workflow")) {
+      await selectWorkflowStep(page, id);
+      return;
+    }
     await openStepSearch(page);
     await page.locator("#inspection-search").fill(id);
     await page.locator(`[data-inspection-node=${JSON.stringify(id)}]`).click();

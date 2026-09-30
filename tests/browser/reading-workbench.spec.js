@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync, mkdirSync } from "node:fs";
-import { openSample, openStepSearch, openRunInformation, prepareWorkbenchExample, selectAgentStep, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openSample, openRunInformation, prepareWorkbenchExample, selectAgentStep, selectWorkflowStep, openWorkbenchRecord, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../../fixtures/recorder-matrix/${name}.json`, import.meta.url), "utf8"));
 const errors = new WeakMap();
@@ -26,7 +26,8 @@ async function importRecord(page, record) {
 async function expectFirstStepSelected(page, kind) {
   if (kind === "workflow") {
     await expect(page.locator('[data-workflow-run]')).toHaveAttribute("aria-current", "true");
-    await expect(page.locator('[data-inspection-node][aria-current="true"]')).toHaveCount(0);
+    await expect(page.locator('[data-workflow-run]')).toBeHidden();
+    await expect(page.locator('#reading-sidebar, #run-inspection, #inspection-search, [data-inspection-node]')).toHaveCount(0);
     await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
     expect(await page.evaluate(() => window.playground.linkedSelection.executionNodeId)).toBeUndefined();
     const record = await page.evaluate(() => window.playground.document);
@@ -191,9 +192,10 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
         await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
         await expect(output).toBeVisible();
         for (const selector of ["#inspection-scope", "#open-raw", "#open-details", "#paste-record", "#node-detail .technical-disclosure"]) await expect(page.locator(selector)).toBeHidden();
-        if (viewport.width >= 768) expect(geometry.sidebar.right).toBeLessThanOrEqual(geometry.main.left + 1);
-        else expect(geometry.sidebar.top).toBeGreaterThanOrEqual(geometry.main.bottom - 1);
-        await expect(page.locator("#inspection-search")).toBeVisible();
+        expect(geometry.sidebar).toBeUndefined();
+        expect(geometry.main.width).toBeGreaterThanOrEqual(geometry.stage.width * 0.5);
+        expect(geometry.main.right <= geometry.detail.left + 1 || geometry.detail.top >= geometry.main.bottom - 1).toBe(true);
+        await expect(page.locator("#reading-sidebar, #inspection-search, [data-inspection-node]")).toHaveCount(0);
       }
       expect(geometry.overflow).toBe(false);
       if (kind !== "agent") await screenshot(page, testInfo, `workbench-${kind}-${viewport.name}`);
@@ -293,10 +295,11 @@ test("Workflow step and whole-run reading stay distinct after language changes a
     await open(page);
     await openSample(page, "workflow");
     await expectFirstStepSelected(page, "workflow");
-    await openStepSearch(page);
-    await page.locator("[data-inspection-node]").first().click();
+    const id = await page.evaluate(() => window.playground.explanation.nodes[0].id);
+    await selectWorkflowStep(page, id);
     await expect(page.locator("#node-detail")).toBeVisible();
     await expect(page.locator("[data-workflow-run]")).not.toHaveAttribute("aria-current", "true");
+    await expect(page.locator("#inspector-panel > .inspector-content > header [data-workflow-run]")).toBeVisible();
     await expect(page.locator("#node-detail #run-result-summary")).toHaveCount(0);
     const accepted = await page.evaluate(() => ({ record: window.playground.document,
       execution: window.playground.executionDAG, selection: window.playground.linkedSelection }));

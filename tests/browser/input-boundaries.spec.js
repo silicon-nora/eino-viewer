@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { openStepSearch, openSample, prepareWorkbenchExample, openWorkbenchRecord, openRunInformation, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { selectWorkflowStep, openSample, prepareWorkbenchExample, openWorkbenchRecord, openRunInformation, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 import { openPasteEditor } from "../helpers/run-viewer-ui.js";
 
 const safeText = readFileSync(new URL("../../fixtures/input-boundaries/graph-safe-integers.json", import.meta.url), "utf8");
@@ -54,8 +54,7 @@ test("Workflow example changes reject unsafe numbers and deep metadata while pre
     await page.waitForFunction(() => window.playground?.ready);
     await openSample(page, "workflow");
     expect(await page.evaluate(() => window.playground.document)).toEqual(accepted);
-    await openStepSearch(page);
-    await page.locator("[data-inspection-node]").first().click();
+    await selectWorkflowStep(page, "process");
     const state = await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection, result: document.querySelector("#node-detail").innerHTML }));
     await page.locator("#sample").selectOption(candidate.id);
     await expect(page.locator("#import-status")).toHaveAttribute("data-error", "true");

@@ -8,7 +8,7 @@ import { buildExecutionTrajectory } from "../../src/trajectory.js";
 import { buildGraphReading } from "../../site/graph-reading.js";
 import { buildGraphTopology } from "../../site/graph-topology.js";
 import { topologyFacts, topologyNode } from "../helpers/graph-topology-ui.js";
-import { openSample, prepareWorkbenchExample, openWorkbenchRecord, expectAgentTrajectory, openRecordActions, openRunInformation, openDetails, openStepSearch, selectAgentStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
+import { openSample, prepareWorkbenchExample, openWorkbenchRecord, expectAgentTrajectory, openRecordActions, openRunInformation, openDetails, openStepSearch, selectAgentStep, selectWorkflowStep, expectSelectedEvidence } from "../helpers/workbench-ui.js";
 
 function fixtureRecord(name) {
   return JSON.parse(readFileSync(new URL(`../../fixtures/${name}`, import.meta.url), "utf8"));
@@ -95,7 +95,10 @@ async function expectRepeatedCanvasSelection(page, node) {
     await expect(detail).toBeVisible();
     await expect(detail.locator(".node-detail-hero h3")).toHaveText(heading);
     expect(await detail.locator("[data-business-channel] .business-value-text").allTextContents()).toEqual(values);
-    await expect(page.locator(`[data-inspection-node=${JSON.stringify(node.id)}]`)).toHaveAttribute("aria-current", "true");
+    if (graphState.kind === "workflow") {
+      await expect(page.locator("[data-inspection-node]")).toHaveCount(0);
+      expect(await page.evaluate(() => window.playground.instance.getActiveNodePath())).toEqual([node.id]);
+    } else await expect(page.locator(`[data-inspection-node=${JSON.stringify(node.id)}]`)).toHaveAttribute("aria-current", "true");
   }
 }
 
@@ -458,8 +461,7 @@ test("rejected example records preserve the full valid document and linked selec
   await page.goto(playgroundPath);
   await page.waitForFunction(() => window.playground?.ready);
   await openSample(page, "workflow");
-  await openStepSearch(page);
-  await page.locator("[data-inspection-node]").first().click();
+  await selectWorkflowStep(page, "process");
   const before = await page.evaluate(() => ({ document: window.playground.document, selection: window.playground.linkedSelection }));
   await page.locator("#sample").selectOption(candidate.id);
   await expect(page.locator("#import-status")).toHaveAttribute("data-error", "true");
@@ -485,9 +487,8 @@ test("Workflow step selections keep exact source associations with repeated time
   await expect.poll(() => page.evaluate(() => window.playground.objectKind)).toBe("workflow");
   await expect(page.locator("#validation-result")).not.toHaveClass(/invalid/);
   expect(await page.evaluate(() => window.playground.document)).toEqual(record);
-  await openStepSearch(page);
-  for (const position of [1, 2]) {
-    await page.locator("[data-inspection-node]").nth(position).click();
+  for (const id of ["get-weather", "build-context"]) {
+    await selectWorkflowStep(page, id);
     const indexes = await page.evaluate(() => window.playground.selectedNodeDetail.evidence.map(({ envelopeIndex }) => envelopeIndex));
     expect(indexes.length).toBeGreaterThan(0);
     for (const index of indexes) await expectSelectedEvidence(page, index, record.evidence[index]);
@@ -660,19 +661,11 @@ test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: 
   await expect(page.locator("#sample")).toHaveValue("workflow-weather");
   await expect(page.locator("#sample-title")).toHaveText("天气 Workflow");
   await expect(page.locator("#dag canvas").first()).toBeVisible();
-  await openStepSearch(page);
-  await expect(page.locator("[data-inspection-node] strong")).toHaveText([
-    "Parse city",
-    "Get weather",
-    "Build model context",
-    "Generate answer",
-  ]);
+  await expect(page.locator("#reading-sidebar, #run-inspection, #inspection-search, [data-inspection-node]")).toHaveCount(0);
   const first = projectEinoViewerDocument(fixtureRecord("eino-workflow-recorder-weather-completed-v1.json")).document.execution.nodes.find(({ id }) => id === "parse-city");
-  await expect(page.locator("[data-workflow-run]")).toHaveAttribute("aria-current", "true");
-  await page.locator("[data-inspection-node]").first().click();
+  await expect(page.locator("#node-detail #run-result-summary")).toBeVisible();
+  await selectWorkflowStep(page, first.id);
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.executionNode)).toEqual(first);
-  await expect(page.locator("[data-inspection-node]").first()).toHaveAttribute("data-inspection-node", first.id);
-  await expect(page.locator("[data-inspection-node]").first()).toHaveAttribute("aria-current", "true");
   await expectRepeatedCanvasSelection(page, first);
   expect(await page.evaluate(() => ({
     objectKind: window.playground.objectKind,
@@ -698,7 +691,7 @@ test("Workflow keeps the existing eino-workflow-dag rendering contract", { tag: 
     hasUpdate: "function",
   });
 
-  await page.locator("[data-inspection-node]").nth(1).click();
+  await selectWorkflowStep(page, "get-weather");
   await expect(page.locator(".node-detail-hero h3")).toHaveText("Get weather");
   await expect(page.locator(':is(#node-detail, .eino-agent-reader [data-step-detail]) [data-business-channel="output"]')).toContainText('"Condition": "晴"');
   expect(await page.locator(":is(#node-detail, .eino-agent-reader [data-step-detail]) [data-business-channel]").evaluateAll((channels) => channels.map((channel) => channel.dataset.businessChannel))).toEqual(["input", "output"]);
