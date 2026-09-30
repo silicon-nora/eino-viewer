@@ -187,3 +187,13 @@ Owner 确认流程图后，移除 Graph 顶部重复的「整次结果」摘要�
 补充五种结构边界（无其他后继、多个返回叶节点、三节点环、额外返回目标、额外父节点），防止误侧置或丢失节点／连线。三浏览器专项 **9 / 9**，随后 Graph 相关回归 **190 / 190**（2.2 分钟）全部通过，无失败、重试或跳过；两轮不累加，不宣称重跑全部 603 项。23 个 JS 测试入口、语法、类型检查通过；32 场景严格检查仍为既有四项限制，无新增问题。实际浏览器核对成功／失败几何完全一致、返回线鼠标选择、失败步骤输入／错误和切语言保留选择。
 
 日志：`.artifacts/graph-structural-focused.log`、`.artifacts/graph-structural-regression.log`、`.artifacts/graph-structural-check.log`、`.artifacts/graph-structural-js.log`、`.artifacts/graph-structural-matrix.log`。[同视口失败场景修正前](../.artifacts/graph-structural-before.png)、[修正后](../.artifacts/graph-structural-after.png)、[成功场景对照](../.artifacts/graph-structural-success.png)。未修改 Agent／Workflow／嵌入／离线界面、Recorder、公共 API 或上游仓库。
+
+#### 画布拖拽边界
+
+Graph 视口统一约束平移：能放下的维度保留整幅绘图，大图允许查看两端并留少量边距；缩放、容器变化、键盘定位及内部视口恢复也经过同一边界。稀疏图不能只与总包围盒相交而实际全空，需保留可见节点内容或真实连线中点；外侧回线的键盘定位不会被节点约束拉走。限制只调整视口，不改节点位置、连线路径或执行事实。
+
+拖动使用逐次位移并丢弃越界量，触边后反向立即响应；不顺带触发浏览器文字选择，不触发节点／连线点击。沿用既有 P0 扩充八方向大幅拖动、持续越界、同一手势反向、缩放、窄容器、离屏视口恢复、节点／回线键盘定位及多实例隔离检查。
+
+最终三浏览器专项 **9 / 9**，Graph 相关回归 **190 / 190**（2.6 分钟）通过，无失败、重试或跳过；未重跑全套 603 项。23 个 JS 测试入口、语法与类型检查通过；32 场景严格检查维持既有四项采集限制。初次新增测试把真实指针移至屏幕外 12000px，Firefox 丢失按下状态；改为屏幕内连续长拖，并等待真实指针事件到达后读取视口，保持严格边界与反向响应断言，没有跳过浏览器或放宽结果。
+
+日志：`.artifacts/graph-pan-focused-verified.log`、`.artifacts/graph-pan-regression.log`、`.artifacts/graph-pan-check.log`、`.artifacts/graph-pan-js.log`、`.artifacts/graph-pan-matrix.log`。[触边实测](../.artifacts/graph-pan-boundary.png)、[恢复完整总览](../.artifacts/graph-pan-overview.png)。实际页面重复向边界拖动后视口保持不变，反向拖动立即变化，浏览器文字选择为空；不修改 Agent、Workflow、嵌入／离线、公开 API 或上游仓库。

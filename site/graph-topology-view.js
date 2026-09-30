@@ -290,7 +290,7 @@ export function createGraphTopologyView(host, model, options = {}) {
   });
   const dom = host.ownerDocument, view = dom.defaultView;
   let locale = language(options.locale), disposed = false, selectedId, selectedEdgeId, frame, unregister;
-  let viewport, dimensions, drag, ignoreNextClick = false, pendingFit = true;
+  let viewport, dimensions, drag, edgeReadingPoints, ignoreNextClick = false, pendingFit = true;
   const signature = JSON.stringify([model.nodes.map(({ id }) => id), model.edges.map(({ id, from, to, kind }) => [id, from, to, kind])]);
   const wrapper = dom.createElement("div");
   wrapper.className = "graph-topology";
@@ -392,8 +392,43 @@ export function createGraphTopologyView(host, model, options = {}) {
     const bounds = host.getBoundingClientRect();
     return host.isConnected && bounds.width > 0 && bounds.height > 0 ? { width: bounds.width, height: bounds.height } : undefined;
   }
+  function constrainViewport() {
+    if (!viewport || !dimensions || !layout.positions.size) return;
+    const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
+    const zoom = Math.min(dimensions.width / viewport.width, dimensions.height / viewport.height);
+    const constrainAxis = (offset, extent, content) => {
+      // Small drawings stay inside the canvas, with room to move through the
+      // spare space. Large drawings can reach both ends, with a small gutter.
+      const gutter = Math.min(24 / zoom, extent / 4);
+      return extent >= content ? clamp(offset, content - extent, 0)
+        : clamp(offset, -gutter, content - extent + gutter);
+    };
+    viewport.x = constrainAxis(viewport.x, viewport.width, layout.width);
+    viewport.y = constrainAxis(viewport.y, viewport.height, layout.height);
+    // A sparse graph's rectangular bounds can contain an empty corner. Keep
+    // actual content visible, not merely an overlap with that box. A focused
+    // edge's midpoint also counts, so keyboard reveal of a long outer return
+    // is not pulled away from the very connection the reader asked to see.
+    const visibleWidth = Math.min(NODE_WIDTH, 48 / zoom, viewport.width / 8);
+    const visibleHeight = Math.min(NODE_HEIGHT, 24 / zoom, viewport.height / 8);
+    let nearest, distance = Infinity;
+    for (const point of layout.positions.values()) {
+      const x = clamp(viewport.x, point.x + visibleWidth - viewport.width, point.x + NODE_WIDTH - visibleWidth);
+      const y = clamp(viewport.y, point.y + visibleHeight - viewport.height, point.y + NODE_HEIGHT - visibleHeight);
+      const shift = (x - viewport.x) ** 2 + (y - viewport.y) ** 2;
+      if (shift === 0) return;
+      if (shift < distance) { distance = shift; nearest = { x, y }; }
+    }
+    edgeReadingPoints ??= [...edgeElements.values()].map(({ path }) => path.getPointAtLength(path.getTotalLength() / 2));
+    if (edgeReadingPoints.some((point) => point.x >= viewport.x + visibleWidth / 2
+      && point.x <= viewport.x + viewport.width - visibleWidth / 2
+      && point.y >= viewport.y + visibleHeight / 2
+      && point.y <= viewport.y + viewport.height - visibleHeight / 2)) return;
+    Object.assign(viewport, nearest);
+  }
   function paintViewport() {
     if (disposed || !viewport) return;
+    constrainViewport();
     svg.setAttribute("viewBox", [viewport.x, viewport.y, viewport.width, viewport.height].join(" "));
   }
   function fit(readable = false) {
@@ -516,8 +551,11 @@ export function createGraphTopologyView(host, model, options = {}) {
   }
   function onPointerDown(event) {
     if (disposed || event.button !== 0 || !viewport) return;
+    // Panning must not also start the browser's SVG text selection. Normal
+    // node/edge clicks still focus their own control through invoke().
+    event.preventDefault();
     ignoreNextClick = false;
-    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, viewport: { ...viewport }, moved: false };
+    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
   }
   function onPointerMove(event) {
     if (!drag || drag.pointerId !== event.pointerId || !dimensions) return;
@@ -525,8 +563,11 @@ export function createGraphTopologyView(host, model, options = {}) {
     if (!drag.moved && Math.hypot(x, y) < 5) return;
     if (!drag.moved) { drag.moved = true; svg.setPointerCapture(event.pointerId); wrapper.classList.add("is-panning"); }
     ignoreNextClick = true;
-    viewport = { ...drag.viewport, x: drag.viewport.x - x * drag.viewport.width / dimensions.width, y: drag.viewport.y - y * drag.viewport.height / dimensions.height };
+    viewport = { ...viewport, x: viewport.x - x * viewport.width / dimensions.width, y: viewport.y - y * viewport.height / dimensions.height };
     paintViewport();
+    // Discard overshoot at the boundary. Reversing the gesture responds on
+    // the next pixel, and a resize/zoom during dragging is not rolled back.
+    drag.x = event.clientX; drag.y = event.clientY;
   }
   function endPointer(event) {
     if (!drag || drag.pointerId !== event.pointerId) return;

@@ -211,6 +211,141 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
   expect(resized.clicks).toEqual([["b"], []]);
   expect(resized.edgeClicks).toEqual([["self", "parallel-self", "exit"], []]);
 
+  // Read rendered screen geometry, not the viewport limiter: a nonzero SVG
+  // viewBox alone cannot prove that the user can still see graph content.
+  const visibleNodes = () => first.evaluate((host) => {
+    const canvas = host.querySelector("svg").getBoundingClientRect();
+    return [...host.querySelectorAll("[data-graph-node]")].filter((node) => {
+      const box = node.querySelector("rect").getBoundingClientRect();
+      const width = Math.min(box.right, canvas.right, innerWidth) - Math.max(box.left, canvas.left, 0);
+      const height = Math.min(box.bottom, canvas.bottom, innerHeight) - Math.max(box.top, canvas.top, 0);
+      return width >= Math.min(8, box.width * 0.1) && height >= Math.min(8, box.height * 0.1);
+    }).map((node) => node.dataset.graphNode);
+  });
+  const renderedViewport = () => first.locator("svg").getAttribute("viewBox");
+  await page.evaluate(() => {
+    const state = window.topologyLifecycle;
+    const observe = (event) => {
+      state.pointerEvent = { type: event.type, x: event.clientX, y: event.clientY,
+        buttons: event.buttons, trusted: event.isTrusted };
+    };
+    const types = ["pointerdown", "pointermove", "pointerup"];
+    for (const type of types) document.addEventListener(type, observe, true);
+    state.stopObservingPointer = () => {
+      for (const type of types) document.removeEventListener(type, observe, true);
+    };
+  });
+  const waitForPointer = (type, x, y, buttons) => expect.poll(() => page.evaluate(() => window.topologyLifecycle.pointerEvent))
+    .toEqual({ type, x, y, buttons, trusted: true });
+  const movePointer = async (x, y, options, buttons = 1) => {
+    await page.mouse.move(x, y, options);
+    // Firefox can resolve mouse.move before dispatching its native event.
+    // A boundary may leave viewBox unchanged, so acknowledge the real input.
+    await waitForPointer("pointermove", x, y, buttons);
+  };
+  const beginPan = async (dx, dy) => {
+    const points = await first.evaluate((host, { dx, dy }) => {
+      const svg = host.querySelector("svg"), box = svg.getBoundingClientRect();
+      const xs = [box.left + 16, box.left + box.width / 4, box.left + box.width / 2, box.right - 16].map(Math.round);
+      const ys = [box.top + 16, box.top + box.height / 4, box.top + box.height / 2, box.bottom - 16].map(Math.round);
+      const candidates = ys.flatMap((y) => xs.map((x) => ({ x, y })))
+        .sort((left, right) => dx * (left.x - right.x) + dy * (left.y - right.y));
+      for (const start of candidates) {
+        if (document.elementFromPoint(start.x, start.y) !== svg) continue;
+        return { start, end: { x: dx > 0 ? innerWidth - 2 : dx < 0 ? 2 : start.x,
+          y: dy > 0 ? innerHeight - 2 : dy < 0 ? 2 : start.y } };
+      }
+      return null;
+    }, { dx, dy });
+    expect(points, "A real canvas background starts each pan without selecting a node or edge").not.toBeNull();
+    const { start, end } = points;
+    await movePointer(start.x, start.y, undefined, 0);
+    await page.mouse.down();
+    await waitForPointer("pointerdown", start.x, start.y, 1);
+    // Capture begins inside the SVG; the whole long stroke stays on screen.
+    // Native Firefox input releases the pointer at extreme offscreen positions.
+    await movePointer(start.x + dx * 12, start.y + dy * 12, { steps: 2 });
+    return end;
+  };
+  const endPan = async ({ x, y }) => {
+    await page.mouse.up();
+    await waitForPointer("pointerup", x, y, 0);
+  };
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+    let previous = await renderedViewport();
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const end = await beginPan(dx, dy);
+      await movePointer(end.x, end.y);
+      expect((await visibleNodes()).length).toBeGreaterThan(0);
+      const current = await renderedViewport();
+      if (attempt === 2) expect(current, `Repeated pan ${dx},${dy} must settle at its boundary`).toBe(previous);
+      previous = current;
+      await endPan(end);
+    }
+    const end = await beginPan(dx, dy);
+    await movePointer(end.x - dx * 48, end.y - dy * 48);
+    expect((await visibleNodes()).length).toBeGreaterThan(0);
+    const boundary = await renderedViewport();
+    await movePointer(end.x, end.y);
+    expect(await renderedViewport()).toBe(boundary);
+    expect((await visibleNodes()).length).toBeGreaterThan(0);
+    // Reverse within the same legal gesture: prior overscroll must not create
+    // dead travel before the canvas responds again.
+    const reversed = { x: end.x - dx * 24, y: end.y - dy * 24 };
+    await movePointer(reversed.x, reversed.y);
+    expect(await renderedViewport()).not.toBe(boundary);
+    expect((await visibleNodes()).length).toBeGreaterThan(0);
+    await endPan(reversed);
+  }
+  expect(await page.evaluate(() => window.getSelection().isCollapsed)).toBe(true);
+  await page.evaluate(() => { window.topologyLifecycle.stopObservingPointer(); });
+  for (const action of ["zoomIn", "zoomOut"]) for (let count = 0; count < 3; count += 1) {
+    await page.evaluate((method) => window.topologyLifecycle.first[method](), action);
+    expect((await visibleNodes()).length).toBeGreaterThan(0);
+  }
+  await page.evaluate(() => { document.querySelector("#first").style.width = "180px"; });
+  await expect.poll(() => first.locator("svg").evaluate((svg) => svg.viewBox.baseVal.width / svg.viewBox.baseVal.height))
+    .toBeCloseTo(180 / 560, 5);
+  expect((await visibleNodes()).length).toBeGreaterThan(0);
+  const offscreenRestored = await page.evaluate(() => {
+    const state = window.topologyLifecycle, saved = state.controls.captureViewerViewport(state.first);
+    return state.controls.restoreViewerViewport(state.first, { ...saved, viewBox: { ...saved.viewBox, x: 1000000, y: -1000000 } });
+  });
+  expect(offscreenRestored).toBe(true);
+  expect((await visibleNodes()).length).toBeGreaterThan(0);
+  await first.locator('[data-graph-node="d"]').focus();
+  expect(await visibleNodes()).toContain("d");
+  const returnMidpointVisible = () => first.evaluate((host) => {
+    const path = host.querySelector('[data-graph-edge="return"]');
+    const point = path.getPointAtLength(path.getTotalLength() / 2).matrixTransform(path.getScreenCTM());
+    const canvas = host.querySelector("svg").getBoundingClientRect();
+    return point.x > Math.max(canvas.left, 0) + 1 && point.x < Math.min(canvas.right, innerWidth) - 1
+      && point.y > Math.max(canvas.top, 0) + 1 && point.y < Math.min(canvas.bottom, innerHeight) - 1;
+  });
+  // Keyboard focus must be able to read the outer return lane even when its
+  // midpoint is far from a node; neither focus nor reveal invokes the edge.
+  await page.keyboard.press("Tab");
+  await first.locator('[data-graph-edge-control="return"]').focus();
+  await expect(first.locator('[data-graph-edge-control="return"]')).toBeFocused();
+  expect(await returnMidpointVisible()).toBe(true);
+  expect(await page.evaluate(() => {
+    const state = window.topologyLifecycle;
+    return state.first.setActiveEdge("return") && state.controls.revealViewerSelection(state.first);
+  })).toBe(true);
+  expect(await returnMidpointVisible()).toBe(true);
+  expect(await page.evaluate(() => {
+    const state = window.topologyLifecycle;
+    state.controls.selectViewerGraphPath(state.first, ["b"]);
+    return state.controls.revealViewerSelection(state.first);
+  })).toBe(true);
+  expect(await visibleNodes()).toContain("b");
+  await expect(first.locator('[data-graph-node="b"]')).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => {
+    const state = window.topologyLifecycle;
+    return { viewport: state.controls.captureViewerViewport(state.second), clicks: state.clicks, edgeClicks: state.edgeClicks };
+  })).toEqual({ viewport: resized.baseline, clicks: [["b"], []], edgeClicks: [["self", "parallel-self", "exit"], []] });
+  await expect(second.locator('[aria-pressed="true"]')).toHaveCount(0);
+
   const disposed = await page.evaluate(async () => {
     const state = window.topologyLifecycle, host = document.querySelector("#first"), svg = host.querySelector("svg");
     const observer = state.observations.find(({ target }) => target === host);
