@@ -8,6 +8,7 @@ const NODE_HEIGHT = 64;
 const ROW_GAP = 32;
 const COLUMN_GAP = 40;
 const PADDING = 48;
+const EDGE_CLEARANCE = 2;
 let instanceSequence = 0;
 
 const text = {
@@ -186,11 +187,38 @@ function parallelOffset(index, count, step, available) {
   return count > 1 ? Math.min(step * (count - 1), Math.max(0, available)) * index / (count - 1) : 0;
 }
 
-function edgeGeometry(edge, layout, parallelIndex = 0, parallelCount = 1) {
+function forwardPorts(edges, layout) {
+  const ports = new Map(), outgoing = new Map(), incoming = new Map();
+  for (const edge of edges) {
+    const from = layout.positions.get(edge.from), to = layout.positions.get(edge.to);
+    if (to.y <= from.y) continue;
+    ports.set(edge.id, {});
+    for (const [groups, id] of [[outgoing, edge.from], [incoming, edge.to]]) {
+      if (!groups.has(id)) groups.set(id, []);
+      groups.get(id).push(edge);
+    }
+  }
+  for (const [groups, field, opposite] of [[outgoing, "sourceX", "to"], [incoming, "targetX", "from"]]) {
+    for (const [id, connections] of groups) {
+      // Keep forks and joins distinct, ordered spatially rather than by
+      // execution. Stable ties preserve the definition order of parallel edges.
+      connections.sort((a, b) => layout.positions.get(a[opposite]).x - layout.positions.get(b[opposite]).x);
+      const center = layout.positions.get(id).x + NODE_WIDTH / 2;
+      // Stay on the flat part of even the rounded start/end boundary.
+      const span = Math.min(96, (connections.length - 1) * 48);
+      connections.forEach((edge, index) => {
+        ports.get(edge.id)[field] = center - span / 2 + parallelOffset(index, connections.length, 48, span);
+      });
+    }
+  }
+  return ports;
+}
+
+function edgeGeometry(edge, layout, ports, parallelIndex = 0, parallelCount = 1) {
   const from = layout.positions.get(edge.from), to = layout.positions.get(edge.to);
-  const sourceX = from.x + NODE_WIDTH / 2, targetX = to.x + NODE_WIDTH / 2;
+  const { sourceX = from.x + NODE_WIDTH / 2, targetX = to.x + NODE_WIDTH / 2 } = ports.get(edge.id) || {};
   if (edge.from === edge.to) {
-    const x = from.x + NODE_WIDTH, y = from.y + NODE_HEIGHT / 2;
+    const x = from.x + NODE_WIDTH + EDGE_CLEARANCE, y = from.y + NODE_HEIGHT / 2;
     const rightBoundary = Math.min(layout.width, ...[...layout.positions.values()]
       .filter((point) => point.y === from.y && point.x > from.x).map((point) => point.x));
     // Both cubic controls share an x coordinate, so the arc's maximum
@@ -201,21 +229,23 @@ function edgeGeometry(edge, layout, parallelIndex = 0, parallelCount = 1) {
     const minimumSpread = desiredSpread <= maximumSpread ? 56 : Math.min(56, maximumSpread * 0.65);
     const spread = parallelCount === 1 ? maximumSpread
       : minimumSpread + (maximumSpread - minimumSpread) * parallelIndex / (parallelCount - 1);
-    return { direction: "self", d: `M ${x} ${y + 16} C ${x + spread} ${y + 72}, ${x + spread} ${y - 72}, ${x} ${y - 16}` };
+    const offset = 12 + parallelOffset(parallelIndex, parallelCount, 8, 10);
+    return { direction: "self", d: `M ${x} ${y + offset} C ${x + spread} ${y + offset}, ${x + spread} ${y - offset}, ${x} ${y - offset}` };
   }
   if (to.y === from.y && (layout.sideAnchors.get(edge.from) === edge.to || layout.sideAnchors.get(edge.to) === edge.from)) {
     const returning = layout.sideAnchors.get(edge.from) === edge.to;
     const direction = to.x > from.x ? 1 : -1;
-    const startX = direction > 0 ? from.x + NODE_WIDTH : from.x, endX = direction > 0 ? to.x : to.x + NODE_WIDTH;
-    const offset = (returning ? 1 : -1) * (12 + parallelOffset(parallelIndex, parallelCount, 5, 10));
-    const y = from.y + NODE_HEIGHT / 2 + offset, bend = y + (returning ? 8 : -8);
+    const startX = (direction > 0 ? from.x + NODE_WIDTH : from.x) + direction * EDGE_CLEARANCE;
+    const endX = (direction > 0 ? to.x : to.x + NODE_WIDTH) - direction * EDGE_CLEARANCE;
+    const offset = (returning ? 1 : -1) * (12 + parallelOffset(parallelIndex, parallelCount, 10, 12));
+    const y = from.y + NODE_HEIGHT / 2 + offset;
     return { direction: returning ? "return" : "forward",
-      d: `M ${startX} ${y} C ${startX + direction * 16} ${bend}, ${endX - direction * 16} ${bend}, ${endX} ${y}` };
+      d: `M ${startX} ${y} H ${endX}` };
   }
   if (to.y <= from.y) {
     const lane = layout.returnX + parallelOffset(parallelIndex, parallelCount, 12, layout.width - 16 - layout.returnX);
-    const startX = from.x + NODE_WIDTH, startY = from.y + NODE_HEIGHT / 2;
-    const endX = to.x + NODE_WIDTH, endY = to.y + NODE_HEIGHT / 2;
+    const startX = from.x + NODE_WIDTH + EDGE_CLEARANCE, startY = from.y + NODE_HEIGHT / 2;
+    const endX = to.x + NODE_WIDTH + EDGE_CLEARANCE, endY = to.y + NODE_HEIGHT / 2;
     // A Bezier stays inside the bounding box of its controls. Preserve the
     // compact return arc when that box is clear; otherwise route through row
     // and column gaps so even disconnected right-hand nodes remain untouched.
@@ -230,15 +260,16 @@ function edgeGeometry(edge, layout, parallelIndex = 0, parallelCount = 1) {
       const radius = 8;
       return { direction: "return", d: `M ${startX} ${startY} H ${sourceGapX - radius} Q ${sourceGapX} ${startY} ${sourceGapX} ${startY + radius} V ${sourceGapY - radius} Q ${sourceGapX} ${sourceGapY} ${sourceGapX + radius} ${sourceGapY} H ${lane - radius} Q ${lane} ${sourceGapY} ${lane} ${sourceGapY - radius} V ${targetGapY + radius} Q ${lane} ${targetGapY} ${lane - radius} ${targetGapY} H ${targetGapX + radius} Q ${targetGapX} ${targetGapY} ${targetGapX} ${targetGapY + radius} V ${endY - radius} Q ${targetGapX} ${endY} ${endX + radius} ${endY} H ${endX}` };
     }
-    return { direction: "return", d: `M ${startX} ${startY} C ${lane} ${startY + 24}, ${lane} ${endY - 24}, ${endX} ${endY}` };
+    return { direction: "return", d: `M ${startX} ${startY} C ${lane} ${startY}, ${lane} ${endY}, ${endX} ${endY}` };
   }
-  const startY = from.y + NODE_HEIGHT, endY = to.y;
+  const startY = from.y + NODE_HEIGHT + EDGE_CLEARANCE, endY = to.y - EDGE_CLEARANCE;
   if (to.y > from.y + NODE_HEIGHT + ROW_GAP + 1) {
     // A branching edge which skips a row must not disappear underneath that
     // row's node and look as though it originated there. Route around every
     // intervening box, turning only in the empty space between rows.
     const between = [...layout.positions.values()].filter((point) => point.y > from.y && point.y < to.y);
-    const direction = targetX < sourceX ? -1 : 1;
+    // Port spacing must not flip the outside lane of same-column nodes.
+    const direction = to.x < from.x ? -1 : 1;
     const baseLane = direction < 0
       ? Math.min(from.x, to.x, ...between.map((point) => point.x)) - 24
       : Math.max(from.x + NODE_WIDTH, to.x + NODE_WIDTH, ...between.map((point) => point.x + NODE_WIDTH)) + 24;
@@ -247,8 +278,11 @@ function edgeGeometry(edge, layout, parallelIndex = 0, parallelCount = 1) {
     return { direction: "forward", d: `M ${sourceX} ${startY} L ${sourceX} ${startY + 12} Q ${sourceX} ${startY + 20} ${sourceX + direction * 8} ${startY + 20} L ${lane - direction * 8} ${startY + 20} Q ${lane} ${startY + 20} ${lane} ${startY + 28} L ${lane} ${endY - 28} Q ${lane} ${endY - 20} ${lane - direction * 8} ${endY - 20} L ${targetX + direction * 8} ${endY - 20} Q ${targetX} ${endY - 20} ${targetX} ${endY - 12} L ${targetX} ${endY}` };
   }
   const middleY = (startY + endY) / 2;
-  const lane = parallelIndex * 12;
-  return { direction: "forward", d: `M ${sourceX} ${startY} C ${sourceX + lane} ${middleY}, ${targetX + lane} ${middleY}, ${targetX} ${endY}` };
+  const direction = Math.sign(targetX - sourceX), radius = Math.min(5, Math.abs(targetX - sourceX) / 2);
+  // A straight lead-in gives every arrow a clear vertical direction, unlike
+  // a shallow Bezier whose final few pixels still look nearly horizontal.
+  return { direction: "forward", d: direction === 0 ? `M ${sourceX} ${startY} V ${endY}`
+    : `M ${sourceX} ${startY} V ${middleY - radius} Q ${sourceX} ${middleY} ${sourceX + direction * radius} ${middleY} H ${targetX - direction * radius} Q ${targetX} ${middleY} ${targetX} ${middleY + radius} V ${endY}` };
 }
 
 function nameLines(value, maxUnits = 21) {
@@ -287,14 +321,15 @@ export function createGraphTopologyView(host, model, options = {}) {
   const defs = svgElement(dom, "defs"), markerId = `eino-graph-topology-arrow-${++instanceSequence}`;
   for (const [state, color] of [["neutral", "#8292a4"], ["active", "#2758c7"]]) {
     const id = state === "neutral" ? markerId : `${markerId}-active`;
-    const marker = svgElement(dom, "marker", { id, "data-graph-arrow": state, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto" });
+    const marker = svgElement(dom, "marker", { id, "data-graph-arrow": state, viewBox: "0 0 10 10", refX: 9, refY: 5,
+      markerUnits: "userSpaceOnUse", markerWidth: 10, markerHeight: 10, orient: "auto" });
     marker.append(svgElement(dom, "path", { d: "M 1 1 L 9 5 L 1 9 z", fill: color }));
     defs.append(marker);
   }
   wrapper.style.setProperty("--graph-topology-active-arrow", `url(#${markerId}-active)`);
   svg.append(defs);
   const edgeElements = new Map();
-  const pairs = new Map(), pairCounts = new Map();
+  const pairs = new Map(), pairCounts = new Map(), ports = forwardPorts(model.edges, layout);
   for (const edge of model.edges) {
     const key = JSON.stringify([edge.from, edge.to]);
     pairCounts.set(key, (pairCounts.get(key) || 0) + 1);
@@ -302,7 +337,7 @@ export function createGraphTopologyView(host, model, options = {}) {
   for (const edge of model.edges) {
     const key = JSON.stringify([edge.from, edge.to]), index = pairs.get(key) || 0;
     pairs.set(key, index + 1);
-    const geometry = edgeGeometry(edge, layout, index, pairCounts.get(key));
+    const geometry = edgeGeometry(edge, layout, ports, index, pairCounts.get(key));
     const group = svgElement(dom, "g", { class: "graph-topology-edge-control", "data-graph-edge-control": edge.id,
       role: "button", tabindex: 0, "aria-pressed": "false" });
     const title = svgElement(dom, "title");

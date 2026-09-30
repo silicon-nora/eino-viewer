@@ -157,3 +157,13 @@ Owner 明确：修订节点属于旁路，不应夹在评估和完成节点之�
 Owner 随后确认 `finish` 与 `fallback` 是对等逻辑分支，不应因本次只执行 `finish` 就让它固定在中轴。现将它们作为一组，左右对称地放在 `evaluate` 下方，再汇合到中轴的结束节点；`revise` 仍保持在 `evaluate` 右侧。规则按共同分支来源与层级判断，不硬编码示例节点名，不改变原来的执行／未观测状态。
 
 本次仅为分支对齐的小范围调整：现有三浏览器专项 **9 / 9**、23 个 JS 测试入口、语法及类型检查通过，未新增测试项。没有重跑上一轮 190 项或全量 603 项；保留原事实与交互断言，仅将过时的 `finish` 居中断言改为同层、对称和正确汇合断言。日志为 `.artifacts/graph-peer-branches-focused.log`、`.artifacts/graph-peer-branches-check.log`、`.artifacts/graph-peer-branches-js.log`；[当前窄屏截图](../.artifacts/graph-peer-branches-after.png)。
+
+#### 连线与箭头精修
+
+实际画面确认：两条完成分支共享结束节点的同一入口，箭头重叠；修订往返短曲线斜向接入节点；选中线宽增大还使箭头同步放大。保留已认可的节点位置，只修正绘制：向下连接按对端横坐标分配独立端口，使用圆角折线和明确的垂直末段；同行修订往返使用水平双线。箭头距节点边缘留 2 个绘图单位，固定大小，不随悬停／选中线宽突变。端口范围避开开始／结束节点的圆角。自环和普通回线也改为水平入射，两条平行自环／修订返回边保留独立箭头落点。
+
+只扩展原有 P0，未增加独立用例或弱化事实断言：验证实际路径末端方向、间距、分支入口／出口顺序、两条平行回线以及中性／选中箭头尺寸；保留原始身份、来源、状态、正文、点击范围、键盘、语言与生命周期检查。三浏览器专项 **9 / 9**，随后 Graph 相关回归 **190 / 190** 通过，无失败、重试或跳过；不累加两轮数量，不宣称重跑全套 603 项。23 个 JS 测试入口、语法和类型检查通过；32 场景严格检查仍保留既有四项采集限制。
+
+日志：`.artifacts/graph-arrows-focused.log`、`.artifacts/graph-arrows-regression.log`、`.artifacts/graph-arrows-check.log`、`.artifacts/graph-arrows-js.log`、`.artifacts/graph-arrows-matrix.log`。[修正前](../.artifacts/graph-arrows-before.png)、[同视口修正后](../.artifacts/graph-arrows-after-viewport.png)、[完整画面](../.artifacts/graph-arrows-after.png)。实际成功／失败记录及返回线鼠标选择已走查。Agent、Workflow、嵌入／离线、Recorder、公开 API 与上游仓库未改。
+
+保留边界：多个跨层连接仍可能共享部分外侧绕线；高密度多重边的端口空间有限，本次不宣称任意数量的平行箭头均不会重叠。节点排布规则与所有执行事实不因绘图修正改变。

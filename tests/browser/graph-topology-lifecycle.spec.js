@@ -83,6 +83,10 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     }
     return { boxes, crossings, finite,
       selfPaths: [...host.querySelectorAll('[data-edge-direction="self"]')].map((path) => path.getAttribute("d")),
+      selfEnds: [...host.querySelectorAll('[data-edge-direction="self"]')].map((path) => {
+        const point = path.getPointAtLength(path.getTotalLength());
+        return { x: point.x, y: point.y };
+      }),
       branchDash: getComputedStyle(host.querySelector('[data-graph-edge="branch"]')).strokeDasharray };
   });
   const boxes = new Map(geometry.boxes.map((box) => [box.id, box]));
@@ -94,6 +98,8 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
   expect(geometry.finite).toEqual([true, true, true, true, true]);
   expect(geometry.crossings).toEqual([]);
   expect(new Set(geometry.selfPaths).size).toBe(2);
+  expect(Math.abs(geometry.selfEnds[0].y - geometry.selfEnds[1].y)).toBeGreaterThanOrEqual(8);
+  for (const point of geometry.selfEnds) expect(point.x - boxes.get("a").x - boxes.get("a").width).toBeCloseTo(2);
   expect(geometry.branchDash).not.toBe("none");
   const markers = await page.evaluate(() => [...document.querySelectorAll(".host")].map((host) => {
     const id = host.querySelector("marker").id;
@@ -268,8 +274,11 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
             const box = group.querySelector("rect").getBBox(), matrix = group.transform.baseVal.consolidate().matrix;
             return { id: group.dataset.graphNode, x: box.x + matrix.e, y: box.y + matrix.f, width: box.width };
           }),
-          edges: [...host.querySelectorAll("[data-graph-edge]")].map((path) => ({ id: path.dataset.graphEdge,
-            path: path.getAttribute("d"), direction: path.dataset.edgeDirection })) };
+          edges: [...host.querySelectorAll("[data-graph-edge]")].map((path) => {
+            const end = path.getPointAtLength(path.getTotalLength());
+            return { id: path.dataset.graphEdge, end: { x: end.x, y: end.y },
+              path: path.getAttribute("d"), direction: path.dataset.edgeDirection };
+          }) };
       } finally { viewer.destroy(); host.remove(); }
     };
     const unique = collect(model);
@@ -286,6 +295,8 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     expect(returns.map(({ direction }) => direction)).toEqual(["return", "return"]);
     expect(new Set(returns.map(({ path }) => path)).size).toBe(2);
   }
+  const sideReturns = routeLayouts.unique.edges.filter(({ id }) => ["return", "parallel-return"].includes(id));
+  expect(Math.abs(sideReturns[0].end.y - sideReturns[1].end.y)).toBeGreaterThanOrEqual(8);
   const uniqueNodes = new Map(routeLayouts.unique.nodes.map((node) => [node.id, node]));
   const mainNodes = ["start", "prepare", "check", "end"].map((id) => uniqueNodes.get(id));
   expect(new Set(mainNodes.map(({ x }) => x)).size).toBe(1);

@@ -78,6 +78,82 @@ async function expectSelectedVisit(page, fixture, visit) {
     .toEqual(fixture.visits.map(({ node }) => node.id));
 }
 
+async function expectGraphArrowGeometry(page, outcome) {
+  const drawing = await page.locator('#dag svg[data-graph-topology]').evaluate((svg) => {
+    const inverse = svg.getScreenCTM().inverse();
+    const nodes = Object.fromEntries([...svg.querySelectorAll('[data-graph-node]')].map((node) => {
+      const rect = node.querySelector('rect'), box = rect.getBBox();
+      const matrix = inverse.multiply(rect.getScreenCTM());
+      const first = new DOMPoint(box.x, box.y).matrixTransform(matrix);
+      const last = new DOMPoint(box.x + box.width, box.y + box.height).matrixTransform(matrix);
+      return [node.dataset.graphNode, { left: first.x, right: last.x, top: first.y, bottom: last.y,
+        centerX: (first.x + last.x) / 2 }];
+    }));
+    const edges = [...svg.querySelectorAll('[data-graph-edge]')].map((path) => {
+      const length = path.getTotalLength(), matrix = inverse.multiply(path.getScreenCTM());
+      const point = (distance) => {
+        const value = path.getPointAtLength(distance).matrixTransform(matrix);
+        return { x: value.x, y: value.y };
+      };
+      return { from: path.dataset.from, to: path.dataset.to, direction: path.dataset.edgeDirection,
+        start: point(0), end: point(length), tail: [1, 2, 4, 6].map((offset) => ({ offset, ...point(length - offset) })) };
+    });
+    const markers = [...svg.querySelectorAll('marker[data-graph-arrow]')].map((marker) => ({
+      state: marker.dataset.graphArrow, units: marker.getAttribute('markerUnits'),
+      width: marker.markerWidth.baseVal.value, height: marker.markerHeight.baseVal.value,
+    }));
+    return { nodes, edges, markers };
+  });
+  expect(drawing.markers).toEqual([
+    { state: "neutral", units: "userSpaceOnUse", width: 10, height: 10 },
+    { state: "active", units: "userSpaceOnUse", width: 10, height: 10 },
+  ]);
+  // SVG user units keep clearance and tangent assertions independent of fit,
+  // zoom, and the screen's scaling. Inspect actual path points, not its d text.
+  const forward = drawing.edges.filter(({ from, to }) => drawing.nodes[to].top > drawing.nodes[from].bottom);
+  expect(forward).toHaveLength(outcome === "success" ? 6 : 7);
+  for (const edge of forward) {
+    const source = drawing.nodes[edge.from], target = drawing.nodes[edge.to];
+    expect(edge.direction).toBe("forward");
+    expect(edge.start.y - source.bottom).toBeCloseTo(2, 2);
+    expect(target.top - edge.end.y).toBeCloseTo(2, 2);
+    expect(Math.abs(edge.start.x - source.centerX)).toBeLessThanOrEqual(48.01);
+    expect(Math.abs(edge.end.x - target.centerX)).toBeLessThanOrEqual(48.01);
+    for (const point of edge.tail) {
+      expect(point.x, `${edge.from} → ${edge.to}: final ${point.offset} units stay vertical`).toBeCloseTo(edge.end.x, 2);
+      expect(edge.end.y - point.y).toBeCloseTo(point.offset, 2);
+    }
+  }
+  for (const id of Object.keys(drawing.nodes)) {
+    for (const [own, other, port] of [["from", "to", "start"], ["to", "from", "end"]]) {
+      const edges = forward.filter((edge) => edge[own] === id)
+        .sort((a, b) => drawing.nodes[a[other]].centerX - drawing.nodes[b[other]].centerX);
+      for (let index = 1; index < edges.length; index += 1) {
+        expect(edges[index][port].x, `${id}: ports follow the opposite nodes' horizontal order`)
+          .toBeGreaterThan(edges[index - 1][port].x);
+      }
+    }
+  }
+  const entrances = forward.filter(({ to }) => to === "end").sort((a, b) => a.end.x - b.end.x);
+  expect(entrances.map(({ from }) => from)).toEqual(["fallback", "finish"]);
+  expect(entrances[0].end.x).toBeLessThan(entrances[1].end.x);
+  const exits = ["fallback", "finish"].map((to) => forward.find((edge) => edge.from === "evaluate" && edge.to === to));
+  expect(exits[0].start.x).toBeLessThan(exits[1].start.x);
+  if (outcome === "success") {
+    for (const [from, to, direction] of [["evaluate", "revise", 1], ["revise", "evaluate", -1]]) {
+      const edge = drawing.edges.find((candidate) => candidate.from === from && candidate.to === to);
+      const source = drawing.nodes[from], target = drawing.nodes[to];
+      const targetX = direction > 0 ? target.left : target.right;
+      expect((edge.start.x - (direction > 0 ? source.right : source.left)) * direction).toBeCloseTo(2, 2);
+      expect((targetX - edge.end.x) * direction).toBeCloseTo(2, 2);
+      for (const point of edge.tail) {
+        expect(point.y, `${from} → ${to}: final ${point.offset} units stay horizontal`).toBeCloseTo(edge.end.y, 2);
+        expect((edge.end.x - point.x) * direction).toBeCloseTo(point.offset, 2);
+      }
+    }
+  }
+}
+
 async function expectLogicalGraph(page, fixture, outcome) {
   const displayed = await topologyFacts(page);
   const definition = fixture.record.evidence.find(({ kind }) => kind === "compose.graph").payload;
@@ -115,6 +191,7 @@ async function expectLogicalGraph(page, fixture, outcome) {
   const branches = await page.locator('#dag [data-graph-edge][data-edge-kind="branch"]').evaluateAll((edges) =>
     edges.map((edge) => ({ dashed: getComputedStyle(edge).strokeDasharray, marker: edge.getAttribute("marker-end") })));
   expect(branches.every(({ dashed, marker }) => dashed !== "none" && Boolean(marker))).toBe(true);
+  await expectGraphArrowGeometry(page, outcome);
   const positions = await page.locator('#dag [data-graph-node]').evaluateAll((nodes) =>
     Object.fromEntries(nodes.map((node) => [node.dataset.graphNode,
       node.querySelector('rect').getBoundingClientRect().toJSON()])));
@@ -222,6 +299,16 @@ async function expectConnectionsInteractive(page, fixture) {
   expect(source.branches[expected.sourceIndex].from).toBe(expected.from);
   expect(source.branches[expected.sourceIndex].targets[expected.targetIndex]).toBe(expected.to);
   await page.locator("#inspection-search").fill("evaluate");
+  const arrowSize = () => branch.evaluate((path) => {
+    const style = getComputedStyle(path), markerId = style.markerEnd.match(/#([^\s)"']+)/)?.[1];
+    const marker = document.getElementById(markerId);
+    return { stroke: Number.parseFloat(style.strokeWidth), state: marker.dataset.graphArrow,
+      size: { units: marker.getAttribute("markerUnits"), width: marker.markerWidth.baseVal.value,
+        height: marker.markerHeight.baseVal.value } };
+  });
+  const neutralArrow = await arrowSize();
+  expect(neutralArrow.state).toBe("neutral");
+  expect(neutralArrow.size).toEqual({ units: "userSpaceOnUse", width: 10, height: 10 });
   await expect(control).toHaveAttribute("role", "button");
   await expect(control).toHaveAttribute("tabindex", "0");
   await control.focus();
@@ -259,6 +346,10 @@ async function expectConnectionsInteractive(page, fixture) {
     return { line: style.stroke, arrow: marker && getComputedStyle(document.getElementById(marker).querySelector("path")).fill };
   });
   await expect.poll(colors).toEqual({ line: "rgb(39, 88, 199)", arrow: "rgb(39, 88, 199)" });
+  const activeArrow = await arrowSize();
+  expect(activeArrow.state).toBe("active");
+  expect(activeArrow.stroke).toBeGreaterThan(neutralArrow.stroke);
+  expect(activeArrow.size).toEqual(neutralArrow.size);
   await page.mouse.click(hit.x, hit.y);
   await expectSelectedConnection(page, branch, expected);
   await page.mouse.move(2, 2);
