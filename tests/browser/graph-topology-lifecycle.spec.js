@@ -256,7 +256,7 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     const edge = (id, from, to, kind = "edge") => ({ id, from, to, kind, basis: "declared" });
     // Deliberately put the loop before the real entry and repeat its return.
     // Moving a side node twice must not remove an unrelated node from its row.
-    const model = { name: "Observed route layout",
+    const model = { name: "Declared route layout",
       nodes: [node("loop"), node("finish"), node("start"), node("end"), node("check"), node("prepare"), node("bypass", false)],
       edges: [edge("return", "loop", "check"), edge("parallel-return", "loop", "check"),
         edge("exit", "finish", "end"), edge("entry", "start", "prepare"), edge("prepare-check", "prepare", "check"),
@@ -266,14 +266,18 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
       const host = document.createElement("div");
       host.className = "host";
       document.body.append(host);
-      const before = JSON.stringify(current), viewer = createGraphTopologyView(host, current);
+      const before = JSON.stringify(current), viewer = createGraphTopologyView(host, current, { locale: "en" });
       try {
         return { expectedNodes: current.nodes.map(({ id }) => id), expectedEdges: current.edges.map(({ id }) => id),
           sourceUnchanged: JSON.stringify(current) === before,
           nodes: [...host.querySelectorAll("[data-graph-node]")].map((group) => {
             const box = group.querySelector("rect").getBBox(), matrix = group.transform.baseVal.consolidate().matrix;
-            return { id: group.dataset.graphNode, x: box.x + matrix.e, y: box.y + matrix.f, width: box.width };
+            return { id: group.dataset.graphNode, x: box.x + matrix.e, y: box.y + matrix.f, width: box.width, height: box.height };
           }),
+          labels: [...host.querySelectorAll('[data-node-kind="node"]')].map((group) => ({
+            id: group.dataset.graphNode, status: group.dataset.status,
+            label: group.getAttribute("aria-label"), title: group.querySelector("title").textContent,
+          })),
           edges: [...host.querySelectorAll("[data-graph-edge]")].map((path) => {
             const end = path.getPointAtLength(path.getTotalLength());
             return { id: path.dataset.graphEdge, end: { x: end.x, y: end.y },
@@ -281,23 +285,69 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
           }) };
       } finally { viewer.destroy(); host.remove(); }
     };
-    const unique = collect(model);
-    // Observing both complete branches cannot establish one winning route.
-    const ambiguous = collect({ ...model, nodes: model.nodes.map((entry) => entry.id === "bypass" ? node("bypass") : entry) });
-    return { unique, ambiguous };
+    const before = JSON.stringify(model);
+    const withNodes = (change) => ({ ...structuredClone(model), nodes: model.nodes.map((entry) =>
+      entry.kind === "node" ? change(structuredClone(entry)) : structuredClone(entry)) });
+    // Only execution facts vary: every declared node and edge keeps its source
+    // order. Neither observing a branch nor removing visits can move the graph.
+    const variants = {
+      unique: model,
+      ambiguous: withNodes((entry) => node(entry.id)),
+      ...Object.fromEntries(["failed", "skipped", "cancelled"].map((status) => [status,
+        withNodes((entry) => ({ ...entry, status, statusCounts: { [status]: 1 }, memberIds: [`${status}:${entry.id}`] }))])),
+      unobserved: withNodes((entry) => node(entry.id, false)),
+      definitionOnly: { ...withNodes((entry) => ({ ...node(entry.id, false), status: "definition-only" })), definitionOnly: true },
+      repeated: withNodes((entry) => ({ ...entry, status: "success", statusCounts: { success: 5 },
+        memberIds: Array.from({ length: 5 }, (_, index) => `visit:${entry.id}:${index}`) })),
+    };
+    const layouts = Object.fromEntries(Object.entries(variants).map(([name, current]) => [name, collect(current)]));
+    // These cycles lack one unambiguous leaf detour. Their ordinary dependency
+    // layers must survive even though each includes at least one return edge.
+    const boundaries = [
+      { name: "two-node cycle without another successor", nodes: ["anchor", "leaf"],
+        edges: [["anchor", "leaf"], ["leaf", "anchor"]], below: [["anchor", "leaf"]] },
+      { name: "two returning leaves and an exit", nodes: ["start", "anchor", "left", "right", "end"],
+        edges: [["start", "anchor"], ["anchor", "left"], ["left", "anchor"], ["anchor", "right"], ["right", "anchor"], ["anchor", "end"]],
+        below: [["anchor", "left"], ["anchor", "right"]] },
+      { name: "three-node cycle", nodes: ["start", "anchor", "middle", "leaf", "end"],
+        edges: [["start", "anchor"], ["anchor", "middle"], ["middle", "leaf"], ["leaf", "anchor"], ["anchor", "end"]],
+        below: [["anchor", "middle"], ["middle", "leaf"]] },
+      { name: "leaf returns to another ancestor", nodes: ["start", "ancestor", "anchor", "leaf", "end"],
+        edges: [["start", "ancestor"], ["ancestor", "anchor"], ["anchor", "leaf"], ["leaf", "anchor"], ["leaf", "ancestor"], ["anchor", "end"]],
+        below: [["ancestor", "anchor"], ["anchor", "leaf"]] },
+      { name: "leaf has a second parent", nodes: ["start", "anchor", "parent", "leaf", "end"],
+        edges: [["start", "anchor"], ["start", "parent"], ["anchor", "leaf"], ["parent", "leaf"], ["leaf", "anchor"], ["anchor", "end"]],
+        below: [["anchor", "leaf"], ["parent", "leaf"]] },
+    ].map(({ name, nodes, edges, below }) => ({ name, below, layout: collect({ name,
+      nodes: nodes.map((id) => node(id, false)), edges: edges.map(([from, to], index) => edge(`edge:${index}`, from, to)) }) }));
+    return { originalUnchanged: JSON.stringify(model) === before, variants: layouts, boundaries };
   });
-  for (const layout of Object.values(routeLayouts)) {
+  expect(routeLayouts.originalUnchanged).toBe(true);
+  const baseline = routeLayouts.variants.unique;
+  for (const [variant, layout] of Object.entries(routeLayouts.variants)) {
     expect(layout.sourceUnchanged).toBe(true);
     expect(layout.nodes.map(({ id }) => id)).toEqual(layout.expectedNodes);
     expect(layout.edges.map(({ id }) => id)).toEqual(layout.expectedEdges);
     expect(new Set(layout.nodes.map(({ id }) => id)).size).toBe(layout.expectedNodes.length);
+    expect(layout.nodes, `${variant} must preserve every declared node position and size`).toEqual(baseline.nodes);
+    expect(layout.edges, `${variant} must preserve every declared edge path and arrow endpoint`).toEqual(baseline.edges);
+    for (const label of layout.labels) expect(label.title).toBe(label.label);
     const returns = layout.edges.filter(({ id }) => ["return", "parallel-return"].includes(id));
     expect(returns.map(({ direction }) => direction)).toEqual(["return", "return"]);
     expect(new Set(returns.map(({ path }) => path)).size).toBe(2);
   }
-  const sideReturns = routeLayouts.unique.edges.filter(({ id }) => ["return", "parallel-return"].includes(id));
+  const labelFor = (variant, id) => routeLayouts.variants[variant].labels.find((node) => node.id === id);
+  expect(labelFor("unique", "bypass")).toMatchObject({ status: "not-observed", label: "bypass · No execution observed" });
+  expect(labelFor("ambiguous", "bypass")).toMatchObject({ status: "success", label: "bypass · 1 call" });
+  for (const status of ["failed", "skipped", "cancelled"]) {
+    expect(labelFor(status, "finish")).toMatchObject({ status, label: `finish · 1 call · 1 ${status}` });
+  }
+  expect(labelFor("unobserved", "finish")).toMatchObject({ status: "not-observed", label: "finish · No execution observed" });
+  expect(labelFor("definitionOnly", "finish")).toMatchObject({ status: "definition-only", label: "finish · Definition only" });
+  expect(labelFor("repeated", "finish")).toMatchObject({ status: "success", label: "finish · 5 calls" });
+  const sideReturns = baseline.edges.filter(({ id }) => ["return", "parallel-return"].includes(id));
   expect(Math.abs(sideReturns[0].end.y - sideReturns[1].end.y)).toBeGreaterThanOrEqual(8);
-  const uniqueNodes = new Map(routeLayouts.unique.nodes.map((node) => [node.id, node]));
+  const uniqueNodes = new Map(baseline.nodes.map((node) => [node.id, node]));
   const mainNodes = ["start", "prepare", "check", "end"].map((id) => uniqueNodes.get(id));
   expect(new Set(mainNodes.map(({ x }) => x)).size).toBe(1);
   for (let index = 1; index < mainNodes.length; index += 1) expect(mainNodes[index].y).toBeGreaterThan(mainNodes[index - 1].y);
@@ -313,11 +363,18 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
   expect((finishCenter + bypassCenter) / 2).toBe(axis);
   expect(finish.y).toBeGreaterThan(check.y);
   expect(uniqueNodes.get("end").y).toBeGreaterThan(finish.y);
-  const ambiguousNodes = new Map(routeLayouts.ambiguous.nodes.map((node) => [node.id, node]));
-  expect(ambiguousNodes.get("loop").y).toBeGreaterThan(ambiguousNodes.get("check").y);
-  expect(ambiguousNodes.get("loop").y).toBe(ambiguousNodes.get("finish").y);
-  expect(ambiguousNodes.get("finish").y).toBe(ambiguousNodes.get("bypass").y);
-  expect(ambiguousNodes.get("loop").x).toBeLessThan(ambiguousNodes.get("finish").x);
-  expect(ambiguousNodes.get("finish").x).toBeLessThan(ambiguousNodes.get("bypass").x);
+  for (const { name, below, layout } of routeLayouts.boundaries) {
+    expect(layout.sourceUnchanged, name).toBe(true);
+    expect(layout.nodes.map(({ id }) => id), name).toEqual(layout.expectedNodes);
+    expect(layout.edges.map(({ id }) => id), name).toEqual(layout.expectedEdges);
+    const nodes = new Map(layout.nodes.map((node) => [node.id, node]));
+    for (const [parent, child] of below) {
+      expect(nodes.get(child).y, `${name}: ${child} must remain below ${parent}`).toBeGreaterThan(nodes.get(parent).y);
+    }
+    for (const { path, end } of layout.edges) {
+      expect(path, name).toBeTruthy();
+      expect(Number.isFinite(end.x) && Number.isFinite(end.y), name).toBe(true);
+    }
+  }
   expect(errors).toEqual([]);
 });

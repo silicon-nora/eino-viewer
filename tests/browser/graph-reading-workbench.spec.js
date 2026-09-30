@@ -101,7 +101,7 @@ async function expectSelectedVisit(page, fixture, visit) {
     .toEqual(fixture.visits.map(({ node }) => node.id));
 }
 
-async function expectGraphArrowGeometry(page, outcome) {
+async function expectGraphArrowGeometry(page) {
   const drawing = await page.locator('#dag svg[data-graph-topology]').evaluate((svg) => {
     const inverse = svg.getScreenCTM().inverse();
     const nodes = Object.fromEntries([...svg.querySelectorAll('[data-graph-node]')].map((node) => {
@@ -134,7 +134,7 @@ async function expectGraphArrowGeometry(page, outcome) {
   // SVG user units keep clearance and tangent assertions independent of fit,
   // zoom, and the screen's scaling. Inspect actual path points, not its d text.
   const forward = drawing.edges.filter(({ from, to }) => drawing.nodes[to].top > drawing.nodes[from].bottom);
-  expect(forward).toHaveLength(outcome === "success" ? 6 : 7);
+  expect(forward).toHaveLength(6);
   for (const edge of forward) {
     const source = drawing.nodes[edge.from], target = drawing.nodes[edge.to];
     expect(edge.direction).toBe("forward");
@@ -162,19 +162,18 @@ async function expectGraphArrowGeometry(page, outcome) {
   expect(entrances[0].end.x).toBeLessThan(entrances[1].end.x);
   const exits = ["fallback", "finish"].map((to) => forward.find((edge) => edge.from === "evaluate" && edge.to === to));
   expect(exits[0].start.x).toBeLessThan(exits[1].start.x);
-  if (outcome === "success") {
-    for (const [from, to, direction] of [["evaluate", "revise", 1], ["revise", "evaluate", -1]]) {
-      const edge = drawing.edges.find((candidate) => candidate.from === from && candidate.to === to);
-      const source = drawing.nodes[from], target = drawing.nodes[to];
-      const targetX = direction > 0 ? target.left : target.right;
-      expect((edge.start.x - (direction > 0 ? source.right : source.left)) * direction).toBeCloseTo(2, 2);
-      expect((targetX - edge.end.x) * direction).toBeCloseTo(2, 2);
-      for (const point of edge.tail) {
-        expect(point.y, `${from} → ${to}: final ${point.offset} units stay horizontal`).toBeCloseTo(edge.end.y, 2);
-        expect((edge.end.x - point.x) * direction).toBeCloseTo(point.offset, 2);
-      }
+  for (const [from, to, direction] of [["evaluate", "revise", 1], ["revise", "evaluate", -1]]) {
+    const edge = drawing.edges.find((candidate) => candidate.from === from && candidate.to === to);
+    const source = drawing.nodes[from], target = drawing.nodes[to];
+    const targetX = direction > 0 ? target.left : target.right;
+    expect((edge.start.x - (direction > 0 ? source.right : source.left)) * direction).toBeCloseTo(2, 2);
+    expect((targetX - edge.end.x) * direction).toBeCloseTo(2, 2);
+    for (const point of edge.tail) {
+      expect(point.y, `${from} → ${to}: final ${point.offset} units stay horizontal`).toBeCloseTo(edge.end.y, 2);
+      expect((edge.end.x - point.x) * direction).toBeCloseTo(point.offset, 2);
     }
   }
+  return drawing.nodes;
 }
 
 async function expectLogicalGraph(page, fixture, outcome) {
@@ -214,75 +213,58 @@ async function expectLogicalGraph(page, fixture, outcome) {
   const branches = await page.locator('#dag [data-graph-edge][data-edge-kind="branch"]').evaluateAll((edges) =>
     edges.map((edge) => ({ dashed: getComputedStyle(edge).strokeDasharray, marker: edge.getAttribute("marker-end") })));
   expect(branches.every(({ dashed, marker }) => dashed !== "none" && Boolean(marker))).toBe(true);
-  await expectGraphArrowGeometry(page, outcome);
-  const positions = await page.locator('#dag [data-graph-node]').evaluateAll((nodes) =>
-    Object.fromEntries(nodes.map((node) => [node.dataset.graphNode,
-      node.querySelector('rect').getBoundingClientRect().toJSON()])));
-  if (outcome === "success") {
-    // Only this recording has one complete start→end route through observed
-    // nodes after removing layout feedback. Give it a reading axis, while
-    // keeping the two forward alternatives equal around that axis. Neither
-    // geometry nor defined edges establish which transitions were traversed.
-    const spine = ["start", "prepare", "evaluate", "end"];
-    for (const [index, id] of spine.entries()) {
-      const center = (positions[id].left + positions[id].right) / 2;
-      const axis = (positions.evaluate.left + positions.evaluate.right) / 2;
-      expect(Math.abs(center - axis)).toBeLessThan(1);
-      if (index > 0) expect(positions[id].top).toBeGreaterThan(positions[spine[index - 1]].bottom);
-    }
-    expect(Math.abs(positions.revise.top - positions.evaluate.top)).toBeLessThan(1);
-    expect(positions.revise.left).toBeGreaterThan(positions.evaluate.right);
-    expect(Math.abs(positions.fallback.top - positions.finish.top)).toBeLessThan(1);
-    expect(positions.fallback.right).toBeLessThan(positions.finish.left);
+  const positions = await expectGraphArrowGeometry(page);
+  // Definition alone determines this reading axis and its balanced forward
+  // alternatives. Execution observations cannot move or reroute the graph.
+  const spine = ["start", "prepare", "evaluate", "end"];
+  for (const [index, id] of spine.entries()) {
+    const center = (positions[id].left + positions[id].right) / 2;
     const axis = (positions.evaluate.left + positions.evaluate.right) / 2;
-    const fallbackCenter = (positions.fallback.left + positions.fallback.right) / 2;
-    const finishCenter = (positions.finish.left + positions.finish.right) / 2;
-    expect(fallbackCenter).toBeLessThan(axis);
-    expect(finishCenter).toBeGreaterThan(axis);
-    expect(Math.abs((fallbackCenter + finishCenter) / 2 - axis)).toBeLessThan(1);
-    for (const id of ["fallback", "finish"]) {
-      expect(positions[id].top).toBeGreaterThan(positions.evaluate.bottom);
-      expect(positions.end.top).toBeGreaterThan(positions[id].bottom);
-    }
-  } else {
-    // With no complete observed route, keep neutral definition layers. In
-    // particular, never promote the unobserved finish to an executed spine.
-    expect(positions.evaluate.top).toBeGreaterThan(positions.prepare.bottom);
-    for (const id of ["fallback", "finish", "revise"]) {
-      expect(positions[id].top).toBeGreaterThan(positions.evaluate.bottom);
-      expect(Math.abs(positions[id].top - positions.fallback.top)).toBeLessThan(1);
-    }
-    expect(positions.fallback.right).toBeLessThan(positions.finish.left);
-    expect(positions.finish.right).toBeLessThan(positions.revise.left);
-    for (const id of ["fallback", "finish"]) {
-      expect(positions.end.top).toBeGreaterThan(positions[id].bottom);
-    }
+    expect(Math.abs(center - axis)).toBeLessThan(1);
+    if (index > 0) expect(positions[id].top).toBeGreaterThan(positions[spine[index - 1]].bottom);
   }
-  if (outcome === "success") {
-    // Inspect every actual drawn curve, including the loop return and all
-    // alternatives, rather than merely checking model endpoints.
-    const crossings = await page.locator('#dag svg[data-graph-topology]').evaluate((svg) => {
-      const boxes = [...svg.querySelectorAll('[data-graph-node]')].map((node) => ({
-        id: node.dataset.graphNode, box: node.querySelector('rect').getBoundingClientRect(),
-      }));
-      const intersections = [];
-      for (const edge of svg.querySelectorAll('[data-graph-edge]')) {
-        const length = edge.getTotalLength(), matrix = edge.getScreenCTM();
-        for (let offset = 1; offset < length; offset += 2) {
-          const point = edge.getPointAtLength(offset).matrixTransform(matrix);
-          const hit = boxes.find(({ id, box }) => ![edge.dataset.from, edge.dataset.to].includes(id)
-            && point.x > box.left + 1 && point.x < box.right - 1 && point.y > box.top + 1 && point.y < box.bottom - 1);
-          if (hit) {
-            intersections.push({ from: edge.dataset.from, to: edge.dataset.to, crossed: hit.id });
-            break;
-          }
+  expect(Math.abs(positions.revise.top - positions.evaluate.top)).toBeLessThan(1);
+  expect(positions.revise.left).toBeGreaterThan(positions.evaluate.right);
+  expect(Math.abs(positions.fallback.top - positions.finish.top)).toBeLessThan(1);
+  expect(positions.fallback.right).toBeLessThan(positions.finish.left);
+  const axis = (positions.evaluate.left + positions.evaluate.right) / 2;
+  const fallbackCenter = (positions.fallback.left + positions.fallback.right) / 2;
+  const finishCenter = (positions.finish.left + positions.finish.right) / 2;
+  expect(fallbackCenter).toBeLessThan(axis);
+  expect(finishCenter).toBeGreaterThan(axis);
+  expect(Math.abs((fallbackCenter + finishCenter) / 2 - axis)).toBeLessThan(1);
+  for (const id of ["fallback", "finish"]) {
+    expect(positions[id].top).toBeGreaterThan(positions.evaluate.bottom);
+    expect(positions.end.top).toBeGreaterThan(positions[id].bottom);
+  }
+  // Inspect every actual drawn curve, including the loop return and all
+  // alternatives, in SVG units independent of each recording's viewport fit.
+  const crossings = await page.locator('#dag svg[data-graph-topology]').evaluate((svg, positions) => {
+    const inverse = svg.getScreenCTM().inverse();
+    const boxes = Object.entries(positions).map(([id, box]) => ({ id, box }));
+    const intersections = [];
+    for (const edge of svg.querySelectorAll('[data-graph-edge]')) {
+      const length = edge.getTotalLength(), matrix = inverse.multiply(edge.getScreenCTM());
+      for (let offset = 1; offset < length; offset += 2) {
+        const point = edge.getPointAtLength(offset).matrixTransform(matrix);
+        const hit = boxes.find(({ id, box }) => ![edge.dataset.from, edge.dataset.to].includes(id)
+          && point.x > box.left + 1 && point.x < box.right - 1 && point.y > box.top + 1 && point.y < box.bottom - 1);
+        if (hit) {
+          intersections.push({ from: edge.dataset.from, to: edge.dataset.to, crossed: hit.id });
+          break;
         }
       }
-      return intersections;
-    });
-    expect(crossings).toEqual([]);
-  }
+    }
+    return intersections;
+  }, positions);
+  expect(crossings).toEqual([]);
   expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(fixture.execution);
+  return {
+    nodes: await page.locator('#dag [data-graph-node]').evaluateAll((nodes) => nodes.map((node) => ({
+      id: node.dataset.graphNode, transform: node.getAttribute("transform"),
+    }))),
+    edges: displayed.edges.map(({ from, to, kind, path }) => ({ from, to, kind, path })),
+  };
 }
 
 async function activateLogicalEvaluate(page) {
@@ -421,12 +403,15 @@ async function expectQuietControls(page) {
 
 test("Graph workbench keeps real loop visits and source-bound values in its simplified reading flow", { tag: "@P0" }, async ({ page }) => {
   test.setTimeout(60000);
+  let definitionGeometry;
   for (const outcome of ["success", "failed"]) {
     const fixture = loopRecord(outcome);
     await open(page, fixture);
     await expectSelectedRoot(page, fixture);
     await expectQuietControls(page);
-    await expectLogicalGraph(page, fixture, outcome);
+    const geometry = await expectLogicalGraph(page, fixture, outcome);
+    if (definitionGeometry) expect(geometry, "identical definitions keep identical SVG geometry across execution outcomes").toEqual(definitionGeometry);
+    else definitionGeometry = geometry;
     await openStepSearch(page);
     for (const [index, visit] of fixture.visits.entries()) await expect(row(page, visit.node.id)).toContainText(`第 ${index + 1} 次`);
 

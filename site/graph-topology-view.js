@@ -93,79 +93,58 @@ function displayLayers(nodes, edges) {
     if (!rows.has(rank)) rows.set(rank, []);
     rows.get(rank).push(id);
   }
-  return { rows, ranked, order: ready, feedback, hasReturn: feedback.size > 0 };
+  return { rows, ranked, feedback, hasReturn: feedback.size > 0 };
 }
 
-function observedRoute(model, layers) {
-  const starts = model.nodes.filter(({ kind }) => kind === "start"), ends = model.nodes.filter(({ kind }) => kind === "end");
-  if (starts.length !== 1 || ends.length !== 1 || !model.nodes.some((node) => node.memberIds?.length)) return [];
-  const start = starts[0].id, end = ends[0].id;
-  const eligible = new Set(model.nodes.filter((node) => node.kind === "start" || node.kind === "end"
-    || node.memberIds?.length > 0 && node.status !== "skipped").map(({ id }) => id));
-  const ways = new Map();
-  // Count distinct node paths, capped at two. Observation of both branches
-  // does not prove which defined connection was traversed, so do not pick a
-  // winning path by visit count, node name, or an arbitrary shortest route.
-  for (const id of [...layers.order].reverse()) {
-    ways.set(id, !eligible.has(id) ? 0 : id === end ? 1 : Math.min(2,
-      [...layers.ranked.get(id).next].reduce((sum, next) => sum + (ways.get(next) || 0), 0)));
+function directDetours(nodes, edges, layers) {
+  const parents = new Map(nodes.map(({ id }) => [id, new Set()]));
+  const outgoing = new Map(nodes.map(({ id }) => [id, new Set()]));
+  const ordinary = new Set(nodes.filter(({ kind }) => kind === "node").map(({ id }) => id));
+  for (const [id, node] of layers.ranked) for (const next of node.next) parents.get(next).add(id);
+  for (const { from, to } of edges) if (from !== to) outgoing.get(from).add(to);
+  const candidates = new Map();
+  for (const edge of edges) {
+    // Only a direct out-and-back leaf can share its anchor's row. Check the
+    // full definition too: another feedback target is not a simple detour.
+    if (!layers.feedback.has(edge.id) || !ordinary.has(edge.from) || !ordinary.has(edge.to)
+      || layers.ranked.get(edge.from).next.size || parents.get(edge.from).size !== 1
+      || !parents.get(edge.from).has(edge.to) || outgoing.get(edge.from).size !== 1) continue;
+    if (!candidates.has(edge.to)) candidates.set(edge.to, new Set());
+    candidates.get(edge.to).add(edge.from);
   }
-  if (ways.get(start) !== 1) return [];
-  const route = [start];
-  while (route.at(-1) !== end) {
-    const next = [...layers.ranked.get(route.at(-1)).next].filter((id) => ways.get(id) > 0);
-    if (next.length !== 1) return [];
-    route.push(next[0]);
+  const sideAnchors = new Map();
+  for (const [anchor, detours] of candidates) {
+    // Without another structural successor there is no reason to call
+    // either half of a cycle the side path. Multiple detours keep their
+    // layers as well, rather than arbitrarily privileging one of them.
+    if (detours.size !== 1 || ![...layers.ranked.get(anchor).next].some((id) => !detours.has(id))) continue;
+    sideAnchors.set([...detours][0], anchor);
   }
-  return route.length > 2 ? route : [];
+  return sideAnchors;
 }
 
 function topologyLayout(model) {
   const layers = displayLayers(model.nodes, model.edges), { rows, hasReturn } = layers;
-  const route = new Set(observedRoute(model, layers)), sideAnchors = new Map();
-  const branchTargets = new Map();
-  for (const { from, to, kind } of model.edges) if (kind === "branch") {
-    if (!branchTargets.has(from)) branchTargets.set(from, new Set());
-    branchTargets.get(from).add(to);
-  }
-  if (route.size) {
-    const parents = new Map(model.nodes.map(({ id }) => [id, new Set()]));
-    for (const [id, node] of layers.ranked) for (const next of node.next) parents.get(next).add(id);
-    for (const edge of model.edges) {
-      // A direct out-and-back detour belongs beside its anchor, not between
-      // that anchor and the next main node. More complex cycles retain their
-      // dependency layers rather than forcing unrelated nodes into one row.
-      if (!layers.feedback.has(edge.id) || sideAnchors.has(edge.from) || !route.has(edge.to) || route.has(edge.from)
-        || layers.ranked.get(edge.from).next.size || parents.get(edge.from).size !== 1
-        || !parents.get(edge.from).has(edge.to)) continue;
-      sideAnchors.set(edge.from, edge.to);
-      const oldRow = rows.get(layers.ranked.get(edge.from).rank);
-      oldRow.splice(oldRow.indexOf(edge.from), 1);
-      rows.get(layers.ranked.get(edge.to).rank).push(edge.from);
-    }
-  }
+  // Geometry uses definition fields only. Execution membership, outcomes,
+  // counts and capture completeness belong exclusively to node presentation.
+  const sideAnchors = directDetours(model.nodes, model.edges, layers);
+  const detourByAnchor = new Map([...sideAnchors].map(([detour, anchor]) => [anchor, detour]));
   const displayRows = [];
   for (const rank of [...rows.keys()].sort((a, b) => a - b)) {
-    const row = rows.get(rank);
-    // Logical alternatives remain peers even when only one was observed.
-    // Center the whole sibling row; the observed route must not give one
-    // branch a privileged straight-through position beneath its parent.
-    if (row.length > 1 && row.length <= 3 && !row.some((id) => sideAnchors.has(id))
-      && [...branchTargets].some(([from, targets]) => route.has(from) && row.every((id) => targets.has(id)))) {
-      displayRows.push(row);
-      continue;
+    let peers = [];
+    for (const id of rows.get(rank)) {
+      if (sideAnchors.has(id)) continue;
+      if (detourByAnchor.has(id)) {
+        if (peers.length) { displayRows.push(peers); peers = []; }
+        displayRows.push([undefined, id, detourByAnchor.get(id)]);
+      } else {
+        peers.push(id);
+        if (peers.length === 3) { displayRows.push(peers); peers = []; }
+      }
     }
-    if (route.size && route.size < model.nodes.length) {
-      const main = row.find((id) => route.has(id));
-      const loops = row.filter((id) => sideAnchors.has(id));
-      const others = row.filter((id) => !route.has(id) && !sideAnchors.has(id));
-      if (row.length) displayRows.push([others.shift(), main, loops.shift()]);
-      while (others.length || loops.length) displayRows.push([others.shift(), undefined, loops.shift() ?? others.shift()]);
-      continue;
-    }
-    // Bounded width keeps broad/disconnected graphs navigable. Additional
-    // rows here are layout only; no concurrency or execution order is implied.
-    for (let offset = 0; offset < row.length; offset += 3) displayRows.push(row.slice(offset, offset + 3));
+    // Center peer rows as a group, keeping the definition order. Bounded
+    // width and extra rows imply neither execution order nor concurrency.
+    if (peers.length) displayRows.push(peers);
   }
   const columns = Math.max(1, ...displayRows.map((row) => row.length));
   const contentWidth = columns * NODE_WIDTH + (columns - 1) * COLUMN_GAP;
@@ -303,7 +282,12 @@ function nameLines(value, maxUnits = 21) {
 /** Create an internal SVG reader for one already validated topology model. */
 export function createGraphTopologyView(host, model, options = {}) {
   if (!host || host.nodeType !== 1 || typeof host.replaceChildren !== "function") throw new TypeError("Expected a Graph drawing container");
-  const nodeById = sourceGraph(model), layout = topologyLayout(model);
+  const nodeById = sourceGraph(model);
+  // Keep runtime facts out of the layout input, not merely out of its rules.
+  const layout = topologyLayout({
+    nodes: model.nodes.map(({ id, kind }) => ({ id, kind })),
+    edges: model.edges.map(({ id, from, to }) => ({ id, from, to })),
+  });
   const dom = host.ownerDocument, view = dom.defaultView;
   let locale = language(options.locale), disposed = false, selectedId, selectedEdgeId, frame, unregister;
   let viewport, dimensions, drag, ignoreNextClick = false, pendingFit = true;
