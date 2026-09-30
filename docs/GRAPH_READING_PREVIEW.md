@@ -197,3 +197,11 @@ Graph 视口统一约束平移：能放下的维度保留整幅绘图，大图�
 最终三浏览器专项 **9 / 9**，Graph 相关回归 **190 / 190**（2.6 分钟）通过，无失败、重试或跳过；未重跑全套 603 项。23 个 JS 测试入口、语法与类型检查通过；32 场景严格检查维持既有四项采集限制。初次新增测试把真实指针移至屏幕外 12000px，Firefox 丢失按下状态；改为屏幕内连续长拖，并等待真实指针事件到达后读取视口，保持严格边界与反向响应断言，没有跳过浏览器或放宽结果。
 
 日志：`.artifacts/graph-pan-focused-verified.log`、`.artifacts/graph-pan-regression.log`、`.artifacts/graph-pan-check.log`、`.artifacts/graph-pan-js.log`、`.artifacts/graph-pan-matrix.log`。[触边实测](../.artifacts/graph-pan-boundary.png)、[恢复完整总览](../.artifacts/graph-pan-overview.png)。实际页面重复向边界拖动后视口保持不变，反向拖动立即变化，浏览器文字选择为空；不修改 Agent、Workflow、嵌入／离线、公开 API 或上游仓库。
+
+#### 固定流程面板与标题栏操作
+
+Graph 的「流程」（无定义时为「调用关系」）改为固定展开的 section，标题使用 h2，不再提供折叠箭头、summary 或收起动作。原有缩小、放大、适应画布按钮移入标题栏右侧，复用同一组元素及事件，移除独立工具栏占位；标题字号、颜色与步骤／运行详情一致。Workflow 继续使用原 details 和工具栏，成功更换记录重置展开状态；Agent 共享阅读界面不改。
+
+在既有 P0/P1 中验证标题点击不折叠、缩放不改当前选择、同一组按钮功能、中英及四种宽度同排无溢出，以及 Workflow 收展／换记录后展开、同页载入 Graph 的控件迁移。三浏览器专项 **15 / 15**、Graph 相关回归 **190 / 190**（2.5 分钟）通过，无失败、重试或跳过；没有新增测试项，也未重跑全套 603 项。23 个 JS 测试入口、语法、类型通过，32 场景严格检查保留既有四项采集限制。
+
+日志：`.artifacts/graph-header-focused.log`、`.artifacts/graph-header-regression.log`、`.artifacts/graph-header-check.log`、`.artifacts/graph-header-js.log`、`.artifacts/graph-header-matrix.log`。[同视口调整前](../.artifacts/graph-header-before.png)、[调整后](../.artifacts/graph-header-after.png)。实际页面已走查标题点击、缩放及语言切换；不改变 Graph 布局／执行事实、公开 API、嵌入／离线或上游仓库。

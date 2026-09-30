@@ -826,6 +826,18 @@ pathHeading.textContent = "Path";
 const pathCanvas = document.querySelector(".canvas-host");
 pathCanvas.before(ui.pathRegion);
 ui.pathRegion.append(pathHeading, pathCanvas);
+// Graph has a fixed reading panel. Keep Workflow's existing disclosure and
+// move the same canvas/controls between shells without duplicating listeners.
+const workflowPathRegion = ui.pathRegion;
+const graphPathRegion = document.createElement("section");
+graphPathRegion.id = "path-region";
+graphPathRegion.setAttribute("aria-labelledby", "graph-path-title");
+const graphPathHeader = document.createElement("header");
+graphPathHeader.className = "graph-path-header";
+const graphPathTitle = document.createElement("h2");
+graphPathTitle.id = "graph-path-title";
+graphPathHeader.append(graphPathTitle);
+graphPathRegion.append(graphPathHeader);
 
 let workflowAPI;
 let einoAPI;
@@ -3736,9 +3748,21 @@ function selectInitialReadingDetail() {
 
 function updateRunViewTabs() {
   ui.runViewTabs.hidden = true;
-  pathHeading.dataset.i18n = currentObjectKind === "agent" ? "trajectoryView" : currentObjectKind === "graph"
+  const graphReading = currentObjectKind === "graph";
+  const pathRegion = graphReading ? graphPathRegion : workflowPathRegion;
+  if (ui.pathRegion !== pathRegion) {
+    ui.pathRegion.replaceWith(pathRegion);
+    pathRegion.append(pathCanvas);
+    ui.pathRegion = pathRegion;
+  }
+  const heading = graphReading ? graphPathTitle : pathHeading;
+  heading.dataset.i18n = currentObjectKind === "agent" ? "trajectoryView" : graphReading
     ? currentGraphTopology ? "graphFlow" : "graphCallsView" : "pathView";
-  pathHeading.textContent = translate(pathHeading.dataset.i18n);
+  heading.textContent = translate(heading.dataset.i18n);
+  ui.readerTools.hidden = graphReading;
+  if (graphReading) {
+    if (ui.diagramTools.parentElement !== graphPathHeader) graphPathHeader.append(ui.diagramTools);
+  } else if (ui.diagramTools.parentElement !== ui.readerTools) ui.runViewTabs.after(ui.diagramTools);
   ui.workbench.dataset.readingKind = currentObjectKind;
   const agentReading = currentObjectKind === "agent";
   const readingOnly = currentObjectKind !== "workflow";
@@ -4120,7 +4144,7 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   document.body.classList.add("has-record");
   ui.inspection.open = true;
   ui.inspectionScope.value = "steps";
-  ui.pathRegion.open = true;
+  workflowPathRegion.open = true;
   largeVisualRequested = false;
   editorRangeCache = undefined;
   inspectionOffset = 0;

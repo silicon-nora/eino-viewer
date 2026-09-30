@@ -63,6 +63,23 @@ async function screenshot(page, testInfo, name) {
   await page.screenshot({ path: new URL(`../../.artifacts/iteration-5/${name}.png`, import.meta.url).pathname });
 }
 
+async function expectPathControls(page, kind) {
+  const graph = kind === "graph";
+  await expect(page.locator("#path-region")).toHaveCount(1);
+  await expect(page.locator(`${graph ? "section" : "details"}#path-region`)).toBeVisible();
+  await expect(page.locator("#diagram-tools")).toHaveCount(1);
+  await expect(page.locator(graph ? "#path-region > header #diagram-tools" : ".reader-tools > #diagram-tools")).toBeVisible();
+  if (graph) {
+    await expect(page.locator("#path-region > header > h2#graph-path-title")).toBeVisible();
+    await expect(page.locator("#path-region > summary")).toHaveCount(0);
+    await expect(page.locator(".reader-tools")).toBeHidden();
+  } else {
+    await expect(page.locator("#path-region")).toHaveAttribute("open");
+    await expect(page.locator("#path-region > summary")).toBeVisible();
+    await expect(page.locator("#graph-path-title")).toHaveCount(0);
+  }
+}
+
 for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 390, height: 844, name: "narrow" }]) {
   test(`Agent trajectory and Graph Workflow results lead the ${viewport.name} first screen without overlapping tools`, { tag: "@P1" }, async ({ page }, testInfo) => {
     await open(page, viewport);
@@ -150,6 +167,7 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
         expect(Math.abs(shortGeometry.containerHeight - shortGeometry.height)).toBeLessThanOrEqual(1);
         expect(await page.evaluate(() => window.playground.document)).toEqual(shortRecord);
       } else if (kind === "graph") {
+        await expectPathControls(page, kind);
         await expect(page.locator("#global-summary")).toBeHidden();
         await expect(page.locator("#run-result-summary")).toBeEmpty();
         await expect(output).toBeVisible();
@@ -159,6 +177,7 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
         else expect(geometry.sidebar.top).toBeGreaterThanOrEqual(geometry.main.bottom - 1);
         await expect(page.locator("#inspection-search")).toBeVisible();
       } else {
+        await expectPathControls(page, kind);
         await expect(output).toBeInViewport();
         expect(geometry.result.bottom).toBeGreaterThanOrEqual(geometry.output.bottom);
         if (viewport.width >= 768) expect(geometry.sidebar.right).toBeLessThanOrEqual(geometry.main.left + 1);
@@ -168,6 +187,28 @@ for (const viewport of [{ width: 1280, height: 720, name: "desktop" }, { width: 
       expect(geometry.overflow).toBe(false);
       if (kind !== "agent") await screenshot(page, testInfo, `workbench-${kind}-${viewport.name}`);
     }
+    const pathSummary = page.locator("#path-region > summary");
+    await pathSummary.click();
+    await expect(page.locator("#path-region")).not.toHaveAttribute("open");
+    await expect(page.locator("#dag")).toBeHidden();
+    await pathSummary.click();
+    await expect(page.locator("#path-region")).toHaveAttribute("open");
+    await expect(page.locator("#dag")).toBeVisible();
+    await pathSummary.click();
+    // Replacing a record in this page must reopen Workflow's disclosure.
+    await openSample(page, "workflow", "workflow-parallel-join-success");
+    await expectPathControls(page, "workflow");
+    await expect(page.locator("#dag")).toBeVisible();
+    await pathSummary.click();
+    await expect(page.locator("#path-region")).not.toHaveAttribute("open");
+    // The existing Workflow editor opens Graph without reloading the page,
+    // exercising movement of the original canvas and its one control group.
+    await importRecord(page, fixture("graph-io-structured"));
+    await expectPathControls(page, "graph");
+    await expect(page.locator("#dag")).toBeVisible();
+    await openSample(page, "workflow", "workflow-parallel-join-failed");
+    await expectPathControls(page, "workflow");
+    await expect(page.locator("#dag")).toBeVisible();
   });
 }
 

@@ -401,6 +401,74 @@ async function expectQuietControls(page) {
   await expect(page.locator('.step-state.success:visible, [data-run-result="success"]:visible')).toHaveCount(0);
 }
 
+async function expectGraphPathHeader(page, locale = "zh", topology = true) {
+  const region = page.locator("#path-region"), header = region.locator(".graph-path-header");
+  expect(await region.evaluate((element) => element.tagName)).toBe("SECTION");
+  await expect(region.locator(":scope > summary")).toHaveCount(0);
+  await expect(header).toBeVisible();
+  await expect(header.locator("h2#graph-path-title")).toHaveText(topology
+    ? locale === "zh" ? "流程" : "Flow"
+    : locale === "zh" ? "调用关系" : "Call relationships");
+  await expect(page.locator("#diagram-tools")).toHaveCount(1);
+  await expect(header.locator("#diagram-tools")).toBeVisible();
+  await expect(page.locator("#reading-main > .reader-tools")).toBeHidden();
+  for (const [id, name] of [["zoom-out", locale === "zh" ? "缩小" : "Zoom out"],
+    ["zoom-in", locale === "zh" ? "放大" : "Zoom in"], ["fit-reading", locale === "zh" ? "适应画布" : "Fit canvas"]]) {
+    const button = header.locator(`#diagram-tools #${id}`);
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
+    await expect(button).toHaveAccessibleName(name);
+  }
+  const layout = await header.evaluate((element) => {
+    const title = element.querySelector("#graph-path-title");
+    return { header: element.getBoundingClientRect().toJSON(), title: title.getBoundingClientRect().toJSON(),
+      buttons: [...element.querySelectorAll("#diagram-tools button")].map((button) => button.getBoundingClientRect().toJSON()),
+      headerOverflow: element.scrollWidth > element.clientWidth + 1,
+      titleOverflow: title.scrollWidth > title.clientWidth + 1,
+      pageOverflow: document.documentElement.scrollWidth > innerWidth + 1 };
+  });
+  expect(layout.headerOverflow || layout.titleOverflow || layout.pageOverflow).toBe(false);
+  expect(layout.buttons).toHaveLength(3);
+  expect(layout.title.left).toBeGreaterThanOrEqual(layout.header.left - 1);
+  expect(layout.title.right).toBeLessThanOrEqual(layout.buttons[0].left + 1);
+  expect(layout.buttons.at(-1).right).toBeLessThanOrEqual(layout.header.right + 1);
+  const items = [layout.title, ...layout.buttons];
+  expect(Math.max(...items.map(({ top }) => top)), "title and all controls occupy the same row")
+    .toBeLessThan(Math.min(...items.map(({ bottom }) => bottom)));
+}
+
+async function expectGraphPathControls(page) {
+  const diagram = page.locator('#dag svg[data-graph-topology]');
+  const selection = await page.evaluate(() => window.playground.linkedSelection);
+  const expectSelection = async () => {
+    expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(selection);
+    await expect(diagram).toBeVisible();
+  };
+  const width = () => diagram.evaluate((svg) => svg.viewBox.baseVal.width);
+  const originalViewport = await diagram.getAttribute("viewBox");
+  await page.locator("#graph-path-title").click();
+  await expect(diagram).toHaveAttribute("viewBox", originalViewport);
+  await expectSelection();
+
+  await page.locator("#fit-reading").click();
+  const fittedWidth = await width();
+  await expectSelection();
+  await page.locator("#zoom-in").click();
+  await expect.poll(width).toBeLessThan(fittedWidth);
+  const zoomedWidth = await width();
+  await expectSelection();
+  await page.locator("#zoom-out").click();
+  await expect.poll(width).toBeGreaterThan(zoomedWidth);
+  await expect.poll(width).toBeCloseTo(fittedWidth, 3);
+  await expectSelection();
+  await page.locator("#zoom-in").click();
+  await expect.poll(width).toBeLessThan(fittedWidth);
+  await expectSelection();
+  await page.locator("#fit-reading").click();
+  await expect.poll(width).toBeCloseTo(fittedWidth, 3);
+  await expectSelection();
+}
+
 test("Graph workbench keeps real loop visits and source-bound values in its simplified reading flow", { tag: "@P0" }, async ({ page }) => {
   test.setTimeout(60000);
   let definitionGeometry;
@@ -409,6 +477,7 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     await open(page, fixture);
     await expectSelectedRoot(page, fixture);
     await expectQuietControls(page);
+    await expectGraphPathHeader(page);
     const geometry = await expectLogicalGraph(page, fixture, outcome);
     if (definitionGeometry) expect(geometry, "identical definitions keep identical SVG geometry across execution outcomes").toEqual(definitionGeometry);
     else definitionGeometry = geometry;
@@ -427,6 +496,7 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     if (outcome === "failed") await expect(row(page, second.node.id)).toContainText("失败");
     await row(page, second.node.id).click();
     if (outcome === "failed") await expect(page.locator("#node-detail")).toContainText("route evaluation unavailable at round 2");
+    await expectGraphPathControls(page);
     await expectSelectedVisit(page, fixture, second);
     expect(second.io.find(({ envelope }) => envelope.payload.direction === "input").envelope.payload.body.round).toBe(2);
     await expect(page.locator("#node-detail .node-detail-hero h3")).toContainText("第 2 次");
@@ -445,6 +515,7 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
     await page.locator('[data-language="en"]').click();
     await expect(page.locator("#inspection-search")).toHaveValue(query);
     await expectQuietControls(page);
+    await expectGraphPathHeader(page, "en");
     expect(await page.evaluate(() => ({ selection: window.playground.linkedSelection,
       scope: window.playground.inspectionScope, document: window.playground.document }))).toEqual(before);
     await expect(page.locator("#node-detail .node-detail-hero h3")).toContainText("Call 2");
@@ -489,7 +560,7 @@ test("Graph workbench keeps real loop visits and source-bound values in its simp
   expect(await page.evaluate(() => window.playground.selectedNodeDetail.graphEdgeId)).toBeUndefined();
   await expect(page.locator('#dag svg[data-graph-topology]')).toHaveCount(0);
   await expect(page.locator('#dag canvas').first()).toBeVisible();
-  await expect(page.locator('#path-region > summary')).toContainText("调用关系");
+  await expectGraphPathHeader(page, "zh", false);
   expect(await page.evaluate(() => window.playground.executionDAG)).toEqual(projectEinoViewerDocument(withoutDefinition).document.execution);
   expect(await page.evaluate(() => window.playground.document)).toEqual(withoutDefinition);
 });
@@ -504,6 +575,14 @@ test("Graph workbench keeps the path primary and complete details reachable at f
     await expect(page.locator("#dag svg[data-graph-topology]")).toBeVisible();
     await expect(page.locator("#dag")).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    const initialSelection = await page.evaluate(() => window.playground.linkedSelection);
+    await expectGraphPathHeader(page);
+    await page.locator('[data-language="en"]').click();
+    await expectGraphPathHeader(page, "en");
+    expect(await page.evaluate(() => window.playground.linkedSelection)).toEqual(initialSelection);
+    await page.locator('[data-language="zh"]').click();
+    await expectGraphPathHeader(page);
+    await expectSelectedRoot(page, fixture);
     await page.screenshot({ path: `.artifacts/graph-reading-${viewport.width}-initial.png` });
 
     await openStepSearch(page);
