@@ -287,11 +287,21 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     expect(new Set(returns.map(({ path }) => path)).size).toBe(2);
   }
   const uniqueNodes = new Map(routeLayouts.unique.nodes.map((node) => [node.id, node]));
-  const mainNodes = ["start", "prepare", "check", "finish", "end"].map((id) => uniqueNodes.get(id));
+  const mainNodes = ["start", "prepare", "check", "end"].map((id) => uniqueNodes.get(id));
   expect(new Set(mainNodes.map(({ x }) => x)).size).toBe(1);
   for (let index = 1; index < mainNodes.length; index += 1) expect(mainNodes[index].y).toBeGreaterThan(mainNodes[index - 1].y);
   expect(uniqueNodes.get("loop").y).toBe(uniqueNodes.get("check").y);
   expect(uniqueNodes.get("loop").x).toBeGreaterThan(uniqueNodes.get("check").x + uniqueNodes.get("check").width);
+  const finish = uniqueNodes.get("finish"), bypass = uniqueNodes.get("bypass"), check = uniqueNodes.get("check");
+  const finishCenter = finish.x + finish.width / 2, bypassCenter = bypass.x + bypass.width / 2;
+  const axis = check.x + check.width / 2;
+  expect(finish.y).toBe(bypass.y);
+  expect(finish.x + finish.width).toBeLessThan(bypass.x);
+  expect(finishCenter).toBeLessThan(axis);
+  expect(bypassCenter).toBeGreaterThan(axis);
+  expect((finishCenter + bypassCenter) / 2).toBe(axis);
+  expect(finish.y).toBeGreaterThan(check.y);
+  expect(uniqueNodes.get("end").y).toBeGreaterThan(finish.y);
   const ambiguousNodes = new Map(routeLayouts.ambiguous.nodes.map((node) => [node.id, node]));
   expect(ambiguousNodes.get("loop").y).toBeGreaterThan(ambiguousNodes.get("check").y);
   expect(ambiguousNodes.get("loop").y).toBe(ambiguousNodes.get("finish").y);

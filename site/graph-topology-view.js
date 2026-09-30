@@ -122,6 +122,11 @@ function observedRoute(model, layers) {
 function topologyLayout(model) {
   const layers = displayLayers(model.nodes, model.edges), { rows, hasReturn } = layers;
   const route = new Set(observedRoute(model, layers)), sideAnchors = new Map();
+  const branchTargets = new Map();
+  for (const { from, to, kind } of model.edges) if (kind === "branch") {
+    if (!branchTargets.has(from)) branchTargets.set(from, new Set());
+    branchTargets.get(from).add(to);
+  }
   if (route.size) {
     const parents = new Map(model.nodes.map(({ id }) => [id, new Set()]));
     for (const [id, node] of layers.ranked) for (const next of node.next) parents.get(next).add(id);
@@ -141,6 +146,14 @@ function topologyLayout(model) {
   const displayRows = [];
   for (const rank of [...rows.keys()].sort((a, b) => a - b)) {
     const row = rows.get(rank);
+    // Logical alternatives remain peers even when only one was observed.
+    // Center the whole sibling row; the observed route must not give one
+    // branch a privileged straight-through position beneath its parent.
+    if (row.length > 1 && row.length <= 3 && !row.some((id) => sideAnchors.has(id))
+      && [...branchTargets].some(([from, targets]) => route.has(from) && row.every((id) => targets.has(id)))) {
+      displayRows.push(row);
+      continue;
+    }
     if (route.size && route.size < model.nodes.length) {
       const main = row.find((id) => route.has(id));
       const loops = row.filter((id) => sideAnchors.has(id));

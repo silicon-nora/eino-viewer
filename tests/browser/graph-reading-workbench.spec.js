@@ -120,9 +120,10 @@ async function expectLogicalGraph(page, fixture, outcome) {
       node.querySelector('rect').getBoundingClientRect().toJSON()])));
   if (outcome === "success") {
     // Only this recording has one complete start→end route through observed
-    // nodes after removing layout feedback. Give it a reading axis, without
-    // changing defined edges into claims about actual traversals.
-    const spine = ["start", "prepare", "evaluate", "finish", "end"];
+    // nodes after removing layout feedback. Give it a reading axis, while
+    // keeping the two forward alternatives equal around that axis. Neither
+    // geometry nor defined edges establish which transitions were traversed.
+    const spine = ["start", "prepare", "evaluate", "end"];
     for (const [index, id] of spine.entries()) {
       const center = (positions[id].left + positions[id].right) / 2;
       const axis = (positions.evaluate.left + positions.evaluate.right) / 2;
@@ -133,6 +134,16 @@ async function expectLogicalGraph(page, fixture, outcome) {
     expect(positions.revise.left).toBeGreaterThan(positions.evaluate.right);
     expect(Math.abs(positions.fallback.top - positions.finish.top)).toBeLessThan(1);
     expect(positions.fallback.right).toBeLessThan(positions.finish.left);
+    const axis = (positions.evaluate.left + positions.evaluate.right) / 2;
+    const fallbackCenter = (positions.fallback.left + positions.fallback.right) / 2;
+    const finishCenter = (positions.finish.left + positions.finish.right) / 2;
+    expect(fallbackCenter).toBeLessThan(axis);
+    expect(finishCenter).toBeGreaterThan(axis);
+    expect(Math.abs((fallbackCenter + finishCenter) / 2 - axis)).toBeLessThan(1);
+    for (const id of ["fallback", "finish"]) {
+      expect(positions[id].top).toBeGreaterThan(positions.evaluate.bottom);
+      expect(positions.end.top).toBeGreaterThan(positions[id].bottom);
+    }
   } else {
     // With no complete observed route, keep neutral definition layers. In
     // particular, never promote the unobserved finish to an executed spine.
