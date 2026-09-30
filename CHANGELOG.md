@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### Owner-accepted reading UI — 2026-09-30
+
+These presentation notes supersede the earlier workbench UI notes below.
+This is a local Git acceptance baseline, not a package release.
+
+- Keep the example-first homepage and shared, unpaged Agent trajectory reader.
+  Select full rows, show complete input before output, and reserve state labels
+  for exceptions without changing recorded statuses or source identities.
+- Simplify the Graph workbench to steps, flow and details. Combine repeated
+  visits visually while retaining each execution's original values; derive
+  structure and cycle layout from definitions independently of outcomes.
+  Make connections selectable, bound canvas panning, remove duplicate results
+  and keep zoom/fit controls in the fixed flow heading.
+- Simplify the Workflow workbench to flow and details, without a step sidebar
+  or search. Open on the whole-run result, select nodes directly, preserve
+  subflow navigation and keyboard focus, and default to left-to-right using
+  the existing four-direction renderer.
+- Keep embedded/offline Graph and Workflow interfaces unchanged. Preserve
+  public APIs, original records, Recorder behavior and drawing safeguards;
+  no streaming, live execution, publishing or upstream repository changes.
+
+### Earlier implementation changes
+
 - Synchronize call breadcrumbs, local path diagrams and source-backed call
   input/return/errors across the workbench, embedded and offline viewers.
   Preserve the overall final result, original IDs and edges, uncertain returns,

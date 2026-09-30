@@ -1,5 +1,7 @@
 # 测试优先级
 
+当前清单（2026-09-30）：255 个独立浏览器场景，P0 174／P1 72／P2 9／P3 0；默认三引擎 603 次执行，81 个 data-matrix 场景仅在 Chromium 默认执行。`npm test` 有 23 个 Node 入口。以下按日期保留历史清理与迭代记录，旧计数不代表当前清单。
+
 ## 判定标准
 
 | 等级 | 风险与保留理由 |
@@ -49,6 +51,8 @@ P0 主要是跨入口事实保真、原始输入安全、错误与正文的独�
 | `scope-reading.test.js` | P0 | 32 场景的局部结果、原边、未归属与不变性；面包屑/声明子树阅读 P1 |
 | `renderer-presentation.test.js` | P0 | 状态与耗时来源、真实调用编号与完整身份；双语命名/键盘可读性 P1 |
 | `reading-presentation.test.js` | P0 | 不改自定义名称和正文、不虚构依赖次序；三入口统一术语 P1，词典精确文案 P2 |
+| `graph-reading.test.js` | P0 | 重复访问身份、原值及边关系保真，失败保留；安全回退与绘图解析兼容性 P1 |
+| `graph-topology.test.js` | P0 | 定义节点、分支与回环保真，执行计数准确，未观测不等同跳过；布局独立于执行结果 P1 |
 | `rendered-value-fold.test.js` | P1 | 隐藏/显示、宽度变化、观察器、取消与销毁；像素阈值与无浏览器环境 P2 |
 | `content-presentation.test.js` | P0 | 原值和数字文本、source role、采集与错误归属；预览长度和 Unicode 边界 P2 |
 | `run-viewer.test.js` | P0 | 副本所有权、事务更新、输入安全、公开接口与异步竞争；阅读流程 P1，披露与阈值 P2 |

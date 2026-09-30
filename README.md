@@ -60,21 +60,31 @@ produces the saved record; users do not need to author a JSON schema. The workbe
 does not open or accept dropped files. Use the [offline HTML](#offline-html) for
 existing saved records, or pass them to the [embedded reader](#embed-the-complete-reader).
 
-An invalid example preserves the last accepted record and selection; Workflow
-also preserves its unapplied Raw draft. The Graph workbench now previews a simpler
-path → step → input/output reading flow. Normal results use an expandable summary;
-failures expose their recorded reason and supported step links. It has no Raw editor
-or technical directory. Try **Multi-round route revision** and inspect each recorded
-visit. The middle diagram uses the Graph definition, including branches and cycles, with confirmed
-visit and exceptional-outcome counts on nodes. Edges are declared connections, not claims of observed
-traversal; unobserved nodes are not marked skipped. The step list and execution selector retain
-original visits and values; the root invocation is not disguised as the structural start node.
-Missing definitions or scopes without a matching definition retain a labeled call-relationship view.
-The canonical scope guard remains; definitions exceeding 500 diagram nodes also require explicit drawing.
-This Graph design awaits owner acceptance; embedded/offline Graph, Agent and Workflow remain unchanged.
+An invalid example preserves the last accepted record and selection. The workbench
+has no Raw editor or technical directory.
 
-See the [local version-control convention](docs/LOCAL_VERSION_CONTROL.md) for the
-accepted Agent baseline and separate Graph preview branch.
+- **Agent: trajectory and details.** The complete trajectory flows down the page,
+  with its first item selected. Click a full row to read input/output; only exceptional states are marked.
+- **Graph: steps, flow and details.** The flow combines repeated visits to a node,
+  while the steps and details retain every original visit and value. Definitions govern
+  connections, branches, cycles and layout independently of execution success or failure.
+  Nodes add confirmed visit and exception counts. Connections are selectable, but do not
+  claim observed traversal; unobserved nodes are not marked skipped. Read the overall result
+  through its root invocation step, without a duplicate result card. Missing definitions or
+  unmatched scopes retain a labeled call-relationship view; the root invocation is not a structural start node.
+- **Workflow: flow and details.** There is no step sidebar or search. The initial detail
+  shows the overall result; click a node to read its input/output, then use **Run result**
+  beside the detail heading to return. Flow defaults left-to-right using the existing
+  four-direction `eino-workflow-dag` renderer. Subflows retain scope-return navigation.
+
+Graph/Workflow flow panels stay open, with zoom and fit controls in their headings.
+Details show input before output with complete input/output bodies. These workbench designs are owner-accepted;
+embedded/offline Graph and Workflow have not adopted this UI revision. Agent already shares
+one reading core across all three entries. Records, public APIs and drawing safeguards are
+unchanged; Graph definitions exceeding 500 diagram nodes also require explicit drawing.
+
+See the [local version-control and acceptance baseline](docs/LOCAL_VERSION_CONTROL.md).
+The original Agent tag and the full subsequent commit history are preserved.
 
 ## Embed the complete reader
 
@@ -127,15 +137,15 @@ update keeps the valid view. `destroy()` is idempotent, and a destroyed instance
 cannot be updated or selected again.
 
 The object API cannot recover precision already lost by a caller's JSON parser.
-The offline file/paste entry and the workbench Workflow Raw-copy editor
-also validate original number tokens before parsing; see [input boundaries](#input-fidelity-boundaries).
+The offline file/paste entry and workbench example loading also validate original
+number tokens before parsing. The workbench has no Raw-copy editor; see [input boundaries](#input-fidelity-boundaries).
 
 ## Reading rules
 
-- Graph/Workflow show the final output first, or the original failure reason. Root results
-  stay separate from intermediate and child outputs. Execution outcome and
+- Root results stay separate from intermediate and child outputs. Failures retain
+  their original reasons and supported node links. Execution outcome and
   capture completeness are independent; a successful run can be partially captured.
-- Graph/Workflow call directories and breadcrumbs change the local path, step/evidence lists
+- Embedded/offline Graph/Workflow call directories and breadcrumbs change the local path, step/evidence lists
   and call input/return/error together. The overall result remains available in
   a collapsible summary above the local result; the original record is unchanged.
 - Agent scopes use complete source addresses; Workflow levels use recorded
@@ -151,7 +161,7 @@ also validate original number tokens before parsing; see [input boundaries](#inp
 - Graph and Workflow scopes of **up to 500 nodes draw automatically** in all
   three reading entries. Larger scopes require an explicit draw action; empty
   scopes create no graph. The threshold uses the full selected scope, not search matches.
-- Graph/Workflow step search covers structural fields: displayed names, IDs, statuses, paths,
+- Workbench Graph and embedded/offline Graph/Workflow step search cover structural fields: displayed names, IDs, statuses, paths,
   invocation identities and evidence-backed call numbers. Evidence search covers
   envelope kinds and structural metadata. Neither indexes business bodies or
   body summaries; it is not full-text search.
@@ -199,7 +209,7 @@ product. Protocol records remain evidence, not extra top-level product areas.
 
 The viewer rejects data it cannot read reliably rather than rewriting it.
 Integers must be between `-9007199254740991` and `9007199254740991`; larger
-numbers are not rounded or converted to strings. Workbench and offline text
+numbers are not rounded or converted to strings. Workbench example loading and offline text
 imports reject discarded decimal precision and underflow. Ordinary decimals
 and equivalent exponent forms remain supported. Numeric-looking strings stay
 strings; unsafe embedded tool-argument JSON stays verbatim.
