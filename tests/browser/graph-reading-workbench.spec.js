@@ -88,6 +88,7 @@ async function expectLogicalGraph(page, fixture, outcome) {
   expect(displayed.nodes.filter(({ active }) => active)).toEqual([]);
   const expectedEdges = [...definition.edges.map(({ from, to }) => ({ from, to, kind: "edge" })),
     ...definition.branches.flatMap(({ from, targets }) => targets.map((to) => ({ from, to, kind: "branch" })))];
+  expect(displayed.edges).toHaveLength(8);
   expect(displayed.edges.map(({ from, to, kind }) => ({ from, to, kind }))).toEqual(expectedEdges);
   expect(displayed.edges.filter(({ from, kind }) => from === "evaluate" && kind === "branch").map(({ to }) => to).sort())
     .toEqual(["fallback", "finish", "revise"]);
@@ -114,9 +115,41 @@ async function expectLogicalGraph(page, fixture, outcome) {
   const branches = await page.locator('#dag [data-graph-edge][data-edge-kind="branch"]').evaluateAll((edges) =>
     edges.map((edge) => ({ dashed: getComputedStyle(edge).strokeDasharray, marker: edge.getAttribute("marker-end") })));
   expect(branches.every(({ dashed, marker }) => dashed !== "none" && Boolean(marker))).toBe(true);
+  const positions = await page.locator('#dag [data-graph-node]').evaluateAll((nodes) =>
+    Object.fromEntries(nodes.map((node) => [node.dataset.graphNode,
+      node.querySelector('rect').getBoundingClientRect().toJSON()])));
   if (outcome === "success") {
-    // Inspect the actual drawn curves, not model endpoints. The conditional
-    // evaluate→fallback/finish routes skip revise's row and must go around it.
+    // Only this recording has one complete start→end route through observed
+    // nodes after removing layout feedback. Give it a reading axis, without
+    // changing defined edges into claims about actual traversals.
+    const spine = ["start", "prepare", "evaluate", "finish", "end"];
+    for (const [index, id] of spine.entries()) {
+      const center = (positions[id].left + positions[id].right) / 2;
+      const axis = (positions.evaluate.left + positions.evaluate.right) / 2;
+      expect(Math.abs(center - axis)).toBeLessThan(1);
+      if (index > 0) expect(positions[id].top).toBeGreaterThan(positions[spine[index - 1]].bottom);
+    }
+    expect(Math.abs(positions.revise.top - positions.evaluate.top)).toBeLessThan(1);
+    expect(positions.revise.left).toBeGreaterThan(positions.evaluate.right);
+    expect(Math.abs(positions.fallback.top - positions.finish.top)).toBeLessThan(1);
+    expect(positions.fallback.right).toBeLessThan(positions.finish.left);
+  } else {
+    // With no complete observed route, keep neutral definition layers. In
+    // particular, never promote the unobserved finish to an executed spine.
+    expect(positions.evaluate.top).toBeGreaterThan(positions.prepare.bottom);
+    for (const id of ["fallback", "finish", "revise"]) {
+      expect(positions[id].top).toBeGreaterThan(positions.evaluate.bottom);
+      expect(Math.abs(positions[id].top - positions.fallback.top)).toBeLessThan(1);
+    }
+    expect(positions.fallback.right).toBeLessThan(positions.finish.left);
+    expect(positions.finish.right).toBeLessThan(positions.revise.left);
+    for (const id of ["fallback", "finish"]) {
+      expect(positions.end.top).toBeGreaterThan(positions[id].bottom);
+    }
+  }
+  if (outcome === "success") {
+    // Inspect every actual drawn curve, including the loop return and all
+    // alternatives, rather than merely checking model endpoints.
     const crossings = await page.locator('#dag svg[data-graph-topology]').evaluate((svg) => {
       const boxes = [...svg.querySelectorAll('[data-graph-node]')].map((node) => ({
         id: node.dataset.graphNode, box: node.querySelector('rect').getBoundingClientRect(),

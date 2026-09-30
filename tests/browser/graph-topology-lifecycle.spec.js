@@ -240,5 +240,63 @@ test("Graph topology safely renders cycles and isolates hidden, resized and dest
     state.second.destroy();
     window.ResizeObserver = state.NativeObserver;
   });
+  const routeLayouts = await page.evaluate(async () => {
+    const { createGraphTopologyView } = await import("/site/graph-topology-view.js");
+    const node = (id, observed = true) => ({ id, name: id,
+      kind: ["start", "end"].includes(id) ? id : "node",
+      status: ["start", "end"].includes(id) ? "structural" : observed ? "success" : "not-observed",
+      statusCounts: observed ? { success: 1 } : {},
+      memberIds: observed && !["start", "end"].includes(id) ? [`visit:${id}`] : [] });
+    const edge = (id, from, to, kind = "edge") => ({ id, from, to, kind, basis: "declared" });
+    // Deliberately put the loop before the real entry and repeat its return.
+    // Moving a side node twice must not remove an unrelated node from its row.
+    const model = { name: "Observed route layout",
+      nodes: [node("loop"), node("finish"), node("start"), node("end"), node("check"), node("prepare"), node("bypass", false)],
+      edges: [edge("return", "loop", "check"), edge("parallel-return", "loop", "check"),
+        edge("exit", "finish", "end"), edge("entry", "start", "prepare"), edge("prepare-check", "prepare", "check"),
+        edge("finish-branch", "check", "finish", "branch"), edge("loop-branch", "check", "loop", "branch"),
+        edge("bypass-branch", "check", "bypass", "branch"), edge("bypass-exit", "bypass", "end")] };
+    const collect = (current) => {
+      const host = document.createElement("div");
+      host.className = "host";
+      document.body.append(host);
+      const before = JSON.stringify(current), viewer = createGraphTopologyView(host, current);
+      try {
+        return { expectedNodes: current.nodes.map(({ id }) => id), expectedEdges: current.edges.map(({ id }) => id),
+          sourceUnchanged: JSON.stringify(current) === before,
+          nodes: [...host.querySelectorAll("[data-graph-node]")].map((group) => {
+            const box = group.querySelector("rect").getBBox(), matrix = group.transform.baseVal.consolidate().matrix;
+            return { id: group.dataset.graphNode, x: box.x + matrix.e, y: box.y + matrix.f, width: box.width };
+          }),
+          edges: [...host.querySelectorAll("[data-graph-edge]")].map((path) => ({ id: path.dataset.graphEdge,
+            path: path.getAttribute("d"), direction: path.dataset.edgeDirection })) };
+      } finally { viewer.destroy(); host.remove(); }
+    };
+    const unique = collect(model);
+    // Observing both complete branches cannot establish one winning route.
+    const ambiguous = collect({ ...model, nodes: model.nodes.map((entry) => entry.id === "bypass" ? node("bypass") : entry) });
+    return { unique, ambiguous };
+  });
+  for (const layout of Object.values(routeLayouts)) {
+    expect(layout.sourceUnchanged).toBe(true);
+    expect(layout.nodes.map(({ id }) => id)).toEqual(layout.expectedNodes);
+    expect(layout.edges.map(({ id }) => id)).toEqual(layout.expectedEdges);
+    expect(new Set(layout.nodes.map(({ id }) => id)).size).toBe(layout.expectedNodes.length);
+    const returns = layout.edges.filter(({ id }) => ["return", "parallel-return"].includes(id));
+    expect(returns.map(({ direction }) => direction)).toEqual(["return", "return"]);
+    expect(new Set(returns.map(({ path }) => path)).size).toBe(2);
+  }
+  const uniqueNodes = new Map(routeLayouts.unique.nodes.map((node) => [node.id, node]));
+  const mainNodes = ["start", "prepare", "check", "finish", "end"].map((id) => uniqueNodes.get(id));
+  expect(new Set(mainNodes.map(({ x }) => x)).size).toBe(1);
+  for (let index = 1; index < mainNodes.length; index += 1) expect(mainNodes[index].y).toBeGreaterThan(mainNodes[index - 1].y);
+  expect(uniqueNodes.get("loop").y).toBe(uniqueNodes.get("check").y);
+  expect(uniqueNodes.get("loop").x).toBeGreaterThan(uniqueNodes.get("check").x + uniqueNodes.get("check").width);
+  const ambiguousNodes = new Map(routeLayouts.ambiguous.nodes.map((node) => [node.id, node]));
+  expect(ambiguousNodes.get("loop").y).toBeGreaterThan(ambiguousNodes.get("check").y);
+  expect(ambiguousNodes.get("loop").y).toBe(ambiguousNodes.get("finish").y);
+  expect(ambiguousNodes.get("finish").y).toBe(ambiguousNodes.get("bypass").y);
+  expect(ambiguousNodes.get("loop").x).toBeLessThan(ambiguousNodes.get("finish").x);
+  expect(ambiguousNodes.get("finish").x).toBeLessThan(ambiguousNodes.get("bypass").x);
   expect(errors).toEqual([]);
 });

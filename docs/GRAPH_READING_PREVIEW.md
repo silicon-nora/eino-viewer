@@ -141,3 +141,13 @@ Graph 仍待 Owner 的视觉和交互验收。嵌入／离线 Graph 尚未同步
 本次在原有两个 P0 中扩展验证，未新增测试案例：三浏览器专项 **9 / 9**，随后 Graph 相关回归 **190 / 190**，无失败、重试或跳过。两次结果不累加，也不等同重新运行全套 603 项。23 个 JS 测试入口、语法及类型检查通过，32 场景严格检查仍为 `passed-with-limitations`，既有四项采集限制不变。
 
 日志：`.artifacts/graph-edge-focused.log`、`.artifacts/graph-edge-regression.log`、`.artifacts/graph-edge-js.log`、`.artifacts/graph-edge-matrix.log`。真实页面鼠标点击、切语言和回到节点已走查；[循环回线选中截图](../.artifacts/graph-edge-loop-selected.png)。不改 Agent、Workflow、嵌入／离线、Recorder 或公开 API。
+
+### 主线与旁路排布（2026-09-30）
+
+Owner 明确：修订节点属于旁路，不应夹在评估和完成节点之间，也不是把三个分支平均铺开。成功样例现以 `开始 → prepare → evaluate → finish → 结束` 为中轴，`revise` 位于 `evaluate` 同行右侧，去修订与返回评估使用相对侧端口的两条短曲线；未观测的 `fallback` 留在 `finish` 左侧旁支。
+
+布局先仅为分层排除反馈边，再在该定义图中统计由已观测节点及结构边界组成的完整路径。只有唯一候选时才使用居中骨架，不以节点名称、访问次数或最短路径任意挑选。没有完整候选、存在多个候选、或仅有定义时继续中性分层，不把未观测节点当已执行主线。侧移只针对有明确单一锚点的直接往返支路，复杂循环仍保留分层。此选择只改变几何，不证明边实际经过；原定义边、执行身份、原值及状态全部保留。
+
+三浏览器专项 **9 / 9**、随后 Graph 相关回归 **190 / 190** 通过，无失败、重试或跳过；不与上一版结果累加，不宣称本次重跑全部 603 项。23 个 JS 测试入口、语法、类型通过；32 场景严格检查维持既有四项采集限制。只扩展原有 P0，未增加独立测试项，覆盖主线／旁路几何、失败中性布局、乱序定义、平行返回边及多候选回退，保留不穿节点、原始数据和交互断言。
+
+日志：`.artifacts/graph-mainline-focused.log`、`.artifacts/graph-mainline-regression.log`、`.artifacts/graph-mainline-check.log`、`.artifacts/graph-mainline-js.log`、`.artifacts/graph-mainline-matrix.log`。[完整页面截图](../.artifacts/graph-mainline-after.png)。页面中的去向和返回线均已用鼠标实测，Graph 仍待 Owner 验收；不改 Agent、Workflow、嵌入／离线或上游仓库。

@@ -43,102 +43,130 @@ function sourceGraph(model) {
   return byId;
 }
 
-// Iterative Kosaraju avoids recursive call-stack limits on explicitly drawn
-// large records. Components only determine geometry, never reading order.
-function components(nodes, edges) {
+// Ignore feedback only while assigning display layers, never while drawing.
+// Treating a whole cycle as one tall block would place a node's other direct
+// branches below the entire cycle, incorrectly suggesting another dependency.
+function displayLayers(nodes, edges) {
   const outgoing = new Map(nodes.map(({ id }) => [id, []]));
-  const incoming = new Map(nodes.map(({ id }) => [id, []]));
-  for (const { from, to } of edges) { outgoing.get(from).push(to); incoming.get(to).push(from); }
-  const visited = new Set(), finished = [];
-  for (const { id } of nodes) {
-    if (visited.has(id)) continue;
-    visited.add(id);
+  const incoming = new Map(nodes.map(({ id }) => [id, 0]));
+  for (const edge of edges) {
+    outgoing.get(edge.from).push(edge);
+    if (edge.from !== edge.to) incoming.set(edge.to, incoming.get(edge.to) + 1);
+  }
+  const states = new Map(), feedback = new Set();
+  // Start at real entry points before considering a disconnected cycle. The
+  // original definition order breaks ties, not names or observed visit order.
+  const roots = [...nodes.filter(({ kind }) => kind === "start"),
+    ...nodes.filter(({ id }) => incoming.get(id) === 0), ...nodes];
+  for (const { id } of roots) {
+    if (states.has(id)) continue;
+    states.set(id, "active");
     const stack = [{ id, offset: 0 }];
     while (stack.length) {
       const frame = stack.at(-1), children = outgoing.get(frame.id);
-      if (frame.offset === children.length) { finished.push(frame.id); stack.pop(); continue; }
-      const child = children[frame.offset++];
-      if (!visited.has(child)) { visited.add(child); stack.push({ id: child, offset: 0 }); }
+      if (frame.offset === children.length) { states.set(frame.id, "done"); stack.pop(); continue; }
+      const edge = children[frame.offset++];
+      if (states.get(edge.to) === "active") feedback.add(edge.id);
+      else if (!states.has(edge.to)) { states.set(edge.to, "active"); stack.push({ id: edge.to, offset: 0 }); }
     }
   }
-  const assigned = new Set(), groups = [];
-  for (const id of finished.reverse()) {
-    if (assigned.has(id)) continue;
-    const group = [], stack = [id];
-    assigned.add(id);
-    while (stack.length) {
-      const current = stack.pop();
-      group.push(current);
-      for (const parent of incoming.get(current)) if (!assigned.has(parent)) { assigned.add(parent); stack.push(parent); }
-    }
-    groups.push(group);
+  const ranked = new Map(nodes.map(({ id }) => [id, { rank: 0, next: new Set(), incoming: 0 }]));
+  for (const { id, from, to } of edges) {
+    if (feedback.has(id)) continue;
+    const source = ranked.get(from), target = ranked.get(to);
+    if (!source.next.has(to)) { source.next.add(to); target.incoming += 1; }
   }
-  return { groups, outgoing, incoming };
+  const ready = nodes.filter(({ id }) => ranked.get(id).incoming === 0).map(({ id }) => id);
+  for (let offset = 0; offset < ready.length; offset += 1) {
+    const node = ranked.get(ready[offset]);
+    for (const id of node.next) {
+      const child = ranked.get(id);
+      child.rank = Math.max(child.rank, node.rank + 1);
+      child.incoming -= 1;
+      if (child.incoming === 0) ready.push(id);
+    }
+  }
+  const rows = new Map();
+  for (const { id } of nodes) {
+    const rank = ranked.get(id).rank;
+    if (!rows.has(rank)) rows.set(rank, []);
+    rows.get(rank).push(id);
+  }
+  return { rows, ranked, order: ready, feedback, hasReturn: feedback.size > 0 };
+}
+
+function observedRoute(model, layers) {
+  const starts = model.nodes.filter(({ kind }) => kind === "start"), ends = model.nodes.filter(({ kind }) => kind === "end");
+  if (starts.length !== 1 || ends.length !== 1 || !model.nodes.some((node) => node.memberIds?.length)) return [];
+  const start = starts[0].id, end = ends[0].id;
+  const eligible = new Set(model.nodes.filter((node) => node.kind === "start" || node.kind === "end"
+    || node.memberIds?.length > 0 && node.status !== "skipped").map(({ id }) => id));
+  const ways = new Map();
+  // Count distinct node paths, capped at two. Observation of both branches
+  // does not prove which defined connection was traversed, so do not pick a
+  // winning path by visit count, node name, or an arbitrary shortest route.
+  for (const id of [...layers.order].reverse()) {
+    ways.set(id, !eligible.has(id) ? 0 : id === end ? 1 : Math.min(2,
+      [...layers.ranked.get(id).next].reduce((sum, next) => sum + (ways.get(next) || 0), 0)));
+  }
+  if (ways.get(start) !== 1) return [];
+  const route = [start];
+  while (route.at(-1) !== end) {
+    const next = [...layers.ranked.get(route.at(-1)).next].filter((id) => ways.get(id) > 0);
+    if (next.length !== 1) return [];
+    route.push(next[0]);
+  }
+  return route.length > 2 ? route : [];
 }
 
 function topologyLayout(model) {
-  const order = new Map(model.nodes.map(({ id }, index) => [id, index]));
-  const { groups, outgoing, incoming } = components(model.nodes, model.edges);
-  const groupByNode = new Map();
-  groups.forEach((group, index) => { for (const id of group) groupByNode.set(id, index); });
-  const ranked = groups.map((group) => {
-    const members = new Set(group);
-    const first = [...group].sort((a, b) => order.get(a) - order.get(b));
-    const entry = first.find((id) => incoming.get(id).some((from) => !members.has(from))) || first[0];
-    const ordered = [], seen = new Set(), pending = [entry];
-    while (pending.length) {
-      const id = pending.pop();
-      if (seen.has(id)) continue;
-      seen.add(id); ordered.push(id);
-      const children = outgoing.get(id).filter((child) => members.has(child) && !seen.has(child));
-      children.sort((a, b) => order.get(b) - order.get(a));
-      pending.push(...children);
-    }
-    ordered.push(...first.filter((id) => !seen.has(id)));
-    return { ids: ordered, rank: 0, next: new Set(), incoming: 0, order: Math.min(...group.map((id) => order.get(id))) };
-  });
-  for (const { from, to } of model.edges) {
-    const source = groupByNode.get(from), target = groupByNode.get(to);
-    if (source !== target && !ranked[source].next.has(target)) { ranked[source].next.add(target); ranked[target].incoming += 1; }
-  }
-  const ready = ranked.map((group, index) => group.incoming === 0 ? index : undefined).filter((index) => index !== undefined);
-  const rows = new Map();
-  while (ready.length) {
-    ready.sort((a, b) => ranked[b].order - ranked[a].order);
-    const index = ready.pop(), group = ranked[index];
-    group.ids.forEach((id, offset) => {
-      const rank = group.rank + offset;
-      if (!rows.has(rank)) rows.set(rank, []);
-      rows.get(rank).push(id);
-    });
-    for (const child of group.next) {
-      ranked[child].rank = Math.max(ranked[child].rank, group.rank + group.ids.length);
-      ranked[child].incoming -= 1;
-      if (ranked[child].incoming === 0) ready.push(child);
+  const layers = displayLayers(model.nodes, model.edges), { rows, hasReturn } = layers;
+  const route = new Set(observedRoute(model, layers)), sideAnchors = new Map();
+  if (route.size) {
+    const parents = new Map(model.nodes.map(({ id }) => [id, new Set()]));
+    for (const [id, node] of layers.ranked) for (const next of node.next) parents.get(next).add(id);
+    for (const edge of model.edges) {
+      // A direct out-and-back detour belongs beside its anchor, not between
+      // that anchor and the next main node. More complex cycles retain their
+      // dependency layers rather than forcing unrelated nodes into one row.
+      if (!layers.feedback.has(edge.id) || sideAnchors.has(edge.from) || !route.has(edge.to) || route.has(edge.from)
+        || layers.ranked.get(edge.from).next.size || parents.get(edge.from).size !== 1
+        || !parents.get(edge.from).has(edge.to)) continue;
+      sideAnchors.set(edge.from, edge.to);
+      const oldRow = rows.get(layers.ranked.get(edge.from).rank);
+      oldRow.splice(oldRow.indexOf(edge.from), 1);
+      rows.get(layers.ranked.get(edge.to).rank).push(edge.from);
     }
   }
   const displayRows = [];
   for (const rank of [...rows.keys()].sort((a, b) => a - b)) {
-    const row = rows.get(rank).sort((a, b) => order.get(a) - order.get(b));
+    const row = rows.get(rank);
+    if (route.size && route.size < model.nodes.length) {
+      const main = row.find((id) => route.has(id));
+      const loops = row.filter((id) => sideAnchors.has(id));
+      const others = row.filter((id) => !route.has(id) && !sideAnchors.has(id));
+      if (row.length) displayRows.push([others.shift(), main, loops.shift()]);
+      while (others.length || loops.length) displayRows.push([others.shift(), undefined, loops.shift() ?? others.shift()]);
+      continue;
+    }
     // Bounded width keeps broad/disconnected graphs navigable. Additional
     // rows here are layout only; no concurrency or execution order is implied.
     for (let offset = 0; offset < row.length; offset += 3) displayRows.push(row.slice(offset, offset + 3));
   }
   const columns = Math.max(1, ...displayRows.map((row) => row.length));
   const contentWidth = columns * NODE_WIDTH + (columns - 1) * COLUMN_GAP;
-  const hasReturn = model.edges.some(({ from, to }) => groupByNode.get(from) === groupByNode.get(to));
   const returnSpace = hasReturn ? 80 : 24;
   const width = PADDING * 2 + contentWidth + returnSpace;
   const positions = new Map();
   displayRows.forEach((row, rowIndex) => {
     const rowWidth = row.length * NODE_WIDTH + (row.length - 1) * COLUMN_GAP;
-    row.forEach((id, column) => positions.set(id, {
+    row.forEach((id, column) => { if (id !== undefined) positions.set(id, {
       x: PADDING + (contentWidth - rowWidth) / 2 + column * (NODE_WIDTH + COLUMN_GAP),
       y: PADDING + rowIndex * (NODE_HEIGHT + ROW_GAP),
-    }));
+    }); });
   });
   const height = PADDING * 2 + Math.max(1, displayRows.length) * NODE_HEIGHT + Math.max(0, displayRows.length - 1) * ROW_GAP;
-  return { positions, width, height, returnX: PADDING + contentWidth + 48 };
+  return { positions, width, height, sideAnchors, returnX: PADDING + contentWidth + 48 };
 }
 
 function parallelOffset(index, count, step, available) {
@@ -161,6 +189,15 @@ function edgeGeometry(edge, layout, parallelIndex = 0, parallelCount = 1) {
     const spread = parallelCount === 1 ? maximumSpread
       : minimumSpread + (maximumSpread - minimumSpread) * parallelIndex / (parallelCount - 1);
     return { direction: "self", d: `M ${x} ${y + 16} C ${x + spread} ${y + 72}, ${x + spread} ${y - 72}, ${x} ${y - 16}` };
+  }
+  if (to.y === from.y && (layout.sideAnchors.get(edge.from) === edge.to || layout.sideAnchors.get(edge.to) === edge.from)) {
+    const returning = layout.sideAnchors.get(edge.from) === edge.to;
+    const direction = to.x > from.x ? 1 : -1;
+    const startX = direction > 0 ? from.x + NODE_WIDTH : from.x, endX = direction > 0 ? to.x : to.x + NODE_WIDTH;
+    const offset = (returning ? 1 : -1) * (12 + parallelOffset(parallelIndex, parallelCount, 5, 10));
+    const y = from.y + NODE_HEIGHT / 2 + offset, bend = y + (returning ? 8 : -8);
+    return { direction: returning ? "return" : "forward",
+      d: `M ${startX} ${y} C ${startX + direction * 16} ${bend}, ${endX - direction * 16} ${bend}, ${endX} ${y}` };
   }
   if (to.y <= from.y) {
     const lane = layout.returnX + parallelOffset(parallelIndex, parallelCount, 12, layout.width - 16 - layout.returnX);
