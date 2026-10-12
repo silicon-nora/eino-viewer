@@ -5,6 +5,8 @@
 `eino-viewer` 展示输入、Agent 轨迹或 Graph/Workflow 路径、步骤输入输出以及最终输出或失败，不执行程序，
 也不补造缺失关系。Agent、Graph、Workflow 是从记录自动识别的运行来源。
 
+协议开发进度：[RunRecord v2 合同包](./protocol/v2/README.md) 已提供新 Schema、生成类型、校验器和合成业务样例；当前 Viewer 与 Recorder 尚未接入 v2。
+
 仅支持保存后的**非流式**结果，不执行运行、不消费流、不订阅实时事件、不上传记录。
 旧记录、未完成记录和只有定义的记录仍可查看，但不会补造结果。
 

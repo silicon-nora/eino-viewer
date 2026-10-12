@@ -7,6 +7,8 @@ final output or failure without executing the program or inventing missing
 relationships. Agent, Graph, and Workflow are supported run sources, detected
 from the record.
 
+Protocol development: the [RunRecord v2 contract package](./protocol/v2/README.md) contains the next schema, generated types, validator and synthetic business fixtures. It is not yet supported by the current Viewer or Recorder.
+
 The product reads saved **non-streaming** results only. It does not execute
 runs, consume streams, subscribe to live events, or upload records. Older,
 incomplete and definition-only records remain readable without invented results.

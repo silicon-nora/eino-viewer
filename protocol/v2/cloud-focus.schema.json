@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:eino:cloud-focus:1",
+  "title": "cloud-focus business profile v1",
+  "description": "Versioned payload and content schema catalog for normalized RunRecord v2. Validate a named $defs schema, not the catalog root. Cross-entity checks and owner rules are specified in CLOUD_FOCUS.md.",
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "ids": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "intent": { "enum": ["week_report", "work_guidance"] },
+    "nonnegative-integer": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "route-decision": {
+      "type": "object",
+      "description": "A selection observed at the actual selector. Selected definitions do not imply their invocations started.",
+      "properties": {
+        "requestedIntent": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "effectiveIntent": { "$ref": "#/$defs/intent" },
+        "selectedDefinitionIds": { "$ref": "#/$defs/ids", "type": "array", "minItems": 1 },
+        "source": { "enum": ["policy", "request_override", "user_override", "force_report_prep", "fallback", "unknown"] },
+        "reasonCode": { "$ref": "#/$defs/id" },
+        "fallback": { "type": "boolean" },
+        "policyVersion": { "$ref": "#/$defs/id" },
+        "requestContentRef": { "$ref": "#/$defs/id" },
+        "policyContentRef": { "$ref": "#/$defs/id" }
+      },
+      "required": ["selectedDefinitionIds", "source"],
+      "additionalProperties": false
+    },
+    "soft-stop": {
+      "type": "object",
+      "description": "An invoked business operation returned without continuing useful work. This is not an unexecuted definition or an execution failure.",
+      "properties": {
+        "reasonCode": { "$ref": "#/$defs/id" },
+        "originInvocationId": { "$ref": "#/$defs/id" },
+        "inherited": { "type": "boolean" },
+        "message": { "type": "string" },
+        "detailsContentRef": { "$ref": "#/$defs/id" }
+      },
+      "required": ["reasonCode", "originInvocationId", "inherited"],
+      "additionalProperties": false
+    },
+    "validation": {
+      "type": "object",
+      "description": "Business parsing/validation of a model response, independent of the model invocation outcome and usage.",
+      "properties": {
+        "stage": { "enum": ["work_items", "card"] },
+        "status": { "enum": ["passed", "failed", "not_performed"] },
+        "reasonCode": { "$ref": "#/$defs/id" },
+        "message": { "type": "string" },
+        "subjectContentRef": { "$ref": "#/$defs/id" },
+        "modelInvocationId": { "$ref": "#/$defs/id" },
+        "detailsContentRef": { "$ref": "#/$defs/id" },
+        "repair": {
+          "type": "object",
+          "properties": {
+            "status": { "enum": ["not_required", "required", "attempted", "exhausted", "unavailable"] },
+            "attemptIndex": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+            "attemptCount": { "$ref": "#/$defs/nonnegative-integer" }
+          },
+          "required": ["status"],
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": { "properties": { "status": { "const": "not_required" } }, "required": ["status"] },
+              "then": {
+                "properties": { "attemptCount": { "const": 0 }, "attemptIndex": false },
+                "required": ["attemptCount"]
+              }
+            }
+          ]
+        }
+      },
+      "required": ["stage", "status"],
+      "additionalProperties": false
+    },
+    "dependency-warning": {
+      "type": "object",
+      "description": "A dependency problem observed while the enclosing business operation may continue successfully.",
+      "properties": {
+        "dependency": { "$ref": "#/$defs/id" },
+        "operation": { "enum": ["read", "write", "fetch"] },
+        "reasonCode": { "$ref": "#/$defs/id" },
+        "effect": { "enum": ["continued", "fallback", "omitted", "unknown"] },
+        "message": { "type": "string" },
+        "causeInvocationId": { "$ref": "#/$defs/id" },
+        "detailsContentRef": { "$ref": "#/$defs/id" }
+      },
+      "required": ["dependency", "reasonCode", "effect"],
+      "additionalProperties": false
+    },
+    "evaluation-context": {
+      "type": "object",
+      "description": "Immutable evaluation material references for one engine result version. Missing material is unknown, never an empty fabricated object or a serialized prompt.",
+      "properties": {
+        "scene": { "$ref": "#/$defs/id" },
+        "intent": { "$ref": "#/$defs/intent" },
+        "resultAnnotationId": { "$ref": "#/$defs/id" },
+        "routeDecisionEventId": { "$ref": "#/$defs/id" },
+        "workItemsContentRef": { "$ref": "#/$defs/id" },
+        "documentsContentRef": { "$ref": "#/$defs/id" },
+        "userProfileContentRef": { "$ref": "#/$defs/id" },
+        "timeContextContentRef": { "$ref": "#/$defs/id" },
+        "additionalContentRefs": { "$ref": "#/$defs/ids" }
+      },
+      "required": ["resultAnnotationId"],
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "description": "An engine result artifact, independent of host delivery, cache, persistence receipt, clicks and impressions.",
+      "properties": {
+        "resultId": { "$ref": "#/$defs/id" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "status": { "enum": ["items", "no_items", "unknown"] },
+        "contentRef": { "$ref": "#/$defs/id" },
+        "itemIds": { "$ref": "#/$defs/ids" },
+        "reasonCode": { "$ref": "#/$defs/id" },
+        "causeInvocationId": { "$ref": "#/$defs/id" },
+        "detailsContentRef": { "$ref": "#/$defs/id" }
+      },
+      "required": ["resultId", "version", "status", "contentRef"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "items" } }, "required": ["status"] },
+          "then": { "properties": { "itemIds": { "type": "array", "minItems": 1 } }, "required": ["itemIds"] }
+        },
+        {
+          "if": { "properties": { "status": { "const": "no_items" } }, "required": ["status"] },
+          "then": { "properties": { "itemIds": { "type": "array", "maxItems": 0 } }, "required": ["itemIds"] }
+        }
+      ]
+    },
+    "work-items": {
+      "type": "array",
+      "description": "Structured card-generation work items. File identifiers are exact strings; this is not user_features prompt text.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "primary_file_ids": { "$ref": "#/$defs/ids" },
+          "supporting_file_ids": { "$ref": "#/$defs/ids" },
+          "weeks_behavior": { "type": "array", "items": { "$ref": "#/$defs/weekly-behavior" } },
+          "attributes": { "type": "object" }
+        },
+        "required": ["title", "summary", "primary_file_ids", "supporting_file_ids", "weeks_behavior"],
+        "additionalProperties": false
+      }
+    },
+    "weekly-behavior": {
+      "type": "object",
+      "properties": {
+        "week_start": { "type": "string" },
+        "edit_count": { "$ref": "#/$defs/nonnegative-integer" },
+        "edit_active_days": { "$ref": "#/$defs/nonnegative-integer", "type": "integer", "maximum": 7 },
+        "daily": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "weekday": { "type": "string" },
+              "edit_count": { "$ref": "#/$defs/nonnegative-integer" },
+              "view_count": { "$ref": "#/$defs/nonnegative-integer" },
+              "attention_share": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "required": ["weekday", "edit_count", "view_count", "attention_share"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["week_start", "edit_count", "edit_active_days", "daily"],
+      "additionalProperties": false
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file_id": { "$ref": "#/$defs/id" },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "content": { "type": "string" },
+          "content_rune_length": { "$ref": "#/$defs/nonnegative-integer" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "key_words": { "type": "array", "items": { "type": "string" } },
+          "permission": { "type": "string" },
+          "attributes": { "type": "object" }
+        },
+        "required": ["file_id", "title"],
+        "additionalProperties": false
+      }
+    },
+    "user-profile": {
+      "type": "object",
+      "description": "Structured profile actually consumed by the operation, not a JSON string. An observed absent profile is {}, with presence explained by content provenance.",
+      "properties": {
+        "user_id": { "$ref": "#/$defs/id" },
+        "nick_name": { "type": "string" },
+        "career": { "type": "string" },
+        "industry": { "type": "string" },
+        "location": { "type": "string" },
+        "user_profiling": { "type": "string" },
+        "interest_tags": { "type": "array", "items": { "type": "string" } },
+        "company_role": { "type": "string" },
+        "attributes": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "time-context": {
+      "type": "object",
+      "description": "Business clock consumed by the prompt, independent of execution timestamps. timezone preserves the actual zone/offset identifier.",
+      "properties": {
+        "current_time": { "type": "string", "minLength": 1 },
+        "timezone": { "$ref": "#/$defs/id" },
+        "weekday": { "type": "string", "minLength": 1 },
+        "now_unix": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+        "attributes": { "type": "object" }
+      },
+      "required": ["current_time", "timezone", "weekday"],
+      "additionalProperties": false
+    },
+    "result-content": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "itemId": { "$ref": "#/$defs/id" },
+              "title": { "type": "string" },
+              "prompt": { "type": "string" },
+              "intent": { "$ref": "#/$defs/intent" },
+              "related_files": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "file_id": { "$ref": "#/$defs/id" },
+                    "file_name": { "type": "string" },
+                    "link_id": { "$ref": "#/$defs/id" },
+                    "size": { "$ref": "#/$defs/nonnegative-integer" },
+                    "attributes": { "type": "object" }
+                  },
+                  "required": ["file_id"],
+                  "additionalProperties": false
+                }
+              },
+              "attributes": { "type": "object" }
+            },
+            "required": ["itemId", "title", "prompt"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["items"],
+      "additionalProperties": false
+    }
+  }
+}

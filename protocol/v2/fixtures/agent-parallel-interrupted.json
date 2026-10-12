@@ -1,0 +1,743 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "run:agent-parallel-interrupted",
+    "mode": "execution",
+    "scope": "fixture.agent",
+    "source": "agent",
+    "rootInvocationId": "i:root",
+    "status": "interrupted",
+    "timing": {
+      "startedAtMs": 1791792000000,
+      "endedAtMs": 1791792001000,
+      "durationMs": 1000,
+      "basis": "observed"
+    },
+    "sealedAtMs": 1791792001010,
+    "producer": {
+      "name": "synthetic-contract-fixtures",
+      "version": "2.0.0-candidate"
+    },
+    "capture": {
+      "state": "partial",
+      "coverage": [
+        "definitions",
+        "invocations",
+        "events",
+        "model"
+      ],
+      "issues": [
+        {
+          "code": "capture.interrupted",
+          "message": "Tool lookup had started but no terminal observation was captured; render was requested but never dispatched.",
+          "owner": {
+            "kind": "invocation",
+            "id": "i:right:lookup"
+          }
+        }
+      ]
+    },
+    "labels": {
+      "synthetic": "true",
+      "origin": "hand-authored-not-production-capture",
+      "scenario": "agent-parallel-interrupted"
+    }
+  },
+  "definitions": [
+    {
+      "id": "d:agent",
+      "kind": "agent",
+      "name": "coordinator"
+    },
+    {
+      "id": "d:left",
+      "kind": "agent",
+      "name": "worker",
+      "parentId": "d:agent",
+      "path": [
+        "left"
+      ]
+    },
+    {
+      "id": "d:left:lookup",
+      "kind": "tool",
+      "name": "lookup",
+      "parentId": "d:left"
+    },
+    {
+      "id": "d:right",
+      "kind": "agent",
+      "name": "worker",
+      "parentId": "d:agent",
+      "path": [
+        "right"
+      ]
+    },
+    {
+      "id": "d:right:lookup",
+      "kind": "tool",
+      "name": "lookup",
+      "parentId": "d:right"
+    },
+    {
+      "id": "d:right:render",
+      "kind": "tool",
+      "name": "render",
+      "parentId": "d:right"
+    }
+  ],
+  "invocations": [
+    {
+      "id": "i:root",
+      "kind": "agent",
+      "name": "coordinator",
+      "parent": {
+        "state": "root"
+      },
+      "status": "interrupted",
+      "timing": {
+        "startedAtMs": 1791792000000,
+        "endedAtMs": 1791792001000,
+        "durationMs": 1000,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:agent-user-message"
+      ],
+      "outputRefs": [
+        "c:agent-final-output"
+      ],
+      "metrics": [],
+      "definitionId": "d:agent",
+      "error": {
+        "code": "interrupted",
+        "message": "Synthetic execution interrupted before all tool work completed."
+      }
+    },
+    {
+      "id": "i:left",
+      "kind": "agent",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000100,
+        "endedAtMs": 1791792000700,
+        "durationMs": 600,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:left"
+    },
+    {
+      "id": "i:model:left",
+      "kind": "model",
+      "name": "synthetic-model",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:left"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000120,
+        "endedAtMs": 1791792000300,
+        "durationMs": 180,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:model:left:request",
+        "c:agent-user-message"
+      ],
+      "outputRefs": [
+        "c:model:left:response",
+        "c:assistant:left"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "i:left:lookup",
+      "kind": "tool",
+      "name": "lookup",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:left"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000310,
+        "endedAtMs": 1791792000650,
+        "durationMs": 340,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [
+        "c:left:tool-result"
+      ],
+      "metrics": [],
+      "definitionId": "d:left:lookup",
+      "externalCallId": "shared-external-call"
+    },
+    {
+      "id": "i:right",
+      "kind": "agent",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "interrupted",
+      "timing": {
+        "startedAtMs": 1791792000100,
+        "endedAtMs": 1791792000999,
+        "durationMs": 899,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:right"
+    },
+    {
+      "id": "i:model:right",
+      "kind": "model",
+      "name": "synthetic-model",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:right"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000120,
+        "endedAtMs": 1791792000300,
+        "durationMs": 180,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:model:right:request",
+        "c:agent-user-message"
+      ],
+      "outputRefs": [
+        "c:model:right:response",
+        "c:assistant:right"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "i:right:lookup",
+      "kind": "tool",
+      "name": "lookup",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:right"
+      },
+      "status": "running",
+      "timing": {
+        "startedAtMs": 1791792000310,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:right:lookup",
+      "externalCallId": "shared-external-call"
+    }
+  ],
+  "events": [
+    {
+      "id": "ev:start:i:root",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792000000,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:left",
+      "sequence": 2,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:left"
+      },
+      "atMs": 1791792000100,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:right",
+      "sequence": 3,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:right"
+      },
+      "atMs": 1791792000100,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:model:left",
+      "sequence": 4,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:left"
+      },
+      "atMs": 1791792000120,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:model:right",
+      "sequence": 5,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "atMs": 1791792000120,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:request:left",
+      "sequence": 6,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:left"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": [
+        "c:assistant:left"
+      ],
+      "targetDefinitionIds": [
+        "d:left:lookup"
+      ],
+      "attributes": {
+        "toolName": "lookup",
+        "externalCallId": "shared-external-call"
+      }
+    },
+    {
+      "id": "ev:request:right",
+      "sequence": 7,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": [
+        "c:assistant:right"
+      ],
+      "targetDefinitionIds": [
+        "d:right:lookup"
+      ],
+      "attributes": {
+        "toolName": "lookup",
+        "externalCallId": "shared-external-call"
+      }
+    },
+    {
+      "id": "ev:request:not-dispatched",
+      "sequence": 8,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": [
+        "c:assistant:right"
+      ],
+      "targetDefinitionIds": [
+        "d:right:render"
+      ],
+      "attributes": {
+        "toolName": "render",
+        "externalCallId": "pending-call"
+      }
+    },
+    {
+      "id": "ev:end:i:model:left",
+      "sequence": 9,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:left"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:model:right",
+      "sequence": 10,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:left:lookup",
+      "sequence": 11,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:left:lookup"
+      },
+      "atMs": 1791792000310,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:right:lookup",
+      "sequence": 12,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:right:lookup"
+      },
+      "atMs": 1791792000310,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:left:lookup",
+      "sequence": 13,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:left:lookup"
+      },
+      "atMs": 1791792000650,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:left",
+      "sequence": 14,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:left"
+      },
+      "atMs": 1791792000700,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:right",
+      "sequence": 15,
+      "type": "invocation.interrupted",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:right"
+      },
+      "atMs": 1791792000999,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:root",
+      "sequence": 16,
+      "type": "invocation.interrupted",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792001000,
+      "contentRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel:1",
+      "type": "responds_to",
+      "from": {
+        "kind": "invocation",
+        "id": "i:left:lookup"
+      },
+      "to": {
+        "kind": "event",
+        "id": "ev:request:left"
+      },
+      "evidenceEventId": "ev:request:left"
+    },
+    {
+      "id": "rel:2",
+      "type": "responds_to",
+      "from": {
+        "kind": "invocation",
+        "id": "i:right:lookup"
+      },
+      "to": {
+        "kind": "event",
+        "id": "ev:request:right"
+      },
+      "evidenceEventId": "ev:request:right"
+    }
+  ],
+  "contents": [
+    {
+      "id": "c:agent-user-message",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "user",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Compare the two fictional project summaries and render the result."
+            }
+          ]
+        }
+      },
+      "schemaRef": "urn:eino:run:2#/$defs/Message"
+    },
+    {
+      "id": "c:model:left:request",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:left"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "provider": "synthetic-provider",
+          "model": "synthetic-model-v1",
+          "parameters": {
+            "jsonObject": true,
+            "thinking": false
+          },
+          "messages": [
+            {
+              "role": "system",
+              "content": "Synthetic schema-constrained generation."
+            },
+            {
+              "role": "user",
+              "content": "Use synthetic material for left."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c:model:left:response",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:left"
+      },
+      "role": "model-response",
+      "mediaType": "text/plain",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"tool_calls\":[{\"id\":\"shared-external-call\",\"name\":\"lookup\",\"arguments\":{\"query\":\"synthetic-left\"}}]}"
+      }
+    },
+    {
+      "id": "c:assistant:left",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:left"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Lookup fictional material for left."
+            }
+          ],
+          "toolRequestEventIds": [
+            "ev:request:left"
+          ]
+        }
+      },
+      "schemaRef": "urn:eino:run:2#/$defs/Message"
+    },
+    {
+      "id": "c:left:tool-result",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:left:lookup"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "tool",
+          "name": "lookup",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Fictional left project completed its draft."
+            }
+          ],
+          "respondsToEventId": "ev:request:left"
+        }
+      },
+      "schemaRef": "urn:eino:run:2#/$defs/Message"
+    },
+    {
+      "id": "c:model:right:request",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "provider": "synthetic-provider",
+          "model": "synthetic-model-v1",
+          "parameters": {
+            "jsonObject": true,
+            "thinking": false
+          },
+          "messages": [
+            {
+              "role": "system",
+              "content": "Synthetic schema-constrained generation."
+            },
+            {
+              "role": "user",
+              "content": "Use synthetic material for right."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c:model:right:response",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "role": "model-response",
+      "mediaType": "text/plain",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"tool_calls\":[{\"id\":\"shared-external-call\",\"name\":\"lookup\",\"arguments\":{\"query\":\"synthetic-right\"}},{\"id\":\"pending-call\",\"name\":\"render\",\"arguments\":{}}]}"
+      }
+    },
+    {
+      "id": "c:assistant:right",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:right"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "Lookup fictional material for right."
+            }
+          ],
+          "toolRequestEventIds": [
+            "ev:request:right",
+            "ev:request:not-dispatched"
+          ]
+        }
+      },
+      "schemaRef": "urn:eino:run:2#/$defs/Message"
+    },
+    {
+      "id": "c:agent-final-output",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "unknown",
+      "transforms": [],
+      "data": {
+        "availability": "missing",
+        "reason": "No final assistant answer was produced before interruption."
+      }
+    }
+  ],
+  "usage": [
+    {
+      "id": "u:left",
+      "invocationId": "i:model:left",
+      "provider": "synthetic-provider",
+      "model": "synthetic-model-v1",
+      "requestId": "synthetic-request:left",
+      "source": "provider",
+      "completeness": "complete",
+      "tokens": {
+        "input": 120,
+        "output": 40,
+        "total": 160,
+        "inputCached": 20,
+        "outputReasoning": 10
+      }
+    },
+    {
+      "id": "u:right",
+      "invocationId": "i:model:right",
+      "provider": "synthetic-provider",
+      "model": "synthetic-model-v1",
+      "requestId": "synthetic-request:right",
+      "source": "provider",
+      "completeness": "complete",
+      "tokens": {
+        "input": 120,
+        "output": 40,
+        "total": 160,
+        "inputCached": 20,
+        "outputReasoning": 10
+      }
+    }
+  ],
+  "annotations": []
+}

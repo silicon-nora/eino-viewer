@@ -1,0 +1,712 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "run:graph-loop-repeated-definition",
+    "mode": "execution",
+    "scope": "fixture.graph",
+    "source": "graph",
+    "rootInvocationId": "i:root",
+    "status": "succeeded",
+    "timing": {
+      "startedAtMs": 1791792000000,
+      "endedAtMs": 1791792001000,
+      "durationMs": 1000,
+      "basis": "observed"
+    },
+    "sealedAtMs": 1791792001010,
+    "producer": {
+      "name": "synthetic-contract-fixtures",
+      "version": "2.0.0-candidate"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "definitions",
+        "invocations",
+        "events",
+        "state"
+      ],
+      "issues": []
+    },
+    "labels": {
+      "synthetic": "true",
+      "origin": "hand-authored-not-production-capture",
+      "scenario": "graph-loop-repeated-definition"
+    }
+  },
+  "definitions": [
+    {
+      "id": "d:graph",
+      "kind": "graph",
+      "name": "bounded-loop",
+      "edges": [
+        {
+          "id": "edge:step-check",
+          "from": "d:step",
+          "to": "d:check",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:repeat",
+          "from": "d:check",
+          "to": "d:step",
+          "kind": "candidate",
+          "branchKey": "again"
+        },
+        {
+          "id": "edge:done",
+          "from": "d:check",
+          "to": "d:end",
+          "kind": "candidate",
+          "branchKey": "done"
+        }
+      ]
+    },
+    {
+      "id": "d:step",
+      "kind": "node",
+      "name": "transform",
+      "parentId": "d:graph"
+    },
+    {
+      "id": "d:check",
+      "kind": "node",
+      "name": "check",
+      "parentId": "d:graph"
+    },
+    {
+      "id": "d:end",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:graph"
+    }
+  ],
+  "invocations": [
+    {
+      "id": "i:root",
+      "kind": "graph",
+      "name": "bounded-loop",
+      "parent": {
+        "state": "root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000000,
+        "endedAtMs": 1791792001000,
+        "durationMs": 1000,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:previous-result"
+      ],
+      "outputRefs": [
+        "c:graph-final"
+      ],
+      "metrics": [],
+      "definitionId": "d:graph"
+    },
+    {
+      "id": "i:step:1",
+      "kind": "node",
+      "name": "transform",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000100,
+        "endedAtMs": 1791792000200,
+        "durationMs": 100,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:step",
+      "iteration": 1
+    },
+    {
+      "id": "i:check:1",
+      "kind": "node",
+      "name": "check",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000205,
+        "endedAtMs": 1791792000220,
+        "durationMs": 15,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:check",
+      "iteration": 1
+    },
+    {
+      "id": "i:step:2",
+      "kind": "node",
+      "name": "transform",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000300,
+        "endedAtMs": 1791792000400,
+        "durationMs": 100,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:step",
+      "iteration": 2
+    },
+    {
+      "id": "i:check:2",
+      "kind": "node",
+      "name": "check",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000405,
+        "endedAtMs": 1791792000420,
+        "durationMs": 15,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:check",
+      "iteration": 2
+    },
+    {
+      "id": "i:step:3",
+      "kind": "node",
+      "name": "transform",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000500,
+        "endedAtMs": 1791792000600,
+        "durationMs": 100,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:step",
+      "iteration": 3
+    },
+    {
+      "id": "i:check:3",
+      "kind": "node",
+      "name": "check",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000605,
+        "endedAtMs": 1791792000620,
+        "durationMs": 15,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:check",
+      "iteration": 3
+    }
+  ],
+  "events": [
+    {
+      "id": "ev:start:i:root",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792000000,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:step:1",
+      "sequence": 2,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:1"
+      },
+      "atMs": 1791792000100,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:step:1",
+      "sequence": 3,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:1"
+      },
+      "atMs": 1791792000200,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:check:1",
+      "sequence": 4,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:1"
+      },
+      "atMs": 1791792000205,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:decision:1",
+      "sequence": 5,
+      "type": "route.selected",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:1"
+      },
+      "atMs": 1791792000215,
+      "contentRefs": [],
+      "targetDefinitionIds": [
+        "d:step"
+      ],
+      "attributes": {
+        "decision": "again"
+      }
+    },
+    {
+      "id": "ev:end:i:check:1",
+      "sequence": 6,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:1"
+      },
+      "atMs": 1791792000220,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:step:2",
+      "sequence": 7,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:step:2",
+      "sequence": 8,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      },
+      "atMs": 1791792000400,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:check:2",
+      "sequence": 9,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:2"
+      },
+      "atMs": 1791792000405,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:decision:2",
+      "sequence": 10,
+      "type": "route.selected",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:2"
+      },
+      "atMs": 1791792000415,
+      "contentRefs": [],
+      "targetDefinitionIds": [
+        "d:step"
+      ],
+      "attributes": {
+        "decision": "again"
+      }
+    },
+    {
+      "id": "ev:end:i:check:2",
+      "sequence": 11,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:2"
+      },
+      "atMs": 1791792000420,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:step:3",
+      "sequence": 12,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      },
+      "atMs": 1791792000500,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:step:3",
+      "sequence": 13,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      },
+      "atMs": 1791792000600,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:check:3",
+      "sequence": 14,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:3"
+      },
+      "atMs": 1791792000605,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:decision:3",
+      "sequence": 15,
+      "type": "route.selected",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:3"
+      },
+      "atMs": 1791792000615,
+      "contentRefs": [],
+      "targetDefinitionIds": [
+        "d:end"
+      ],
+      "attributes": {
+        "decision": "done"
+      }
+    },
+    {
+      "id": "ev:end:i:check:3",
+      "sequence": 16,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:check:3"
+      },
+      "atMs": 1791792000620,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:root",
+      "sequence": 17,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792001000,
+      "contentRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel:1",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:check:1"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:step:1"
+      }
+    },
+    {
+      "id": "rel:2",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:1"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:1"
+      }
+    },
+    {
+      "id": "rel:3",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:check:1"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:1"
+      }
+    },
+    {
+      "id": "rel:4",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:check:2"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      }
+    },
+    {
+      "id": "rel:5",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:check:1"
+      },
+      "evidenceEventId": "ev:decision:1"
+    },
+    {
+      "id": "rel:6",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:2"
+      }
+    },
+    {
+      "id": "rel:7",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:check:2"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:2"
+      }
+    },
+    {
+      "id": "rel:8",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:1"
+      }
+    },
+    {
+      "id": "rel:9",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:check:3"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      }
+    },
+    {
+      "id": "rel:10",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:check:2"
+      },
+      "evidenceEventId": "ev:decision:2"
+    },
+    {
+      "id": "rel:11",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:3"
+      }
+    },
+    {
+      "id": "rel:12",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:check:3"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:3"
+      }
+    },
+    {
+      "id": "rel:13",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:2"
+      }
+    },
+    {
+      "id": "rel:14",
+      "type": "derived_from",
+      "from": {
+        "kind": "content",
+        "id": "c:graph-final"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:counter:3"
+      }
+    }
+  ],
+  "contents": [
+    {
+      "id": "c:previous-result",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": null
+      }
+    },
+    {
+      "id": "c:counter:1",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:1"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "counter",
+          "version": 1,
+          "value": 1
+        }
+      }
+    },
+    {
+      "id": "c:counter:2",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:2"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "counter",
+          "version": 2,
+          "value": 2
+        }
+      }
+    },
+    {
+      "id": "c:counter:3",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:step:3"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "counter",
+          "version": 3,
+          "value": 3
+        }
+      }
+    },
+    {
+      "id": "c:graph-final",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "role": "result",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "counter": 3
+        }
+      }
+    }
+  ],
+  "usage": [],
+  "annotations": []
+}

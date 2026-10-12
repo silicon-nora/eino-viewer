@@ -1,0 +1,3158 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "run:cloud-focus-work-guidance-normal",
+    "mode": "execution",
+    "scope": "recommend.Generate",
+    "source": "application",
+    "rootInvocationId": "i:root",
+    "status": "succeeded",
+    "timing": {
+      "startedAtMs": 1791792000000,
+      "endedAtMs": 1791792001000,
+      "durationMs": 1000,
+      "basis": "observed"
+    },
+    "sealedAtMs": 1791792001010,
+    "producer": {
+      "name": "synthetic-contract-fixtures",
+      "version": "2.0.0-candidate"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "definitions",
+        "invocations",
+        "events",
+        "model",
+        "state",
+        "business"
+      ],
+      "issues": []
+    },
+    "labels": {
+      "synthetic": "true",
+      "origin": "hand-authored-not-production-capture",
+      "scenario": "cloud-focus-work-guidance-normal"
+    },
+    "correlation": {
+      "taskId": "synthetic-task:cloud-focus-work-guidance-normal",
+      "uid": "synthetic-user",
+      "scene": "weekly_report"
+    }
+  },
+  "definitions": [
+    {
+      "id": "d:workflow",
+      "kind": "workflow",
+      "name": "weekly_report",
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "revision": "synthetic/2026.10.12.1",
+      "edges": [
+        {
+          "id": "edge:d:workflow:1",
+          "from": "d:root:START",
+          "to": "d:discover_events",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:2",
+          "from": "d:root:START",
+          "to": "d:discover_events",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:3",
+          "from": "d:discover_events",
+          "to": "d:resolve_files",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:4",
+          "from": "d:discover_events",
+          "to": "d:resolve_files",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:5",
+          "from": "d:resolve_files",
+          "to": "d:report_files",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:6",
+          "from": "d:resolve_files",
+          "to": "d:report_files",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:7",
+          "from": "d:report_files",
+          "to": "d:behavior_heatmap",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:8",
+          "from": "d:report_files",
+          "to": "d:behavior_heatmap",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:9",
+          "from": "d:behavior_heatmap",
+          "to": "d:intent_router",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:10",
+          "from": "d:behavior_heatmap",
+          "to": "d:intent_router",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:11",
+          "from": "d:intent_router",
+          "to": "d:week_report_work_items",
+          "kind": "candidate",
+          "branchKey": "week_report"
+        },
+        {
+          "id": "edge:d:workflow:12",
+          "from": "d:intent_router",
+          "to": "d:week_report_work_items",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:13",
+          "from": "d:intent_router",
+          "to": "d:work_guidance",
+          "kind": "candidate",
+          "branchKey": "work_guidance"
+        },
+        {
+          "id": "edge:d:workflow:14",
+          "from": "d:intent_router",
+          "to": "d:work_guidance",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:15",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_recommend",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:16",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_recommend",
+          "kind": "data"
+        },
+        {
+          "id": "edge:d:workflow:17",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_write_cycle_portrait",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:18",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_write_cycle_portrait",
+          "kind": "data"
+        },
+        {
+          "id": "edge:d:workflow:19",
+          "from": "d:week_report_recommend",
+          "to": "d:root:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:20",
+          "from": "d:week_report_write_cycle_portrait",
+          "to": "d:root:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:21",
+          "from": "d:work_guidance",
+          "to": "d:root:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:22",
+          "from": "d:week_report_recommend",
+          "to": "d:root:END",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/week_report"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:23",
+          "from": "d:work_guidance",
+          "to": "d:root:END",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/work_guidance"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d:discover_events",
+      "kind": "node",
+      "name": "discover_events",
+      "parentId": "d:workflow",
+      "key": "discover_events",
+      "path": [
+        "discover_events"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:resolve_files",
+      "kind": "node",
+      "name": "resolve_files",
+      "parentId": "d:workflow",
+      "key": "resolve_files",
+      "path": [
+        "resolve_files"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:report_files",
+      "kind": "node",
+      "name": "report_files",
+      "parentId": "d:workflow",
+      "key": "report_files",
+      "path": [
+        "report_files"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:behavior_heatmap",
+      "kind": "node",
+      "name": "behavior_heatmap",
+      "parentId": "d:workflow",
+      "key": "behavior_heatmap",
+      "path": [
+        "behavior_heatmap"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:intent_router",
+      "kind": "node",
+      "name": "intent_router",
+      "parentId": "d:workflow",
+      "key": "intent_router",
+      "path": [
+        "intent_router"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_work_items",
+      "kind": "workflow",
+      "name": "week_report_work_items",
+      "parentId": "d:workflow",
+      "key": "week_report_work_items",
+      "path": [
+        "week_report_work_items"
+      ],
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "edges": [
+        {
+          "id": "edge:d:week_report_work_items:1",
+          "from": "d:week_report_work_items:START",
+          "to": "d:week_report_rank_docs",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:2",
+          "from": "d:week_report_rank_docs",
+          "to": "d:week_report_prepare_token",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:3",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_load_summary",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:4",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_load_topn_docs_content",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:5",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_file_behavior_context",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:6",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_user_profile",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:7",
+          "from": "d:week_report_load_summary",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/Summary"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:week_report_work_items:8",
+          "from": "d:week_report_load_summary",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:9",
+          "from": "d:week_report_file_behavior_context",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:10",
+          "from": "d:week_report_user_profile",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:11",
+          "from": "d:week_report_load_topn_docs_content",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:12",
+          "from": "d:week_report_load_topn_docs_content",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/Content"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:week_report_work_items:13",
+          "from": "d:week_report_prepare_llm_input",
+          "to": "d:week_report_llm_work_items",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:14",
+          "from": "d:week_report_llm_work_items",
+          "to": "d:week_report_work_item_behavior",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:15",
+          "from": "d:week_report_work_item_behavior",
+          "to": "d:week_report_work_items:END",
+          "kind": "dependency"
+        }
+      ]
+    },
+    {
+      "id": "d:week_report_rank_docs",
+      "kind": "node",
+      "name": "week_report_rank_docs",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_rank_docs",
+      "path": [
+        "week_report_work_items",
+        "week_report_rank_docs"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_prepare_token",
+      "kind": "node",
+      "name": "week_report_prepare_token",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_prepare_token",
+      "path": [
+        "week_report_work_items",
+        "week_report_prepare_token"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_load_summary",
+      "kind": "node",
+      "name": "week_report_load_summary",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_load_summary",
+      "path": [
+        "week_report_work_items",
+        "week_report_load_summary"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_load_topn_docs_content",
+      "kind": "node",
+      "name": "week_report_load_topn_docs_content",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_load_topn_docs_content",
+      "path": [
+        "week_report_work_items",
+        "week_report_load_topn_docs_content"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_file_behavior_context",
+      "kind": "node",
+      "name": "week_report_file_behavior_context",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_file_behavior_context",
+      "path": [
+        "week_report_work_items",
+        "week_report_file_behavior_context"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_user_profile",
+      "kind": "node",
+      "name": "week_report_user_profile",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_user_profile",
+      "path": [
+        "week_report_work_items",
+        "week_report_user_profile"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_prepare_llm_input",
+      "kind": "node",
+      "name": "week_report_prepare_llm_input",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_prepare_llm_input",
+      "path": [
+        "week_report_work_items",
+        "week_report_prepare_llm_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_llm_work_items",
+      "kind": "node",
+      "name": "week_report_llm_work_items",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_llm_work_items",
+      "path": [
+        "week_report_work_items",
+        "week_report_llm_work_items"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:week_report_work_item_behavior",
+      "kind": "node",
+      "name": "week_report_work_item_behavior",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_work_item_behavior",
+      "path": [
+        "week_report_work_items",
+        "week_report_work_item_behavior"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_recommend",
+      "kind": "workflow",
+      "name": "week_report_recommend",
+      "parentId": "d:workflow",
+      "key": "week_report_recommend",
+      "path": [
+        "week_report_recommend"
+      ],
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "edges": [
+        {
+          "id": "edge:d:week_report_recommend:1",
+          "from": "d:week_report_recommend:START",
+          "to": "d:week_report_prepare_card_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:2",
+          "from": "d:week_report_prepare_card_input",
+          "to": "d:week_report_llm_card",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:3",
+          "from": "d:week_report_llm_card",
+          "to": "d:week_report_card_format_repair",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:4",
+          "from": "d:week_report_card_format_repair",
+          "to": "d:week_report_enrich",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:5",
+          "from": "d:week_report_enrich",
+          "to": "d:week_report_recommend:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:6",
+          "from": "d:week_report_llm_card",
+          "to": "d:week_report_card_format_repair",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "/SkipInfo",
+              "targetPath": "/SkipInfo"
+            },
+            {
+              "sourcePath": "/Candidates",
+              "targetPath": "/Candidates"
+            },
+            {
+              "sourcePath": "/NeedsFormatRepair",
+              "targetPath": "/NeedsFormatRepair"
+            },
+            {
+              "sourcePath": "/ParseError",
+              "targetPath": "/ParseError"
+            },
+            {
+              "sourcePath": "/LLMRawOutput",
+              "targetPath": "/LLMRawOutput"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d:week_report_prepare_card_input",
+      "kind": "node",
+      "name": "week_report_prepare_card_input",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_prepare_card_input",
+      "path": [
+        "week_report_recommend",
+        "week_report_prepare_card_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_llm_card",
+      "kind": "node",
+      "name": "week_report_llm_card",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_llm_card",
+      "path": [
+        "week_report_recommend",
+        "week_report_llm_card"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:week_report_card_format_repair",
+      "kind": "node",
+      "name": "week_report_card_format_repair",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_card_format_repair",
+      "path": [
+        "week_report_recommend",
+        "week_report_card_format_repair"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:week_report_enrich",
+      "kind": "node",
+      "name": "week_report_enrich",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_enrich",
+      "path": [
+        "week_report_recommend",
+        "week_report_enrich"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance",
+      "kind": "workflow",
+      "name": "work_guidance",
+      "parentId": "d:workflow",
+      "key": "work_guidance",
+      "path": [
+        "work_guidance"
+      ],
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "edges": [
+        {
+          "id": "edge:d:work_guidance:1",
+          "from": "d:work_guidance:START",
+          "to": "d:work_guidance_rank_docs",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:2",
+          "from": "d:work_guidance_rank_docs",
+          "to": "d:work_guidance_prepare_token",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:3",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_load_summary",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:4",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_load_topn_docs_content",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:5",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_file_behavior_context",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:6",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_user_profile",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:7",
+          "from": "d:work_guidance_load_summary",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:work_guidance:8",
+          "from": "d:work_guidance_load_summary",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:9",
+          "from": "d:work_guidance_file_behavior_context",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:10",
+          "from": "d:work_guidance_user_profile",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:11",
+          "from": "d:work_guidance_prepare_llm_input",
+          "to": "d:work_guidance_llm_work_items",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:12",
+          "from": "d:work_guidance_llm_work_items",
+          "to": "d:work_guidance_work_item_behavior",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:13",
+          "from": "d:work_guidance_work_item_behavior",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:14",
+          "from": "d:work_guidance_work_item_behavior",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/WorkItems"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:work_guidance:15",
+          "from": "d:work_guidance_load_topn_docs_content",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:16",
+          "from": "d:work_guidance_load_topn_docs_content",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/Content"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:work_guidance:17",
+          "from": "d:work_guidance_prepare_card_input",
+          "to": "d:work_guidance_llm_card",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:18",
+          "from": "d:work_guidance_llm_card",
+          "to": "d:work_guidance_card_format_repair",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:19",
+          "from": "d:work_guidance_card_format_repair",
+          "to": "d:work_guidance_enrich",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:20",
+          "from": "d:work_guidance_enrich",
+          "to": "d:work_guidance:END",
+          "kind": "dependency"
+        }
+      ]
+    },
+    {
+      "id": "d:work_guidance_rank_docs",
+      "kind": "node",
+      "name": "work_guidance_rank_docs",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_rank_docs",
+      "path": [
+        "work_guidance",
+        "work_guidance_rank_docs"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_prepare_token",
+      "kind": "node",
+      "name": "work_guidance_prepare_token",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_prepare_token",
+      "path": [
+        "work_guidance",
+        "work_guidance_prepare_token"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_load_summary",
+      "kind": "node",
+      "name": "work_guidance_load_summary",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_load_summary",
+      "path": [
+        "work_guidance",
+        "work_guidance_load_summary"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_load_topn_docs_content",
+      "kind": "node",
+      "name": "work_guidance_load_topn_docs_content",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_load_topn_docs_content",
+      "path": [
+        "work_guidance",
+        "work_guidance_load_topn_docs_content"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_file_behavior_context",
+      "kind": "node",
+      "name": "work_guidance_file_behavior_context",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_file_behavior_context",
+      "path": [
+        "work_guidance",
+        "work_guidance_file_behavior_context"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_user_profile",
+      "kind": "node",
+      "name": "work_guidance_user_profile",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_user_profile",
+      "path": [
+        "work_guidance",
+        "work_guidance_user_profile"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_prepare_llm_input",
+      "kind": "node",
+      "name": "work_guidance_prepare_llm_input",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_prepare_llm_input",
+      "path": [
+        "work_guidance",
+        "work_guidance_prepare_llm_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_llm_work_items",
+      "kind": "node",
+      "name": "work_guidance_llm_work_items",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_llm_work_items",
+      "path": [
+        "work_guidance",
+        "work_guidance_llm_work_items"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:work_guidance_work_item_behavior",
+      "kind": "node",
+      "name": "work_guidance_work_item_behavior",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_work_item_behavior",
+      "path": [
+        "work_guidance",
+        "work_guidance_work_item_behavior"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_prepare_card_input",
+      "kind": "node",
+      "name": "work_guidance_prepare_card_input",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_prepare_card_input",
+      "path": [
+        "work_guidance",
+        "work_guidance_prepare_card_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_llm_card",
+      "kind": "node",
+      "name": "work_guidance_llm_card",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_llm_card",
+      "path": [
+        "work_guidance",
+        "work_guidance_llm_card"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:work_guidance_card_format_repair",
+      "kind": "node",
+      "name": "work_guidance_card_format_repair",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_card_format_repair",
+      "path": [
+        "work_guidance",
+        "work_guidance_card_format_repair"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:work_guidance_enrich",
+      "kind": "node",
+      "name": "work_guidance_enrich",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_enrich",
+      "path": [
+        "work_guidance",
+        "work_guidance_enrich"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_write_cycle_portrait",
+      "kind": "node",
+      "name": "week_report_write_cycle_portrait",
+      "parentId": "d:workflow",
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:root:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:workflow"
+    },
+    {
+      "id": "d:root:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:workflow"
+    },
+    {
+      "id": "d:week_report_work_items:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:week_report_work_items"
+    },
+    {
+      "id": "d:week_report_work_items:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:week_report_work_items"
+    },
+    {
+      "id": "d:week_report_recommend:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:week_report_recommend"
+    },
+    {
+      "id": "d:week_report_recommend:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:week_report_recommend"
+    },
+    {
+      "id": "d:work_guidance:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:work_guidance"
+    },
+    {
+      "id": "d:work_guidance:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:work_guidance"
+    }
+  ],
+  "invocations": [
+    {
+      "id": "i:root",
+      "kind": "application",
+      "name": "recommend.Generate",
+      "parent": {
+        "state": "root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000000,
+        "endedAtMs": 1791792001000,
+        "durationMs": 1000,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:request"
+      ],
+      "outputRefs": [
+        "c:engine-result"
+      ],
+      "metrics": [
+        {
+          "name": "items_count",
+          "value": 2,
+          "unit": "item"
+        }
+      ]
+    },
+    {
+      "id": "i:workflow",
+      "kind": "workflow",
+      "name": "weekly_report",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000010,
+        "endedAtMs": 1791792000990,
+        "durationMs": 980,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:workflow"
+    },
+    {
+      "id": "i:discover_events",
+      "kind": "node",
+      "name": "discover_events",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:workflow"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000020,
+        "endedAtMs": 1791792000040,
+        "durationMs": 20,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:discover_events"
+    },
+    {
+      "id": "i:resolve_files",
+      "kind": "node",
+      "name": "resolve_files",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:workflow"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000045,
+        "endedAtMs": 1791792000070,
+        "durationMs": 25,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:resolve_files"
+    },
+    {
+      "id": "i:report_files",
+      "kind": "node",
+      "name": "report_files",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:workflow"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000075,
+        "endedAtMs": 1791792000090,
+        "durationMs": 15,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:report_files"
+    },
+    {
+      "id": "i:behavior_heatmap",
+      "kind": "node",
+      "name": "behavior_heatmap",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:workflow"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000095,
+        "endedAtMs": 1791792000120,
+        "durationMs": 25,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [
+        "c:heatmap"
+      ],
+      "metrics": [],
+      "definitionId": "d:behavior_heatmap"
+    },
+    {
+      "id": "i:intent_router",
+      "kind": "node",
+      "name": "intent_router",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:workflow"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000125,
+        "endedAtMs": 1791792000140,
+        "durationMs": 15,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [
+        {
+          "name": "intent",
+          "value": "work_guidance"
+        },
+        {
+          "name": "reason",
+          "value": "force_intent"
+        }
+      ],
+      "definitionId": "d:intent_router"
+    },
+    {
+      "id": "i:work_guidance",
+      "kind": "workflow",
+      "name": "work_guidance",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:workflow"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000150,
+        "endedAtMs": 1791792000900,
+        "durationMs": 750,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance"
+    },
+    {
+      "id": "i:work_guidance_rank_docs",
+      "kind": "node",
+      "name": "work_guidance_rank_docs",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000155,
+        "endedAtMs": 1791792000180,
+        "durationMs": 25,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_rank_docs"
+    },
+    {
+      "id": "i:work_guidance_prepare_token",
+      "kind": "node",
+      "name": "work_guidance_prepare_token",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000185,
+        "endedAtMs": 1791792000205,
+        "durationMs": 20,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_prepare_token"
+    },
+    {
+      "id": "i:work_guidance_load_summary",
+      "kind": "node",
+      "name": "work_guidance_load_summary",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000210,
+        "endedAtMs": 1791792000265,
+        "durationMs": 55,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:state:document-facts",
+        "c:state:report-documents"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_load_summary"
+    },
+    {
+      "id": "i:work_guidance_load_topn_docs_content",
+      "kind": "node",
+      "name": "work_guidance_load_topn_docs_content",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000210,
+        "endedAtMs": 1791792000500,
+        "durationMs": 290,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:state:document-facts"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_load_topn_docs_content"
+    },
+    {
+      "id": "i:work_guidance_file_behavior_context",
+      "kind": "node",
+      "name": "work_guidance_file_behavior_context",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000210,
+        "endedAtMs": 1791792000240,
+        "durationMs": 30,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_file_behavior_context"
+    },
+    {
+      "id": "i:work_guidance_user_profile",
+      "kind": "node",
+      "name": "work_guidance_user_profile",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000210,
+        "endedAtMs": 1791792000260,
+        "durationMs": 50,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_user_profile"
+    },
+    {
+      "id": "i:work_guidance_prepare_llm_input",
+      "kind": "node",
+      "name": "work_guidance_prepare_llm_input",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000270,
+        "endedAtMs": 1791792000290,
+        "durationMs": 20,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:state:document-facts",
+        "c:state:prompt-context",
+        "c:state:user-profile"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_prepare_llm_input"
+    },
+    {
+      "id": "i:work_guidance_llm_work_items",
+      "kind": "node",
+      "name": "work_guidance_llm_work_items",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000295,
+        "endedAtMs": 1791792000470,
+        "durationMs": 175,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_llm_work_items"
+    },
+    {
+      "id": "i:work_guidance_work_item_behavior",
+      "kind": "node",
+      "name": "work_guidance_work_item_behavior",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000475,
+        "endedAtMs": 1791792000490,
+        "durationMs": 15,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_work_item_behavior"
+    },
+    {
+      "id": "i:work_guidance_prepare_card_input",
+      "kind": "node",
+      "name": "work_guidance_prepare_card_input",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000525,
+        "endedAtMs": 1791792000555,
+        "durationMs": 30,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:state:document-facts"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_prepare_card_input"
+    },
+    {
+      "id": "i:work_guidance_llm_card",
+      "kind": "node",
+      "name": "work_guidance_llm_card",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000560,
+        "endedAtMs": 1791792000760,
+        "durationMs": 200,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:state:prompt-context",
+        "c:state:user-profile"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "definitionId": "d:work_guidance_llm_card"
+    },
+    {
+      "id": "i:work_guidance_card_format_repair",
+      "kind": "node",
+      "name": "work_guidance_card_format_repair",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000765,
+        "endedAtMs": 1791792000850,
+        "durationMs": 85,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [
+        {
+          "name": "format_repair_count",
+          "value": 0,
+          "unit": "call"
+        }
+      ],
+      "definitionId": "d:work_guidance_card_format_repair"
+    },
+    {
+      "id": "i:work_guidance_enrich",
+      "kind": "node",
+      "name": "work_guidance_enrich",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000855,
+        "endedAtMs": 1791792000890,
+        "durationMs": 35,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [
+        "c:engine-result"
+      ],
+      "metrics": [],
+      "definitionId": "d:work_guidance_enrich"
+    },
+    {
+      "id": "i:model:work-items",
+      "kind": "model",
+      "name": "synthetic-model",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance_llm_work_items"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000300,
+        "endedAtMs": 1791792000460,
+        "durationMs": 160,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:model:work-items:request"
+      ],
+      "outputRefs": [
+        "c:model:work-items:response"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "i:model:card",
+      "kind": "model",
+      "name": "synthetic-model",
+      "parent": {
+        "state": "known",
+        "invocationId": "i:work_guidance_llm_card"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791792000565,
+        "endedAtMs": 1791792000750,
+        "durationMs": 185,
+        "basis": "observed"
+      },
+      "inputRefs": [
+        "c:model:card:request"
+      ],
+      "outputRefs": [
+        "c:model:card:response"
+      ],
+      "metrics": []
+    }
+  ],
+  "events": [
+    {
+      "id": "ev:start:i:root",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792000000,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:workflow",
+      "sequence": 2,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:workflow"
+      },
+      "atMs": 1791792000010,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:discover_events",
+      "sequence": 3,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:discover_events"
+      },
+      "atMs": 1791792000020,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:discover_events",
+      "sequence": 4,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:discover_events"
+      },
+      "atMs": 1791792000040,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:resolve_files",
+      "sequence": 5,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:resolve_files"
+      },
+      "atMs": 1791792000045,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:resolve_files",
+      "sequence": 6,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:resolve_files"
+      },
+      "atMs": 1791792000070,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:report_files",
+      "sequence": 7,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      },
+      "atMs": 1791792000075,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:state:report-documents",
+      "sequence": 8,
+      "type": "state.written",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      },
+      "atMs": 1791792000090,
+      "contentRefs": [
+        "c:state:report-documents"
+      ]
+    },
+    {
+      "id": "ev:end:i:report_files",
+      "sequence": 9,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      },
+      "atMs": 1791792000090,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:behavior_heatmap",
+      "sequence": 10,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:behavior_heatmap"
+      },
+      "atMs": 1791792000095,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:behavior_heatmap",
+      "sequence": 11,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:behavior_heatmap"
+      },
+      "atMs": 1791792000120,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:intent_router",
+      "sequence": 12,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:intent_router"
+      },
+      "atMs": 1791792000125,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:route",
+      "sequence": 13,
+      "type": "route.selected",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:intent_router"
+      },
+      "atMs": 1791792000138,
+      "contentRefs": [],
+      "targetDefinitionIds": [
+        "d:work_guidance"
+      ],
+      "attributes": {
+        "requestedIntent": "work_guidance",
+        "effectiveIntent": "work_guidance",
+        "reason": "force_intent"
+      }
+    },
+    {
+      "id": "ev:end:i:intent_router",
+      "sequence": 14,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:intent_router"
+      },
+      "atMs": 1791792000140,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance",
+      "sequence": 15,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance"
+      },
+      "atMs": 1791792000150,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_rank_docs",
+      "sequence": 16,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_rank_docs"
+      },
+      "atMs": 1791792000155,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:state:document-facts",
+      "sequence": 17,
+      "type": "state.written",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_rank_docs"
+      },
+      "atMs": 1791792000180,
+      "contentRefs": [
+        "c:state:document-facts"
+      ]
+    },
+    {
+      "id": "ev:end:i:work_guidance_rank_docs",
+      "sequence": 18,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_rank_docs"
+      },
+      "atMs": 1791792000180,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_prepare_token",
+      "sequence": 19,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_token"
+      },
+      "atMs": 1791792000185,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_prepare_token",
+      "sequence": 20,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_token"
+      },
+      "atMs": 1791792000205,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_load_summary",
+      "sequence": 21,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      },
+      "atMs": 1791792000210,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_load_topn_docs_content",
+      "sequence": 22,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_topn_docs_content"
+      },
+      "atMs": 1791792000210,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_file_behavior_context",
+      "sequence": 23,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "atMs": 1791792000210,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_user_profile",
+      "sequence": 24,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "atMs": 1791792000210,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:state:prompt-context",
+      "sequence": 25,
+      "type": "state.written",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "atMs": 1791792000240,
+      "contentRefs": [
+        "c:state:prompt-context"
+      ]
+    },
+    {
+      "id": "ev:end:i:work_guidance_file_behavior_context",
+      "sequence": 26,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "atMs": 1791792000240,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:state:user-profile",
+      "sequence": 27,
+      "type": "state.written",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "atMs": 1791792000260,
+      "contentRefs": [
+        "c:state:user-profile"
+      ]
+    },
+    {
+      "id": "ev:end:i:work_guidance_user_profile",
+      "sequence": 28,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "atMs": 1791792000260,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_load_summary",
+      "sequence": 29,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      },
+      "atMs": 1791792000265,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_prepare_llm_input",
+      "sequence": 30,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "atMs": 1791792000270,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_prepare_llm_input",
+      "sequence": 31,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "atMs": 1791792000290,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_llm_work_items",
+      "sequence": 32,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_work_items"
+      },
+      "atMs": 1791792000295,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:model:work-items",
+      "sequence": 33,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:work-items"
+      },
+      "atMs": 1791792000300,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:model:work-items",
+      "sequence": 34,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:work-items"
+      },
+      "atMs": 1791792000460,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_llm_work_items",
+      "sequence": 35,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_work_items"
+      },
+      "atMs": 1791792000470,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_work_item_behavior",
+      "sequence": 36,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_work_item_behavior"
+      },
+      "atMs": 1791792000475,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_work_item_behavior",
+      "sequence": 37,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_work_item_behavior"
+      },
+      "atMs": 1791792000490,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_load_topn_docs_content",
+      "sequence": 38,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_topn_docs_content"
+      },
+      "atMs": 1791792000500,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_prepare_card_input",
+      "sequence": 39,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_card_input"
+      },
+      "atMs": 1791792000525,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_prepare_card_input",
+      "sequence": 40,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_card_input"
+      },
+      "atMs": 1791792000555,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_llm_card",
+      "sequence": 41,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_card"
+      },
+      "atMs": 1791792000560,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:model:card",
+      "sequence": 42,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:card"
+      },
+      "atMs": 1791792000565,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:model:card",
+      "sequence": 43,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:card"
+      },
+      "atMs": 1791792000750,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_llm_card",
+      "sequence": 44,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_card"
+      },
+      "atMs": 1791792000760,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_card_format_repair",
+      "sequence": 45,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_card_format_repair"
+      },
+      "atMs": 1791792000765,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_card_format_repair",
+      "sequence": 46,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_card_format_repair"
+      },
+      "atMs": 1791792000850,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:start:i:work_guidance_enrich",
+      "sequence": 47,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_enrich"
+      },
+      "atMs": 1791792000855,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance_enrich",
+      "sequence": 48,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_enrich"
+      },
+      "atMs": 1791792000890,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:work_guidance",
+      "sequence": 49,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance"
+      },
+      "atMs": 1791792000900,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:workflow",
+      "sequence": 50,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:workflow"
+      },
+      "atMs": 1791792000990,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:end:i:root",
+      "sequence": 51,
+      "type": "invocation.succeeded",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792001000,
+      "contentRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel:1",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:resolve_files"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:discover_events"
+      }
+    },
+    {
+      "id": "rel:2",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:resolve_files"
+      }
+    },
+    {
+      "id": "rel:3",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:behavior_heatmap"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      }
+    },
+    {
+      "id": "rel:4",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:intent_router"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:behavior_heatmap"
+      }
+    },
+    {
+      "id": "rel:5",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:intent_router"
+      },
+      "evidenceEventId": "ev:route"
+    },
+    {
+      "id": "rel:6",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_token"
+      }
+    },
+    {
+      "id": "rel:7",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_topn_docs_content"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_token"
+      }
+    },
+    {
+      "id": "rel:8",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_token"
+      }
+    },
+    {
+      "id": "rel:9",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_token"
+      }
+    },
+    {
+      "id": "rel:10",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      }
+    },
+    {
+      "id": "rel:11",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      }
+    },
+    {
+      "id": "rel:12",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      }
+    },
+    {
+      "id": "rel:13",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_card_input"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_work_item_behavior"
+      }
+    },
+    {
+      "id": "rel:14",
+      "type": "caused_by",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_card_input"
+      },
+      "to": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_topn_docs_content"
+      }
+    },
+    {
+      "id": "rel:15",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_rank_docs"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:document-facts"
+      },
+      "evidenceEventId": "ev:state:document-facts"
+    },
+    {
+      "id": "rel:16",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:document-facts"
+      }
+    },
+    {
+      "id": "rel:17",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_topn_docs_content"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:document-facts"
+      }
+    },
+    {
+      "id": "rel:18",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:document-facts"
+      }
+    },
+    {
+      "id": "rel:19",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_card_input"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:document-facts"
+      }
+    },
+    {
+      "id": "rel:20",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:report-documents"
+      },
+      "evidenceEventId": "ev:state:report-documents"
+    },
+    {
+      "id": "rel:21",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:report-documents"
+      }
+    },
+    {
+      "id": "rel:22",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:prompt-context"
+      },
+      "evidenceEventId": "ev:state:prompt-context"
+    },
+    {
+      "id": "rel:23",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:prompt-context"
+      }
+    },
+    {
+      "id": "rel:24",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_card"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:prompt-context"
+      }
+    },
+    {
+      "id": "rel:25",
+      "type": "writes",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:user-profile"
+      },
+      "evidenceEventId": "ev:state:user-profile"
+    },
+    {
+      "id": "rel:26",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_prepare_llm_input"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:user-profile"
+      }
+    },
+    {
+      "id": "rel:27",
+      "type": "reads",
+      "from": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_card"
+      },
+      "to": {
+        "kind": "content",
+        "id": "c:state:user-profile"
+      }
+    }
+  ],
+  "contents": [
+    {
+      "id": "c:request",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "scene": "weekly_report",
+          "count": 2,
+          "forceIntent": "work_guidance",
+          "nowUnix": 1791792000,
+          "userId": "synthetic-user"
+        }
+      }
+    },
+    {
+      "id": "c:heatmap",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:behavior_heatmap"
+      },
+      "role": "diagnostic",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "scores": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.75,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "k": 1,
+          "t": 0.5,
+          "now_unix": 1791792000
+        }
+      }
+    },
+    {
+      "id": "c:materials",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_load_summary"
+      },
+      "role": "evaluation-context",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "file_id": "synthetic-file-1",
+            "title": "示例迭代方案",
+            "permission": "owner",
+            "summary": "完全虚构的测试材料。"
+          },
+          {
+            "file_id": "synthetic-file-2",
+            "title": "示例质量清单",
+            "permission": "editor",
+            "summary": "完全虚构的测试材料。"
+          }
+        ]
+      },
+      "schemaRef": "urn:eino:cloud-focus:1#/$defs/documents"
+    },
+    {
+      "id": "c:state:document-facts",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_rank_docs"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "document-facts",
+          "version": 1,
+          "value": {
+            "topFileIds": [
+              "synthetic-file-1",
+              "synthetic-file-2"
+            ],
+            "documents": [
+              {
+                "fileId": "synthetic-file-1",
+                "title": "示例迭代方案",
+                "permission": "owner"
+              },
+              {
+                "fileId": "synthetic-file-2",
+                "title": "示例质量清单",
+                "permission": "editor"
+              },
+              {
+                "fileId": "synthetic-report-file",
+                "title": "示例周报",
+                "permission": "owner"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "c:state:report-documents",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:report_files"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "report-documents",
+          "version": 1,
+          "value": {
+            "byFileId": {
+              "synthetic-report-file": {
+                "titleMatched": true,
+                "tagMatched": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c:state:prompt-context",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "prompt-context",
+          "version": 1,
+          "value": {
+            "nowUnix": 1791792000,
+            "currentTime": "2026-10-12T16:00:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "fileBehavior": []
+          }
+        }
+      }
+    },
+    {
+      "id": "c:state:user-profile",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "role": "state",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "key": "user-profile",
+          "version": 1,
+          "value": {
+            "user_id": "synthetic-user",
+            "company_role": "synthetic-project-owner"
+          }
+        }
+      }
+    },
+    {
+      "id": "c:model:work-items:request",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:work-items"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "provider": "synthetic-provider",
+          "model": "synthetic-model-v1",
+          "parameters": {
+            "jsonObject": true,
+            "thinking": false
+          },
+          "messages": [
+            {
+              "role": "system",
+              "content": "Synthetic schema-constrained generation."
+            },
+            {
+              "role": "user",
+              "content": "Use synthetic material for work-items."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c:model:work-items:response",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:work-items"
+      },
+      "role": "model-response",
+      "mediaType": "text/plain",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"work_items\":[{\"title\":\"示例事项1\",\"summary\":\"虚构事项摘要\",\"primary_file_ids\":[\"synthetic-file-1\"],\"supporting_file_ids\":[]},{\"title\":\"示例事项2\",\"summary\":\"虚构事项摘要\",\"primary_file_ids\":[\"synthetic-file-2\"],\"supporting_file_ids\":[]}]}"
+      }
+    },
+    {
+      "id": "c:model:card:request",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:card"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "provider": "synthetic-provider",
+          "model": "synthetic-model-v1",
+          "parameters": {
+            "jsonObject": true,
+            "thinking": false
+          },
+          "messages": [
+            {
+              "role": "system",
+              "content": "Synthetic schema-constrained generation."
+            },
+            {
+              "role": "user",
+              "content": "Use synthetic material for card."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c:model:card:response",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:model:card"
+      },
+      "role": "model-response",
+      "mediaType": "text/plain",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"cards\":[{\"title\":\"示例卡片1\",\"prompt\":\"请整理完全虚构的测试材料。\",\"related_file_ids\":[\"synthetic-file-1\"]},{\"title\":\"示例卡片2\",\"prompt\":\"请整理完全虚构的测试材料。\",\"related_file_ids\":[\"synthetic-file-2\"]}]}"
+      }
+    },
+    {
+      "id": "c:engine-result",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_enrich"
+      },
+      "role": "result",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "items": [
+            {
+              "itemId": "item:run:cloud-focus-work-guidance-normal:1",
+              "title": "示例卡片1",
+              "prompt": "请整理完全虚构的测试材料。",
+              "intent": "work_guidance",
+              "related_files": [
+                {
+                  "file_id": "synthetic-file-1",
+                  "file_name": "示例迭代方案"
+                }
+              ]
+            },
+            {
+              "itemId": "item:run:cloud-focus-work-guidance-normal:2",
+              "title": "示例卡片2",
+              "prompt": "请整理完全虚构的测试材料。",
+              "intent": "work_guidance",
+              "related_files": [
+                {
+                  "file_id": "synthetic-file-2",
+                  "file_name": "示例质量清单"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "schemaRef": "urn:eino:cloud-focus:1#/$defs/result-content"
+    },
+    {
+      "id": "c:eval-work-items",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_work_item_behavior"
+      },
+      "role": "evaluation-context",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "title": "示例事项1",
+            "summary": "虚构事项摘要",
+            "primary_file_ids": [
+              "synthetic-file-1"
+            ],
+            "supporting_file_ids": [],
+            "weeks_behavior": []
+          },
+          {
+            "title": "示例事项2",
+            "summary": "虚构事项摘要",
+            "primary_file_ids": [
+              "synthetic-file-2"
+            ],
+            "supporting_file_ids": [],
+            "weeks_behavior": []
+          }
+        ]
+      },
+      "schemaRef": "urn:eino:cloud-focus:1#/$defs/work-items"
+    },
+    {
+      "id": "c:eval-time",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_file_behavior_context"
+      },
+      "role": "evaluation-context",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "current_time": "2026-10-12T16:00:00+08:00",
+          "timezone": "Asia/Shanghai",
+          "weekday": "Monday",
+          "now_unix": 1791792000
+        }
+      },
+      "schemaRef": "urn:eino:cloud-focus:1#/$defs/time-context"
+    },
+    {
+      "id": "c:eval-profile",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_user_profile"
+      },
+      "role": "evaluation-context",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "user_id": "synthetic-user",
+          "company_role": "synthetic-project-owner"
+        }
+      },
+      "schemaRef": "urn:eino:cloud-focus:1#/$defs/user-profile"
+    }
+  ],
+  "usage": [
+    {
+      "id": "u:work-items",
+      "invocationId": "i:model:work-items",
+      "provider": "synthetic-provider",
+      "model": "synthetic-model-v1",
+      "requestId": "synthetic-request:work-items",
+      "source": "provider",
+      "completeness": "complete",
+      "tokens": {
+        "input": 120,
+        "output": 40,
+        "total": 160,
+        "inputCached": 20,
+        "outputReasoning": 10
+      }
+    },
+    {
+      "id": "u:card",
+      "invocationId": "i:model:card",
+      "provider": "synthetic-provider",
+      "model": "synthetic-model-v1",
+      "requestId": "synthetic-request:card",
+      "source": "provider",
+      "completeness": "complete",
+      "tokens": {
+        "input": 240,
+        "output": 60,
+        "total": 300,
+        "inputCached": 40,
+        "outputReasoning": 12
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "id": "a:route",
+      "owner": {
+        "kind": "event",
+        "id": "ev:route"
+      },
+      "type": "cloud-focus.route-decision",
+      "schemaVersion": 1,
+      "payload": {
+        "requestedIntent": "work_guidance",
+        "effectiveIntent": "work_guidance",
+        "selectedDefinitionIds": [
+          "d:work_guidance"
+        ],
+        "source": "request_override",
+        "reasonCode": "force_intent",
+        "fallback": false,
+        "policyVersion": "synthetic/2026.10.12.1",
+        "requestContentRef": "c:request"
+      }
+    },
+    {
+      "id": "a:card-validation",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:work_guidance_llm_card"
+      },
+      "type": "cloud-focus.validation",
+      "schemaVersion": 1,
+      "payload": {
+        "stage": "card",
+        "status": "passed",
+        "subjectContentRef": "c:model:card:response",
+        "modelInvocationId": "i:model:card",
+        "repair": {
+          "status": "not_required",
+          "attemptCount": 0
+        }
+      }
+    },
+    {
+      "id": "a:result",
+      "owner": {
+        "kind": "run",
+        "id": "run:cloud-focus-work-guidance-normal"
+      },
+      "type": "cloud-focus.result",
+      "schemaVersion": 1,
+      "payload": {
+        "resultId": "result:run:cloud-focus-work-guidance-normal",
+        "version": 1,
+        "status": "items",
+        "contentRef": "c:engine-result",
+        "itemIds": [
+          "item:run:cloud-focus-work-guidance-normal:1",
+          "item:run:cloud-focus-work-guidance-normal:2"
+        ]
+      }
+    },
+    {
+      "id": "a:evaluation",
+      "owner": {
+        "kind": "run",
+        "id": "run:cloud-focus-work-guidance-normal"
+      },
+      "type": "cloud-focus.evaluation-context",
+      "schemaVersion": 1,
+      "payload": {
+        "scene": "weekly_report",
+        "resultAnnotationId": "a:result",
+        "intent": "work_guidance",
+        "routeDecisionEventId": "ev:route",
+        "documentsContentRef": "c:materials",
+        "workItemsContentRef": "c:eval-work-items",
+        "timeContextContentRef": "c:eval-time",
+        "userProfileContentRef": "c:eval-profile"
+      }
+    }
+  ]
+}

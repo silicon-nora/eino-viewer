@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "run:cloud-focus-compile-failure",
+    "mode": "execution",
+    "scope": "recommend.Generate",
+    "source": "application",
+    "rootInvocationId": "i:root",
+    "status": "failed",
+    "timing": {
+      "startedAtMs": 1791792000000,
+      "endedAtMs": 1791792001000,
+      "durationMs": 1000,
+      "basis": "observed"
+    },
+    "sealedAtMs": 1791792001010,
+    "producer": {
+      "name": "synthetic-contract-fixtures",
+      "version": "2.0.0-candidate"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "invocations",
+        "events"
+      ],
+      "issues": []
+    },
+    "labels": {
+      "synthetic": "true",
+      "origin": "hand-authored-not-production-capture",
+      "scenario": "cloud-focus-compile-failure"
+    }
+  },
+  "definitions": [],
+  "invocations": [
+    {
+      "id": "i:root",
+      "kind": "application",
+      "name": "recommend.Generate",
+      "parent": {
+        "state": "root"
+      },
+      "status": "failed",
+      "timing": {
+        "startedAtMs": 1791792000000,
+        "endedAtMs": 1791792001000,
+        "durationMs": 1000,
+        "basis": "observed"
+      },
+      "inputRefs": [],
+      "outputRefs": [],
+      "metrics": [],
+      "error": {
+        "code": "compile_failed",
+        "message": "Synthetic graph compile failure before Workflow.Invoke."
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "ev:start:i:root",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792000000,
+      "contentRefs": []
+    },
+    {
+      "id": "ev:compile",
+      "sequence": 2,
+      "type": "definition.compilation-failed",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792000500,
+      "contentRefs": [],
+      "attributes": {
+        "stage": "BuildWorkflow"
+      }
+    },
+    {
+      "id": "ev:end:i:root",
+      "sequence": 3,
+      "type": "invocation.failed",
+      "owner": {
+        "kind": "invocation",
+        "id": "i:root"
+      },
+      "atMs": 1791792001000,
+      "contentRefs": []
+    }
+  ],
+  "relations": [],
+  "contents": [],
+  "usage": [],
+  "annotations": []
+}

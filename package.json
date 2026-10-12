@@ -132,7 +132,7 @@
     "benchmark:static": "node --expose-gc scripts/benchmark-static-records.js",
     "check": "node --check src/protocol-core.js && node --check src/component-protocol.js && node --check src/run-record.js && node --check src/run-lifecycle.js && node --check src/views.js && node --check src/viewer.js && node --check src/execution-dag.js && node --check src/trajectory.js && node --check src/explanation.js && node --check src/scope-reading.js && node --check src/content-presentation.js && node --check src/renderer-presentation.js && node --check src/json-value.js && node --check src/record-input.js && node --check src/run-viewer.js && node --check site/app.js && npm run check:reading",
     "check:reading": "node --check src/reading-presentation.js && node --check src/run-viewer-state.js && node --check src/run-viewer-styles.js && node --check src/viewer-state.js && node --check src/rendered-value-fold.js && node --check src/trajectory-reading.js && node --check src/agent-run-viewer.js && node --check src/agent-run-viewer-styles.js && node --check site/agent-reader.js && node --check site/graph-reading.js && node --check site/graph-topology.js && node --check site/graph-topology-view.js",
-    "test": "node tests/component-protocol.test.js && node tests/run-record.test.js && node tests/recorder-matrix.test.js && node tests/complex-graph-workflow.test.js && node tests/views.test.js && node tests/viewer.test.js && node tests/domain-views.test.js && node tests/negative-domains.test.js && node tests/execution-dag.test.js && node tests/trajectory.test.js && node tests/trajectory-reading.test.js && node tests/explanation.test.js && node tests/inspection.test.js && node tests/scope-reading.test.js && node tests/renderer-presentation.test.js && node tests/reading-presentation.test.js && node tests/graph-reading.test.js && node tests/graph-topology.test.js && node tests/rendered-value-fold.test.js && node tests/content-presentation.test.js && node tests/run-viewer.test.js && node tests/json-input-boundary.test.js && node tests/record-input.test.js",
+    "test": "node tests/component-protocol.test.js && node tests/run-record.test.js && node tests/recorder-matrix.test.js && node tests/complex-graph-workflow.test.js && node tests/views.test.js && node tests/viewer.test.js && node tests/domain-views.test.js && node tests/negative-domains.test.js && node tests/execution-dag.test.js && node tests/trajectory.test.js && node tests/trajectory-reading.test.js && node tests/explanation.test.js && node tests/inspection.test.js && node tests/scope-reading.test.js && node tests/renderer-presentation.test.js && node tests/reading-presentation.test.js && node tests/graph-reading.test.js && node tests/graph-topology.test.js && node tests/rendered-value-fold.test.js && node tests/content-presentation.test.js && node tests/run-viewer.test.js && node tests/json-input-boundary.test.js && node tests/record-input.test.js && npm run test:protocol-v2",
     "test:recorder-matrix": "npm run test:recorder-matrix:go && node tests/recorder-matrix.test.js && node tests/complex-graph-workflow.test.js && npm run inspect:recorder-matrix",
     "test:recorder-matrix:go": "cd integrations/go && go test -run 'TestStaticAgentRecorder|TestStaticGraphWorkflowMatrix|TestGraphIO|TestWorkflowRootIO|TestSafeComponentIO|TestComplexAgentRecorderMatrix|TestNestedAgentRecorderMatrix|TestDeepNestedAgentRecorderMatrix|TestGraphLoopRecorderMatrix|TestParallelWorkflowRecorderMatrix' ./...",
     "inspect:recorder-matrix": "node scripts/inspect-recorder-matrix.js",
@@ -143,7 +143,13 @@
     "typecheck": "tsc -p tsconfig.json",
     "prepack": "npm run check && npm run build && npm run typecheck && npm test",
     "prepublishOnly": "npm run prepack",
-    "release:dry-run": "npm publish --dry-run --access public"
+    "release:dry-run": "npm publish --dry-run --access public",
+    "generate:protocol-v2-types": "node scripts/generate-protocol-v2-types.js",
+    "check:protocol-v2-types": "node scripts/generate-protocol-v2-types.js --check",
+    "typecheck:protocol-v2": "tsc --noEmit --strict --skipLibCheck false --target ES2022 --module ESNext --moduleResolution Bundler tests/protocol-v2-types.test.ts",
+    "test:protocol-v2": "node --test tests/protocol-v2.test.js && npm run typecheck:protocol-v2",
+    "test:protocol-v2:go": "cd integrations/go && go test ./protocolv2/... -count=1",
+    "test:protocol-v2:all": "npm run check:protocol-v2-types && npm run test:protocol-v2 && npm run test:protocol-v2:go && node scripts/check-protocol-v2-roundtrip.js"
   },
   "dependencies": {
     "eino-workflow-dag": "^1.3.1"
@@ -152,6 +158,7 @@
     "@arethetypeswrong/cli": "^0.18.5",
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.63.0",
+    "ajv": "8.17.1",
     "publint": "^0.3.24",
     "typescript": "^5.4.0",
     "vite": "^6.0.0"

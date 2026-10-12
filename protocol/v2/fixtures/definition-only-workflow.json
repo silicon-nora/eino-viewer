@@ -1,0 +1,1036 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "run:definition-only-workflow",
+    "mode": "definition",
+    "scope": "fixture.workflow",
+    "source": "workflow",
+    "status": "unknown",
+    "timing": {
+      "basis": "unknown"
+    },
+    "sealedAtMs": 1791792001010,
+    "producer": {
+      "name": "synthetic-contract-fixtures",
+      "version": "2.0.0-candidate"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "definitions"
+      ],
+      "issues": []
+    },
+    "labels": {
+      "synthetic": "true",
+      "origin": "hand-authored-not-production-capture",
+      "scenario": "definition-only-workflow"
+    }
+  },
+  "definitions": [
+    {
+      "id": "d:workflow",
+      "kind": "workflow",
+      "name": "weekly_report",
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "revision": "synthetic/2026.10.12.1",
+      "edges": [
+        {
+          "id": "edge:d:workflow:1",
+          "from": "d:root:START",
+          "to": "d:discover_events",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:2",
+          "from": "d:root:START",
+          "to": "d:discover_events",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:3",
+          "from": "d:discover_events",
+          "to": "d:resolve_files",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:4",
+          "from": "d:discover_events",
+          "to": "d:resolve_files",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:5",
+          "from": "d:resolve_files",
+          "to": "d:report_files",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:6",
+          "from": "d:resolve_files",
+          "to": "d:report_files",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:7",
+          "from": "d:report_files",
+          "to": "d:behavior_heatmap",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:8",
+          "from": "d:report_files",
+          "to": "d:behavior_heatmap",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:9",
+          "from": "d:behavior_heatmap",
+          "to": "d:intent_router",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:10",
+          "from": "d:behavior_heatmap",
+          "to": "d:intent_router",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:11",
+          "from": "d:intent_router",
+          "to": "d:week_report_work_items",
+          "kind": "candidate",
+          "branchKey": "week_report"
+        },
+        {
+          "id": "edge:d:workflow:12",
+          "from": "d:intent_router",
+          "to": "d:week_report_work_items",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:13",
+          "from": "d:intent_router",
+          "to": "d:work_guidance",
+          "kind": "candidate",
+          "branchKey": "work_guidance"
+        },
+        {
+          "id": "edge:d:workflow:14",
+          "from": "d:intent_router",
+          "to": "d:work_guidance",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:15",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_recommend",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:16",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_recommend",
+          "kind": "data"
+        },
+        {
+          "id": "edge:d:workflow:17",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_write_cycle_portrait",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:18",
+          "from": "d:week_report_work_items",
+          "to": "d:week_report_write_cycle_portrait",
+          "kind": "data"
+        },
+        {
+          "id": "edge:d:workflow:19",
+          "from": "d:week_report_recommend",
+          "to": "d:root:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:20",
+          "from": "d:week_report_write_cycle_portrait",
+          "to": "d:root:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:21",
+          "from": "d:work_guidance",
+          "to": "d:root:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:workflow:22",
+          "from": "d:week_report_recommend",
+          "to": "d:root:END",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/week_report"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:workflow:23",
+          "from": "d:work_guidance",
+          "to": "d:root:END",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/work_guidance"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d:discover_events",
+      "kind": "node",
+      "name": "discover_events",
+      "parentId": "d:workflow",
+      "key": "discover_events",
+      "path": [
+        "discover_events"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:resolve_files",
+      "kind": "node",
+      "name": "resolve_files",
+      "parentId": "d:workflow",
+      "key": "resolve_files",
+      "path": [
+        "resolve_files"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:report_files",
+      "kind": "node",
+      "name": "report_files",
+      "parentId": "d:workflow",
+      "key": "report_files",
+      "path": [
+        "report_files"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:behavior_heatmap",
+      "kind": "node",
+      "name": "behavior_heatmap",
+      "parentId": "d:workflow",
+      "key": "behavior_heatmap",
+      "path": [
+        "behavior_heatmap"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:intent_router",
+      "kind": "node",
+      "name": "intent_router",
+      "parentId": "d:workflow",
+      "key": "intent_router",
+      "path": [
+        "intent_router"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_work_items",
+      "kind": "workflow",
+      "name": "week_report_work_items",
+      "parentId": "d:workflow",
+      "key": "week_report_work_items",
+      "path": [
+        "week_report_work_items"
+      ],
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "edges": [
+        {
+          "id": "edge:d:week_report_work_items:1",
+          "from": "d:week_report_work_items:START",
+          "to": "d:week_report_rank_docs",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:2",
+          "from": "d:week_report_rank_docs",
+          "to": "d:week_report_prepare_token",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:3",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_load_summary",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:4",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_load_topn_docs_content",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:5",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_file_behavior_context",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:6",
+          "from": "d:week_report_prepare_token",
+          "to": "d:week_report_user_profile",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:7",
+          "from": "d:week_report_load_summary",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/Summary"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:week_report_work_items:8",
+          "from": "d:week_report_load_summary",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:9",
+          "from": "d:week_report_file_behavior_context",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:10",
+          "from": "d:week_report_user_profile",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:11",
+          "from": "d:week_report_load_topn_docs_content",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:12",
+          "from": "d:week_report_load_topn_docs_content",
+          "to": "d:week_report_prepare_llm_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/Content"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:week_report_work_items:13",
+          "from": "d:week_report_prepare_llm_input",
+          "to": "d:week_report_llm_work_items",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:14",
+          "from": "d:week_report_llm_work_items",
+          "to": "d:week_report_work_item_behavior",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_work_items:15",
+          "from": "d:week_report_work_item_behavior",
+          "to": "d:week_report_work_items:END",
+          "kind": "dependency"
+        }
+      ]
+    },
+    {
+      "id": "d:week_report_rank_docs",
+      "kind": "node",
+      "name": "week_report_rank_docs",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_rank_docs",
+      "path": [
+        "week_report_work_items",
+        "week_report_rank_docs"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_prepare_token",
+      "kind": "node",
+      "name": "week_report_prepare_token",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_prepare_token",
+      "path": [
+        "week_report_work_items",
+        "week_report_prepare_token"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_load_summary",
+      "kind": "node",
+      "name": "week_report_load_summary",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_load_summary",
+      "path": [
+        "week_report_work_items",
+        "week_report_load_summary"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_load_topn_docs_content",
+      "kind": "node",
+      "name": "week_report_load_topn_docs_content",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_load_topn_docs_content",
+      "path": [
+        "week_report_work_items",
+        "week_report_load_topn_docs_content"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_file_behavior_context",
+      "kind": "node",
+      "name": "week_report_file_behavior_context",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_file_behavior_context",
+      "path": [
+        "week_report_work_items",
+        "week_report_file_behavior_context"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_user_profile",
+      "kind": "node",
+      "name": "week_report_user_profile",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_user_profile",
+      "path": [
+        "week_report_work_items",
+        "week_report_user_profile"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:week_report_prepare_llm_input",
+      "kind": "node",
+      "name": "week_report_prepare_llm_input",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_prepare_llm_input",
+      "path": [
+        "week_report_work_items",
+        "week_report_prepare_llm_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_llm_work_items",
+      "kind": "node",
+      "name": "week_report_llm_work_items",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_llm_work_items",
+      "path": [
+        "week_report_work_items",
+        "week_report_llm_work_items"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:week_report_work_item_behavior",
+      "kind": "node",
+      "name": "week_report_work_item_behavior",
+      "parentId": "d:week_report_work_items",
+      "key": "week_report_work_item_behavior",
+      "path": [
+        "week_report_work_items",
+        "week_report_work_item_behavior"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_recommend",
+      "kind": "workflow",
+      "name": "week_report_recommend",
+      "parentId": "d:workflow",
+      "key": "week_report_recommend",
+      "path": [
+        "week_report_recommend"
+      ],
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "edges": [
+        {
+          "id": "edge:d:week_report_recommend:1",
+          "from": "d:week_report_recommend:START",
+          "to": "d:week_report_prepare_card_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:2",
+          "from": "d:week_report_prepare_card_input",
+          "to": "d:week_report_llm_card",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:3",
+          "from": "d:week_report_llm_card",
+          "to": "d:week_report_card_format_repair",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:4",
+          "from": "d:week_report_card_format_repair",
+          "to": "d:week_report_enrich",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:5",
+          "from": "d:week_report_enrich",
+          "to": "d:week_report_recommend:END",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:week_report_recommend:6",
+          "from": "d:week_report_llm_card",
+          "to": "d:week_report_card_format_repair",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "/SkipInfo",
+              "targetPath": "/SkipInfo"
+            },
+            {
+              "sourcePath": "/Candidates",
+              "targetPath": "/Candidates"
+            },
+            {
+              "sourcePath": "/NeedsFormatRepair",
+              "targetPath": "/NeedsFormatRepair"
+            },
+            {
+              "sourcePath": "/ParseError",
+              "targetPath": "/ParseError"
+            },
+            {
+              "sourcePath": "/LLMRawOutput",
+              "targetPath": "/LLMRawOutput"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d:week_report_prepare_card_input",
+      "kind": "node",
+      "name": "week_report_prepare_card_input",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_prepare_card_input",
+      "path": [
+        "week_report_recommend",
+        "week_report_prepare_card_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_llm_card",
+      "kind": "node",
+      "name": "week_report_llm_card",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_llm_card",
+      "path": [
+        "week_report_recommend",
+        "week_report_llm_card"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:week_report_card_format_repair",
+      "kind": "node",
+      "name": "week_report_card_format_repair",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_card_format_repair",
+      "path": [
+        "week_report_recommend",
+        "week_report_card_format_repair"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:week_report_enrich",
+      "kind": "node",
+      "name": "week_report_enrich",
+      "parentId": "d:week_report_recommend",
+      "key": "week_report_enrich",
+      "path": [
+        "week_report_recommend",
+        "week_report_enrich"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance",
+      "kind": "workflow",
+      "name": "work_guidance",
+      "parentId": "d:workflow",
+      "key": "work_guidance",
+      "path": [
+        "work_guidance"
+      ],
+      "component": "Workflow",
+      "semanticKind": "graph",
+      "edges": [
+        {
+          "id": "edge:d:work_guidance:1",
+          "from": "d:work_guidance:START",
+          "to": "d:work_guidance_rank_docs",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:2",
+          "from": "d:work_guidance_rank_docs",
+          "to": "d:work_guidance_prepare_token",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:3",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_load_summary",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:4",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_load_topn_docs_content",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:5",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_file_behavior_context",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:6",
+          "from": "d:work_guidance_prepare_token",
+          "to": "d:work_guidance_user_profile",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:7",
+          "from": "d:work_guidance_load_summary",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": ""
+            }
+          ]
+        },
+        {
+          "id": "edge:d:work_guidance:8",
+          "from": "d:work_guidance_load_summary",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:9",
+          "from": "d:work_guidance_file_behavior_context",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:10",
+          "from": "d:work_guidance_user_profile",
+          "to": "d:work_guidance_prepare_llm_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:11",
+          "from": "d:work_guidance_prepare_llm_input",
+          "to": "d:work_guidance_llm_work_items",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:12",
+          "from": "d:work_guidance_llm_work_items",
+          "to": "d:work_guidance_work_item_behavior",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:13",
+          "from": "d:work_guidance_work_item_behavior",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:14",
+          "from": "d:work_guidance_work_item_behavior",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/WorkItems"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:work_guidance:15",
+          "from": "d:work_guidance_load_topn_docs_content",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:16",
+          "from": "d:work_guidance_load_topn_docs_content",
+          "to": "d:work_guidance_prepare_card_input",
+          "kind": "data",
+          "mappings": [
+            {
+              "sourcePath": "",
+              "targetPath": "/Content"
+            }
+          ]
+        },
+        {
+          "id": "edge:d:work_guidance:17",
+          "from": "d:work_guidance_prepare_card_input",
+          "to": "d:work_guidance_llm_card",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:18",
+          "from": "d:work_guidance_llm_card",
+          "to": "d:work_guidance_card_format_repair",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:19",
+          "from": "d:work_guidance_card_format_repair",
+          "to": "d:work_guidance_enrich",
+          "kind": "dependency"
+        },
+        {
+          "id": "edge:d:work_guidance:20",
+          "from": "d:work_guidance_enrich",
+          "to": "d:work_guidance:END",
+          "kind": "dependency"
+        }
+      ]
+    },
+    {
+      "id": "d:work_guidance_rank_docs",
+      "kind": "node",
+      "name": "work_guidance_rank_docs",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_rank_docs",
+      "path": [
+        "work_guidance",
+        "work_guidance_rank_docs"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_prepare_token",
+      "kind": "node",
+      "name": "work_guidance_prepare_token",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_prepare_token",
+      "path": [
+        "work_guidance",
+        "work_guidance_prepare_token"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_load_summary",
+      "kind": "node",
+      "name": "work_guidance_load_summary",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_load_summary",
+      "path": [
+        "work_guidance",
+        "work_guidance_load_summary"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_load_topn_docs_content",
+      "kind": "node",
+      "name": "work_guidance_load_topn_docs_content",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_load_topn_docs_content",
+      "path": [
+        "work_guidance",
+        "work_guidance_load_topn_docs_content"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_file_behavior_context",
+      "kind": "node",
+      "name": "work_guidance_file_behavior_context",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_file_behavior_context",
+      "path": [
+        "work_guidance",
+        "work_guidance_file_behavior_context"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_user_profile",
+      "kind": "node",
+      "name": "work_guidance_user_profile",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_user_profile",
+      "path": [
+        "work_guidance",
+        "work_guidance_user_profile"
+      ],
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:work_guidance_prepare_llm_input",
+      "kind": "node",
+      "name": "work_guidance_prepare_llm_input",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_prepare_llm_input",
+      "path": [
+        "work_guidance",
+        "work_guidance_prepare_llm_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_llm_work_items",
+      "kind": "node",
+      "name": "work_guidance_llm_work_items",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_llm_work_items",
+      "path": [
+        "work_guidance",
+        "work_guidance_llm_work_items"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:work_guidance_work_item_behavior",
+      "kind": "node",
+      "name": "work_guidance_work_item_behavior",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_work_item_behavior",
+      "path": [
+        "work_guidance",
+        "work_guidance_work_item_behavior"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_prepare_card_input",
+      "kind": "node",
+      "name": "work_guidance_prepare_card_input",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_prepare_card_input",
+      "path": [
+        "work_guidance",
+        "work_guidance_prepare_card_input"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:work_guidance_llm_card",
+      "kind": "node",
+      "name": "work_guidance_llm_card",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_llm_card",
+      "path": [
+        "work_guidance",
+        "work_guidance_llm_card"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:work_guidance_card_format_repair",
+      "kind": "node",
+      "name": "work_guidance_card_format_repair",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_card_format_repair",
+      "path": [
+        "work_guidance",
+        "work_guidance_card_format_repair"
+      ],
+      "component": "Lambda",
+      "semanticKind": "llm"
+    },
+    {
+      "id": "d:work_guidance_enrich",
+      "kind": "node",
+      "name": "work_guidance_enrich",
+      "parentId": "d:work_guidance",
+      "key": "work_guidance_enrich",
+      "path": [
+        "work_guidance",
+        "work_guidance_enrich"
+      ],
+      "component": "Lambda",
+      "semanticKind": "cpu"
+    },
+    {
+      "id": "d:week_report_write_cycle_portrait",
+      "kind": "node",
+      "name": "week_report_write_cycle_portrait",
+      "parentId": "d:workflow",
+      "component": "Lambda",
+      "semanticKind": "io"
+    },
+    {
+      "id": "d:root:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:workflow"
+    },
+    {
+      "id": "d:root:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:workflow"
+    },
+    {
+      "id": "d:week_report_work_items:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:week_report_work_items"
+    },
+    {
+      "id": "d:week_report_work_items:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:week_report_work_items"
+    },
+    {
+      "id": "d:week_report_recommend:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:week_report_recommend"
+    },
+    {
+      "id": "d:week_report_recommend:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:week_report_recommend"
+    },
+    {
+      "id": "d:work_guidance:START",
+      "kind": "boundary",
+      "name": "START",
+      "parentId": "d:work_guidance"
+    },
+    {
+      "id": "d:work_guidance:END",
+      "kind": "boundary",
+      "name": "END",
+      "parentId": "d:work_guidance"
+    }
+  ],
+  "invocations": [],
+  "events": [],
+  "relations": [],
+  "contents": [],
+  "usage": [],
+  "annotations": []
+}
