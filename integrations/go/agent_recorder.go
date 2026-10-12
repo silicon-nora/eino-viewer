@@ -29,6 +29,7 @@ type AgentRecorderOptions struct {
 // input messages, component callbacks, AgentEvents, and the final assistant
 // message share one ordered evidence collection.
 type AgentRecorder struct {
+	v2            *nativeV2Recorder
 	mu            sync.Mutex
 	runID         string
 	options       AgentRecorderOptions
@@ -68,6 +69,7 @@ func (recorder *AgentRecorder) Run(
 		return nil, ErrNilAgentRunner
 	}
 	recorder.recordLifecycleStart()
+	ctx = recorder.v2.startAgent(ctx, messages)
 	recorder.recordLastUserMessage(messages)
 	options = append(options, adk.WithCallbacks(recorder.Handler()))
 	return recorder.Wrap(runner.Run(ctx, messages, options...)), nil
@@ -84,6 +86,7 @@ func (recorder *AgentRecorder) Query(
 		return nil, ErrNilAgentRunner
 	}
 	recorder.recordLifecycleStart()
+	ctx = recorder.v2.startAgent(ctx, []*schema.Message{schema.UserMessage(query)})
 	recorder.RecordMessage(schema.UserMessage(query))
 	options = append(options, adk.WithCallbacks(recorder.Handler()))
 	return recorder.Wrap(runner.Query(ctx, query, options...)), nil
@@ -93,6 +96,7 @@ func (recorder *AgentRecorder) Query(
 // using Wrap directly remain responsible for recording the run input.
 func (recorder *AgentRecorder) Wrap(source *adk.AsyncIterator[*adk.AgentEvent]) *RecordedAgentIterator {
 	if source != nil {
+		recorder.v2.requireRootForWrap()
 		recorder.recordLifecycleStart()
 	}
 	return &RecordedAgentIterator{source: source, recorder: recorder, outcome: "success"}
@@ -114,6 +118,7 @@ func (iterator *RecordedAgentIterator) Next() (*adk.AgentEvent, bool) {
 		// Without consuming them, the recorder cannot assert a final boundary.
 		if iterator.recorder != nil && !iterator.streamed {
 			iterator.recorder.recordLifecycleEnd(iterator.outcome)
+			iterator.recorder.v2.finishAgentRun(iterator.outcome)
 		}
 		return nil, false
 	}
@@ -135,7 +140,7 @@ func (iterator *RecordedAgentIterator) Next() (*adk.AgentEvent, bool) {
 // Handler records JSON-safe component inputs and outputs. Stream callbacks are
 // represented as metadata only and their private reader copies are closed.
 func (recorder *AgentRecorder) Handler() callbacks.Handler {
-	return callbacks.NewHandlerBuilder().
+	legacy := callbacks.NewHandlerBuilder().
 		OnStartFn(func(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
 			recorder.recordComponent(ctx, info, ComponentIOInput, false, input)
 			return ctx
@@ -173,10 +178,12 @@ func (recorder *AgentRecorder) Handler() callbacks.Handler {
 			return ctx
 		}).
 		Build()
+	return recorder.v2.wrap(legacy)
 }
 
 // RecordMessage adds an explicit schema.message source record.
 func (recorder *AgentRecorder) RecordMessage(message *schema.Message) {
+	recorder.v2.requireRootForExplicitRecord()
 	recorder.capture(func(options EnvelopeOptions) (Envelope, []Diagnostic, error) {
 		return safeRecorderMessage(message, options)
 	})
@@ -185,6 +192,7 @@ func (recorder *AgentRecorder) RecordMessage(message *schema.Message) {
 // RecordTool adds an optional schema.tool definition. Actual tool calls are
 // captured independently from AgentEvents and component callbacks.
 func (recorder *AgentRecorder) RecordTool(tool *schema.ToolInfo) {
+	recorder.v2.rejectEntry("RecordTool is a legacy source API; v2 observes tool invocations from callbacks.")
 	recorder.capture(func(options EnvelopeOptions) (Envelope, []Diagnostic, error) {
 		if tool == nil {
 			return Envelope{}, nil, ErrNilSchemaValue
@@ -199,6 +207,7 @@ func (recorder *AgentRecorder) RecordTool(tool *schema.ToolInfo) {
 // observed, non-streaming root assistant message without tool calls. Nested
 // answers stay in their original AgentEvent and must not become run outputs.
 func (recorder *AgentRecorder) RecordEvent(event *adk.AgentEvent) {
+	recorder.v2.rootEvent(event)
 	recorder.capture(func(options EnvelopeOptions) (Envelope, []Diagnostic, error) {
 		return safeRecorderAgentEvent(event, options)
 	})

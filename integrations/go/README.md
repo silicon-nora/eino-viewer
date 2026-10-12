@@ -8,6 +8,143 @@ It also provides the compatibility-first `eino-dag` envelope used to carry
 independently versioned Eino information domains. Existing snapshot functions
 remain unchanged.
 
+## Native RunRecord v2 (local implementation)
+
+The current checkout also provides **native v2 capture**. Use the explicit v2
+constructors before execution; `RunRecordV2()` never upgrades or guesses facts
+from a v1 `RunRecord`. The older constructors and APIs described below retain
+their existing behavior. The released module tag in the install example below
+predates these local v2 APIs; use this checkout until a release includes them.
+
+```go
+recorder := workflowdag.NewAgentRecorderV2("agent-run-42", workflowdag.AgentRecorderOptions{})
+iterator, err := recorder.Run(ctx, runner, messages)
+if err != nil { return err }
+for {
+    event, ok := iterator.Next()
+    if !ok { break }
+    // Handle the original event, including errors, then keep draining.
+    handleEvent(event)
+}
+encoded, err := recorder.MarshalRunRecordV2()
+if err != nil { return err }
+// Save encoded, then read it with the v2 Viewer. RunRecord() still returns v1.
+```
+
+For an existing Graph or Workflow, use `NewGraphRecorderV2` or
+`NewWorkflowRecorderV2`, pass `CompileOption()` and `InvokeOption()` exactly as
+in the existing examples, and export with `RunRecordV2()` /
+`MarshalRunRecordV2()`. Each constructor still takes its existing options type.
+An old constructor followed by `RunRecordV2()` returns `ErrV2NotEnabled`.
+
+V2 observes each callback invocation with its own ID and propagates that ID
+through Eino's per-handler context. Repeated graph nodes stay distinct and
+same-name concurrent AgentTools keep separate parents. Definitions and their
+candidate edges do not create executed invocations. Root outcomes come from
+the actual non-streaming Graph/Workflow boundary or the exhausted Runner
+iterator, including orchestration errors absent from Agent callback copies.
+Content is copied at observation time through the existing bounded JSON and
+redaction policy. Empty strings and explicit null remain actual values.
+
+Every actual model invocation has one usage row. Actual callback configuration
+and supplied token counts are used; absent usage is explicitly unknown, and a
+supplied zero is preserved. Invalid counts produce capture issues and unknown
+usage. Numbers outside the reader's exact range are retained as sanitized JSON
+**text in a diagnostic content**, with a missing-body descriptor instead of
+silently rounding the original payload. Application-owned model clients can
+supply their observed usage through the explicit API below.
+
+### Application boundaries and extension points
+
+`NewRunRecorderV2` puts an application boundary, Eino children, and explicitly
+instrumented operations/model calls in one document. Pass each returned context
+to its actual child work; names are never used to discover parents.
+
+```go
+recorder, err := workflowdag.NewRunRecorderV2("generate-42", workflowdag.RunRecorderV2Options{
+    Source: "application", Scope: "recommendation-engine",
+})
+if err != nil { return err }
+runCtx, _, err := recorder.Begin(ctx, workflowdag.InvocationStartV2{
+    Kind: "application", Name: "Generate", HasInput: true, Input: request,
+})
+if err != nil { return err }
+runnable, err := workflow.Compile(runCtx, recorder.CompileOption())
+if err != nil {
+    _ = recorder.End(runCtx, workflowdag.InvocationEndV2{Status: "failed", Error: err})
+} else {
+    result, runErr := runnable.Invoke(runCtx, request, recorder.InvokeOption())
+    outcome := workflowdag.InvocationEndV2{Status: "succeeded", HasOutput: true, Output: result}
+    if runErr != nil { outcome = workflowdag.InvocationEndV2{Status: "failed", Error: runErr} }
+    if err := recorder.End(runCtx, outcome); err != nil { return err }
+}
+encoded, captureErr := recorder.MarshalRunRecordV2()
+```
+
+Use another `Begin(runCtx, ...)` / `End(childCtx, ...)` for a real
+application-owned operation or model request. `HasInput` / `HasOutput` distinguish
+an absent observation from an observed nil value. `RecordModelUsage(childCtx,
+ModelUsageV2{...})` only accepts a model invocation and validates the observed
+nonnegative counts, totals, subsets and numeric bounds. Repeated observations
+merge into the same ledger row: non-nil counters replace that counter, nil
+preserves a known value, and counters are never summed. Invalid merged totals
+are rejected without changing the prior row; an unknown observation never
+erases known counts. `Annotate(childCtx, "namespace.type", 1, payload)` takes a bounded,
+redacted snapshot of a business extension. The authoritative JS validator must
+still validate registered annotation payloads and cross-record semantics.
+
+### V2 capture limits
+
+- Supported automatic Agent entry points are **Run and Query**. Legacy
+  `Wrap`-only recording, standalone `RecordMessage` / `RecordEvent`, and
+  `RecordTool` source injection do not define complete v2 boundaries; unsupported
+  manual entry paths fail v2 export explicitly. Use Run/Query or the explicit
+  application collector. V1 source APIs remain available on ordinary recorders.
+- Recorder observes independent Agent callback iterator copies asynchronously.
+  It never consumes application-owned model/message streams. A live stream or
+  incomplete invocation retains running/unknown state, missing content and
+  capture issues. Draining the application's stream does not automatically
+  backfill its body, final usage, or a missing terminal callback into this
+  collector. Static exports of running, interrupted, or streaming runs do
+  not wait for those streams. After an exhausted non-streaming root, export
+  synchronizes already registered Agent copies for at most 250 ms; any missing
+  terminal boundary is reported as partial capture.
+- Tool requests are linked to tool callbacks only when the observed external
+  call ID and name resolve uniquely within the actual Agent invocation scope.
+  Missing or ambiguous identity remains an issue, not a guessed relationship.
+  Transfer requests are retained; actual transfers are not inferred from names.
+- Model coverage concerns Eino callbacks or explicit Begin/End instrumentation.
+  Hidden provider activity, application state and business outcomes are not
+  discovered automatically. No provider/model identity is guessed from defaults.
+- V2 constructors retain legacy APIs, so applications choosing them may invoke
+  the configured redactor for both projections. Redactors should be pure and
+  thread-safe. Ordinary v1 constructors do not activate the v2 collector.
+- These APIs do not implement persistence, external reference storage, live
+  streaming reconstruction, checkpoint resume, or cloud-focus integration.
+  Go wire types and producer checks do not replace the complete JS contract
+  validator.
+
+### Generate and validate real Eino recordings
+
+Tests use the actual Eino Runner/Graph/Workflow and deterministic external model
+and tool implementations. They assert execution, invocation identities, usage,
+capture loss, cancellation, stream ownership and outer Runner failure. No
+network or real model credentials are needed.
+
+```sh
+# From integrations/go; emits fresh runtime records into the given directory.
+WRITE_NATIVE_V2_FIXTURES=/tmp/eino-native-v2 go test -count=1 -run TestNativeV2 ./...
+# From the repository root; use the same output directory.
+node protocol/v2/validate.js /tmp/eino-native-v2/*.json
+# Explicitly update the checked-in real-run examples instead:
+WRITE_NATIVE_V2_FIXTURES=1 go test -count=1 -run TestNativeV2 ./...
+```
+
+Without the environment variable, tests do not write fixtures. Current example
+records live in [testdata/v2](./testdata/v2); their timestamps are observations,
+not deterministic golden values. The same producer tests can generate fresh
+inputs for Viewer validation on every run.
+
 ## Start here
 
 1. Attach the [Agent](#agentrecorder), [Graph](#graphrecorder) or

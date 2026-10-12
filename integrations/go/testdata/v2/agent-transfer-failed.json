@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "native-transfer-failed",
+    "mode": "execution",
+    "scope": "eino",
+    "source": "agent",
+    "rootInvocationId": "call-1",
+    "status": "failed",
+    "timing": {
+      "startedAtMs": 1791804706088,
+      "endedAtMs": 1791804706088,
+      "durationMs": 0,
+      "basis": "monotonic"
+    },
+    "sealedAtMs": 1791804706088,
+    "producer": {
+      "name": "eino-viewer/go",
+      "version": "0.1.0"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "invocations",
+        "events",
+        "io",
+        "model"
+      ],
+      "issues": []
+    }
+  },
+  "definitions": [],
+  "invocations": [
+    {
+      "id": "call-1",
+      "kind": "agent",
+      "name": "transfer-root",
+      "parent": {
+        "state": "root"
+      },
+      "status": "failed",
+      "timing": {
+        "startedAtMs": 1791804706088,
+        "endedAtMs": 1791804706088,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-1"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "error": {
+        "message": "transfer failed: agent 'missing-child' not found when transferring from 'transfer-root'"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "event-1",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706088,
+      "contentRefs": []
+    },
+    {
+      "id": "event-2",
+      "sequence": 2,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706088,
+      "contentRefs": [
+        "content-1"
+      ]
+    },
+    {
+      "id": "event-3",
+      "sequence": 3,
+      "type": "agent.transfer-requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706088,
+      "contentRefs": [],
+      "attributes": {
+        "destinationAgent": "missing-child"
+      }
+    },
+    {
+      "id": "event-4",
+      "sequence": 4,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706088,
+      "contentRefs": []
+    }
+  ],
+  "relations": [],
+  "contents": [
+    {
+      "id": "content-1",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "question",
+            "role": "user"
+          }
+        ]
+      }
+    }
+  ],
+  "usage": [],
+  "annotations": []
+}

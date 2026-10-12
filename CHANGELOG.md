@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Native RunRecord v2 capture and reading — 2026-10-12
+
+- Read v2 directly in the embedded, workbench and portable viewers, retaining
+  definitions, individual calls, root results, requests, content availability,
+  usage and business annotations. Keep v1 reading and transactional replacement.
+- Add explicit Go v2 Agent/Graph/Workflow constructors and an application
+  recorder for custom model/operation boundaries. Capture identities during
+  execution; never reconstruct them from v1 envelopes. Preserve unknown facts
+  and report unsupported legacy manual entry paths explicitly.
+- Ship the `eino-viewer/protocol-v2` validator and types, with schema validation
+  compiled ahead of time for browsers and offline use without runtime eval.
+  Validate freshly executed Eino recordings through the same consumer contract.
+- Tighten partial token-total bounds and verify orchestration failure outcomes,
+  concurrent same-name calls, redaction, missing bodies and stream ownership.
+  Business host integration and publication remain separate work.
+
 ### Owner-accepted reading UI — 2026-09-30
 
 These presentation notes supersede the earlier workbench UI notes below.

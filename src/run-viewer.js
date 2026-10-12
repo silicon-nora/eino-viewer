@@ -15,6 +15,8 @@ import { createRenderedValueFoldObserver } from "./rendered-value-fold.js";
 import { buildExecutionTrajectory } from "./trajectory.js";
 import { buildTrajectoryReading } from "./trajectory-reading.js";
 import { buildAgentRunView } from "./agent-run-viewer.js";
+import { createRunViewerV2 } from "./run-viewer-v2.js";
+import { createVersionedViewer } from "./versioned-viewer.js";
 
 // All styles are instance-scoped; mounting the component does not alter the host page.
 const stylesheet = `
@@ -110,6 +112,10 @@ function prepare(input, locale) {
 
 /** A read-only, self-contained result inspector for one saved Eino run. No execution or live subscription. */
 export function createEinoRunViewer(container, input, options = {}) {
+  return createVersionedViewer(container, input, options, createLegacyEinoRunViewer, createRunViewerV2, EinoViewerError, true);
+}
+
+function createLegacyEinoRunViewer(container, input, options = {}) {
   if (!container || container.nodeType !== 1 || typeof container.replaceChildren !== "function" || !container.ownerDocument) {
     throw invalid("viewer.invalid_container", "Expected an Element container.");
   }

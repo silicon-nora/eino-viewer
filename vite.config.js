@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
         entry: {
           index: resolve(import.meta.dirname, "src/index.js"),
           protocol: resolve(import.meta.dirname, "src/protocol.js"),
+          "protocol-v2": resolve(import.meta.dirname, "src/run-record-v2.js"),
           views: resolve(import.meta.dirname, "src/views.js"),
           viewer: resolve(import.meta.dirname, "src/viewer.js"),
           "run-viewer": resolve(import.meta.dirname, "src/run-viewer.js"),

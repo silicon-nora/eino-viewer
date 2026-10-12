@@ -63,6 +63,13 @@ completeViewer.selectStep("node-1");
 completeViewer.selectEvidence(0);
 completeViewer.update({});
 completeViewer.destroy();
-const inspection = createRunInspectionIndex(completeViewer.explanation, completeViewer.document.evidence);
-inspection.searchSteps("tool", { issuesOnly: true, offset: 50 }).items[0]?.timing.durationMs;
-inspection.searchEvidence("component.io", { scope: "unassigned" }).items[0]?.nodeIds;
+if (completeViewer.explanation.schemaVersion === 1 && completeViewer.document.schemaVersion === 1) {
+  const inspection = createRunInspectionIndex(completeViewer.explanation, completeViewer.document.evidence);
+  inspection.searchSteps("tool", { issuesOnly: true, offset: 50 }).items[0]?.timing.durationMs;
+  inspection.searchEvidence("component.io", { scope: "unassigned" }).items[0]?.nodeIds;
+}
+if (completeViewer.document.schemaVersion === 2) {
+  completeViewer.document.record.run.source;
+  completeViewer.document.nodes[0]?.outputRefs;
+  completeViewer.selectEntity({ kind: "content", id: "body" });
+}

@@ -81,7 +81,9 @@
     "workflowSnapshotAdapter",
     "workflowSnapshotView"
   ],
-  "./run-viewer": ["createEinoRunViewer"],
+  "./run-viewer": [
+    "createEinoRunViewer"
+  ],
   "./protocol": [
     "AGENT_EVENT_KIND",
     "AGENT_EVENT_KIND_VERSION",
@@ -178,5 +180,11 @@
     "parseWorkflowSnapshot",
     "registerWorkflowDAGTheme",
     "validateWorkflowSnapshot"
+  ],
+  "./protocol-v2": [
+    "cloudFocusSchema",
+    "parseRunRecordV2",
+    "runRecordSchema",
+    "validateRunRecordV2"
   ]
 }

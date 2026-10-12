@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "native-workflow-cancelled",
+    "mode": "execution",
+    "scope": "eino",
+    "source": "workflow",
+    "rootInvocationId": "call-1",
+    "status": "cancelled",
+    "timing": {
+      "startedAtMs": 1791804706074,
+      "endedAtMs": 1791804706074,
+      "durationMs": 0,
+      "basis": "monotonic"
+    },
+    "sealedAtMs": 1791804706074,
+    "producer": {
+      "name": "eino-viewer/go",
+      "version": "0.1.0"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "invocations",
+        "events",
+        "io",
+        "model",
+        "definitions"
+      ],
+      "issues": []
+    }
+  },
+  "definitions": [
+    {
+      "id": "def-1",
+      "kind": "workflow",
+      "name": "workflow",
+      "path": [],
+      "edges": [
+        {
+          "id": "edge-1",
+          "from": "def-2",
+          "to": "def-4",
+          "kind": "control"
+        },
+        {
+          "id": "edge-2",
+          "from": "def-2",
+          "to": "def-4",
+          "kind": "data"
+        },
+        {
+          "id": "edge-3",
+          "from": "def-4",
+          "to": "def-3",
+          "kind": "control"
+        },
+        {
+          "id": "edge-4",
+          "from": "def-4",
+          "to": "def-3",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "id": "def-2",
+      "kind": "boundary",
+      "name": "start",
+      "parentId": "def-1",
+      "key": "start"
+    },
+    {
+      "id": "def-3",
+      "kind": "boundary",
+      "name": "end",
+      "parentId": "def-1",
+      "key": "end"
+    },
+    {
+      "id": "def-4",
+      "kind": "node",
+      "name": "work",
+      "parentId": "def-1",
+      "key": "work",
+      "path": [
+        "work"
+      ],
+      "component": "Lambda"
+    }
+  ],
+  "invocations": [
+    {
+      "id": "call-1",
+      "kind": "workflow",
+      "name": "Workflow",
+      "definitionId": "def-1",
+      "parent": {
+        "state": "root"
+      },
+      "status": "cancelled",
+      "timing": {
+        "startedAtMs": 1791804706074,
+        "endedAtMs": 1791804706074,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-1"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "error": {
+        "message": "[NodeRunError] context canceled\n------------------------\nnode path: [work]"
+      }
+    },
+    {
+      "id": "call-2",
+      "kind": "node",
+      "name": "Lambda",
+      "definitionId": "def-4",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-1"
+      },
+      "status": "cancelled",
+      "timing": {
+        "startedAtMs": 1791804706074,
+        "endedAtMs": 1791804706074,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-2"
+      ],
+      "outputRefs": [],
+      "metrics": [],
+      "error": {
+        "message": "context canceled"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "event-1",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-2",
+      "sequence": 2,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": [
+        "content-1"
+      ]
+    },
+    {
+      "id": "event-3",
+      "sequence": 3,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-4",
+      "sequence": 4,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": [
+        "content-2"
+      ]
+    },
+    {
+      "id": "event-5",
+      "sequence": 5,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-6",
+      "sequence": 6,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    }
+  ],
+  "relations": [],
+  "contents": [
+    {
+      "id": "content-1",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "input"
+      }
+    },
+    {
+      "id": "content-2",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "input"
+      }
+    }
+  ],
+  "usage": [],
+  "annotations": []
+}

@@ -5,10 +5,26 @@
 `eino-viewer` 展示输入、Agent 轨迹或 Graph/Workflow 路径、步骤输入输出以及最终输出或失败，不执行程序，
 也不补造缺失关系。Agent、Graph、Workflow 是从记录自动识别的运行来源。
 
-协议开发进度：[RunRecord v2 合同包](./protocol/v2/README.md) 已提供新 Schema、生成类型、校验器和合成业务样例；当前 Viewer 与 Recorder 尚未接入 v2。
+RunRecord v2 可由 Go 的 `NewAgentRecorderV2`、`NewGraphRecorderV2`、`NewWorkflowRecorderV2`
+直接采集，并通过 `RunRecordV2()` / `MarshalRunRecordV2()` 输出。Viewer 的嵌入、工作台和离线入口
+均可读取 v1 / v2；v2 直接保留定义、逐次调用、事件、正文、用量和业务扩展，不自动把旧记录升级成新事实。
+这一步完成通用采集与阅读链路；cloud-focus / suggest-platform 的业务接入另行实施。
+上述 v2 API 是本地未发布实现；原 Go 构造函数默认仍产生 v1。
 
-仅支持保存后的**非流式**结果，不执行运行、不消费流、不订阅实时事件、不上传记录。
-旧记录、未完成记录和只有定义的记录仍可查看，但不会补造结果。
+新协议的独立校验入口：
+
+```js
+import { parseRunRecordV2, validateRunRecordV2 } from "eino-viewer/protocol-v2";
+import { createEinoRunViewer } from "eino-viewer/run-viewer";
+const record = parseRunRecordV2(jsonText); // 先检查输入精度和大小，再检查结构与跨实体语义
+const result = validateRunRecordV2(record); // { ok, errors, warnings }，不修改输入
+createEinoRunViewer(container, record, { locale: "zh" });
+```
+
+合同与采集边界见 [v2 规范](https://github.com/silicon-nora/eino-viewer/blob/main/protocol/v2/README.md)。
+
+支持保存后的静态记录；v2 可保留显式观察到的流式部分正文。Viewer 不执行运行、不消费流、不订阅实时事件、不上传记录。
+旧记录、未完成记录和只有定义的记录仍可查看，但不会补造结果。Go 自动采集有明确的流边界限制，接入流式应用前请查看 Recorder 说明。
 
 ## 选择入口
 
@@ -53,7 +69,9 @@ python3 -m http.server 4173 --bind 127.0.0.1
 不要求使用者手写标准 JSON。工作台不支持打开或拖入文件；已有记录请用上方的离线 HTML 打开，
 或传给下方的嵌入阅读器。
 
-无效示例保留上一份有效记录与选择。工作台不提供原始记录编辑器或技术目录。
+无效示例保留上一份有效记录与选择。工作台不提供原始记录编辑器，现有 v1 示例没有技术目录。
+
+下面描述现有 v1 示例的已验收界面；v2 使用后文说明的三入口共享阅读器。
 
 - **Agent：轨迹＋详情。** 轨迹按内容完整平铺，默认选中首项；点击整行查看输入、输出，只标明异常状态。
 - **Graph：步骤＋流程＋详情。** 同一节点的多次执行合并显示在流程图中，步骤及详情仍保留每次访问的原始值。
@@ -67,7 +85,7 @@ Graph／Workflow 的流程面板固定展开，缩放与适应画布位于标题
 本轮简化已获 Owner 验收，只应用于工作台 Graph／Workflow；它们的嵌入／离线界面未同步改版。
 Agent 已在三个入口共享同一阅读核心。原始记录、公共 API 和绘图保护不变，Graph 定义超过 500 个节点也需主动绘制。
 
-维护者可查看[本地版本管理与验收基线](docs/LOCAL_VERSION_CONTROL.md)；保留最初的 Agent 标签和后续完整提交历史。
+维护者可查看[本地版本管理与验收基线](https://github.com/silicon-nora/eino-viewer/blob/main/docs/LOCAL_VERSION_CONTROL.md)；保留最初的 Agent 标签和后续完整提交历史。
 
 ## 嵌入完整阅读器
 
@@ -107,7 +125,7 @@ viewer.update(nextRunRecord);
 viewer.destroy();
 ```
 
-`selectStep(id)` 选择解释后的步骤；`selectEvidence(index)` 使用从零开始的原始信封索引。
+`selectStep(id)` 选择解释后的步骤；v1 的 `selectEvidence(index)` 使用从零开始的原始信封索引。
 `selectGroup(id)` 选择一个范围及其下级，`selectGroup(null)` 返回全部步骤。
 不存在的选择返回 `false`。无效输入抛出带 `diagnostics` 的 `EinoViewerError`；
 无效更新保留旧视图。`destroy()` 可重复调用，销毁后不能再更新或选择。
@@ -116,6 +134,12 @@ viewer.destroy();
 会在解析前额外校验原始数字文本；工作台没有 Raw 副本编辑器。详见[输入保真边界](#输入保真边界)。
 
 ## 阅读规则
+
+v2 三入口共用原生阅读器：显式根结果、可检索和分页的实际调用、关联来源的正文，以及可检查的事件、关系、用量和业务注解。Agent 不画流程；Graph/Workflow 保留定义结构与嵌套范围。复制保留实际记录值；缺失正文不重建。大范围有绘图预算，并提供分页的定义/连线读取入口，不删除记录事实。
+
+v2 的 `selectStep` 使用 invocation ID；`selectEntity({ kind, id })` 选择带类型的实体引用；`selectEvidence(index)` 选择原始 `events[index]`，不是旧信封索引。
+
+下面的详细展示规则适用于原有 v1 阅读器：
 
 - 根结果不与中间或子调用输出混淆，失败保留原始原因和可确认的节点定位；
   执行结果与采集完整度独立，成功运行也可能只采集到部分内容。
@@ -136,7 +160,7 @@ viewer.destroy();
 
 ## 低层画布与兼容入口
 
-`createEinoViewer` 仍是低层画布入口，供调用方自行组织结果、详情与证据界面。
+对 v1，`createEinoViewer` 仍是低层画布入口，供调用方自行组织结果、详情与证据界面。
 它不是完整阅读器的别名，现有 API 不变：
 
 ```js
@@ -153,7 +177,9 @@ const canvas = createEinoViewer(document.querySelector("#viewer"), runRecord, {
 它同样支持 `update(input)` 与可重复调用的 `destroy()`，无效更新保留旧画布。
 节点点击返回 `{ id, node }`：Run Record 使用规范 `ExecutionDAG` 节点，仅定义输入使用源节点。
 
-主要输入是一份 `EinoRunRecord`。兼容输入包括 schema-v1 `EinoWorkflowSnapshot`、
+对 v2，`createEinoViewer` 使用原生阅读器，保留 `kind` / `document` / `update` / `destroy` 小接口；节点点击返回带阅读投影的 invocation。需要选择控制和完整阅读 API 时使用 `createEinoRunViewer`。
+
+主要输入是一份 v1 `EinoRunRecord` 或原生 v2 `RunRecord`。兼容输入包括 schema-v1 `EinoWorkflowSnapshot`、
 同次运行的受支持信封，以及经校验的 `EinoViewerDocument`。
 `projectEinoViewerDocument()` 返回带稳定 `code`/`path` 的诊断，不抛出输入错误；
 不会猜测多次运行混合、来源锚点冲突或缺少锚点的视图。
@@ -187,5 +213,5 @@ const canvas = createEinoViewer(document.querySelector("#viewer"), runRecord, {
 
 现状见[示例优先与 Agent 轨迹验收](https://github.com/silicon-nora/eino-viewer/blob/main/docs/AGENT_TRAJECTORY_ACCEPTANCE.md)、
 [静态结果路线](https://github.com/silicon-nora/eino-viewer/blob/main/docs/STATIC_RESULT_ROADMAP.md)
-与[测试维护说明](tests/README.md)。`npm run benchmark:static` 测量本机
+与[测试维护说明](https://github.com/silicon-nora/eino-viewer/blob/main/tests/README.md)。`npm run benchmark:static` 测量本机
 100 / 1,000 / 10,000 条合成证据，不代表真实业务覆盖或性能 SLA。发布不在当前工作范围内。

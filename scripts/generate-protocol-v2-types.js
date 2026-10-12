@@ -118,7 +118,7 @@ const go = execFileSync("gofmt", { input: [
   "",
 ].join("\n\n"), encoding: "utf8" });
 
-for (const [path, contents] of [["protocol/v2/types.d.ts", ts], ["integrations/go/protocolv2/types.go", go]]) {
+for (const [path, contents] of [["protocol/v2/types.d.ts", ts], ["src/protocol-v2-types.d.ts", ts], ["src/protocol-v2-types.d.cts", ts], ["integrations/go/protocolv2/types.go", go]]) {
   const url = new URL(path, root);
   if (check) {
     const current = await readFile(url, "utf8");

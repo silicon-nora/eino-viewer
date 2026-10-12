@@ -1,0 +1,4873 @@
+{
+  "schemaVersion": 2,
+  "run": {
+    "id": "native-nested-parallel",
+    "mode": "execution",
+    "scope": "eino",
+    "source": "agent",
+    "rootInvocationId": "call-1",
+    "status": "succeeded",
+    "timing": {
+      "startedAtMs": 1791804706074,
+      "endedAtMs": 1791804706080,
+      "durationMs": 5,
+      "basis": "monotonic"
+    },
+    "sealedAtMs": 1791804706080,
+    "producer": {
+      "name": "eino-viewer/go",
+      "version": "0.1.0"
+    },
+    "capture": {
+      "state": "complete",
+      "coverage": [
+        "invocations",
+        "events",
+        "io",
+        "model"
+      ],
+      "issues": []
+    }
+  },
+  "definitions": [],
+  "invocations": [
+    {
+      "id": "call-1",
+      "kind": "agent",
+      "name": "coordinator",
+      "parent": {
+        "state": "root"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706074,
+        "endedAtMs": 1791804706080,
+        "durationMs": 5,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-1"
+      ],
+      "outputRefs": [
+        "content-82"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-2",
+      "kind": "graph",
+      "name": "coordinator",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-1"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706074,
+        "endedAtMs": 1791804706080,
+        "durationMs": 5,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-2"
+      ],
+      "outputRefs": [
+        "content-81"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-3",
+      "kind": "node",
+      "name": "Lambda",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-2"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706074,
+        "endedAtMs": 1791804706074,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-3"
+      ],
+      "outputRefs": [
+        "content-4"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-4",
+      "kind": "graph",
+      "name": "ReAct",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-2"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706074,
+        "endedAtMs": 1791804706080,
+        "durationMs": 5,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-5"
+      ],
+      "outputRefs": [
+        "content-80"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-5",
+      "kind": "node",
+      "name": "Init",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706075,
+        "endedAtMs": 1791804706075,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-6"
+      ],
+      "outputRefs": [
+        "content-7"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-6",
+      "kind": "model",
+      "name": "ChatModel",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706075,
+        "endedAtMs": 1791804706075,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-8"
+      ],
+      "outputRefs": [
+        "content-9"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-7",
+      "kind": "node",
+      "name": "CancelCheck",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706075,
+        "endedAtMs": 1791804706075,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-13"
+      ],
+      "outputRefs": [
+        "content-14"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-8",
+      "kind": "node",
+      "name": "ToolNode",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706075,
+        "endedAtMs": 1791804706079,
+        "durationMs": 4,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-15"
+      ],
+      "outputRefs": [
+        "content-72"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-9",
+      "kind": "tool",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-8"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706075,
+        "endedAtMs": 1791804706079,
+        "durationMs": 4,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-16"
+      ],
+      "outputRefs": [
+        "content-71"
+      ],
+      "metrics": [],
+      "externalCallId": "call-child-slow"
+    },
+    {
+      "id": "call-10",
+      "kind": "tool",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-8"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706075,
+        "endedAtMs": 1791804706079,
+        "durationMs": 3,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-17"
+      ],
+      "outputRefs": [
+        "content-59"
+      ],
+      "metrics": [],
+      "externalCallId": "call-child-fast"
+    },
+    {
+      "id": "call-11",
+      "kind": "agent",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-10"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706078,
+        "durationMs": 2,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-18"
+      ],
+      "outputRefs": [],
+      "metrics": []
+    },
+    {
+      "id": "call-12",
+      "kind": "agent",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-9"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706079,
+        "durationMs": 3,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-19"
+      ],
+      "outputRefs": [],
+      "metrics": []
+    },
+    {
+      "id": "call-13",
+      "kind": "graph",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-11"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706078,
+        "durationMs": 2,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-20"
+      ],
+      "outputRefs": [
+        "content-58"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-14",
+      "kind": "node",
+      "name": "Lambda",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-13"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706076,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-21"
+      ],
+      "outputRefs": [
+        "content-22"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-15",
+      "kind": "graph",
+      "name": "worker",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-12"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706079,
+        "durationMs": 3,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-23"
+      ],
+      "outputRefs": [
+        "content-70"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-16",
+      "kind": "node",
+      "name": "Lambda",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-15"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706076,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-24"
+      ],
+      "outputRefs": [
+        "content-25"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-17",
+      "kind": "graph",
+      "name": "ReAct",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-13"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706076,
+        "endedAtMs": 1791804706078,
+        "durationMs": 2,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-26"
+      ],
+      "outputRefs": [
+        "content-57"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-18",
+      "kind": "node",
+      "name": "Init",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706077,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-27"
+      ],
+      "outputRefs": [
+        "content-28"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-19",
+      "kind": "model",
+      "name": "ChatModel",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706077,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-29"
+      ],
+      "outputRefs": [
+        "content-34"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-20",
+      "kind": "graph",
+      "name": "ReAct",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-15"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706079,
+        "durationMs": 2,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-30"
+      ],
+      "outputRefs": [
+        "content-69"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-21",
+      "kind": "node",
+      "name": "Init",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706077,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-31"
+      ],
+      "outputRefs": [
+        "content-32"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-22",
+      "kind": "model",
+      "name": "ChatModel",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706077,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-33"
+      ],
+      "outputRefs": [
+        "content-37"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-23",
+      "kind": "node",
+      "name": "CancelCheck",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706077,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-40"
+      ],
+      "outputRefs": [
+        "content-41"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-24",
+      "kind": "node",
+      "name": "ToolNode",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706078,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-42"
+      ],
+      "outputRefs": [
+        "content-49"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-25",
+      "kind": "tool",
+      "name": "lookup_item",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-24"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706078,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-43"
+      ],
+      "outputRefs": [
+        "content-48"
+      ],
+      "metrics": [],
+      "externalCallId": "shared-inner-call"
+    },
+    {
+      "id": "call-26",
+      "kind": "node",
+      "name": "CancelCheck",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706077,
+        "endedAtMs": 1791804706078,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-44"
+      ],
+      "outputRefs": [
+        "content-45"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-27",
+      "kind": "node",
+      "name": "ToolNode",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706078,
+        "endedAtMs": 1791804706079,
+        "durationMs": 1,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-46"
+      ],
+      "outputRefs": [
+        "content-61"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-28",
+      "kind": "tool",
+      "name": "lookup_item",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-27"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706078,
+        "endedAtMs": 1791804706079,
+        "durationMs": 1,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-47"
+      ],
+      "outputRefs": [
+        "content-60"
+      ],
+      "metrics": [],
+      "externalCallId": "shared-inner-call"
+    },
+    {
+      "id": "call-29",
+      "kind": "node",
+      "name": "AfterToolCalls",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706078,
+        "endedAtMs": 1791804706078,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-50"
+      ],
+      "outputRefs": [
+        "content-51"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-30",
+      "kind": "node",
+      "name": "AfterToolCallsCancelCheck",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706078,
+        "endedAtMs": 1791804706078,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-52"
+      ],
+      "outputRefs": [
+        "content-53"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-31",
+      "kind": "model",
+      "name": "ChatModel",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-17"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706078,
+        "endedAtMs": 1791804706078,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-54"
+      ],
+      "outputRefs": [
+        "content-55"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-32",
+      "kind": "node",
+      "name": "AfterToolCalls",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706079,
+        "endedAtMs": 1791804706079,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-62"
+      ],
+      "outputRefs": [
+        "content-63"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-33",
+      "kind": "node",
+      "name": "AfterToolCallsCancelCheck",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706079,
+        "endedAtMs": 1791804706079,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-64"
+      ],
+      "outputRefs": [
+        "content-65"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-34",
+      "kind": "model",
+      "name": "ChatModel",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-20"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706079,
+        "endedAtMs": 1791804706079,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-66"
+      ],
+      "outputRefs": [
+        "content-67"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-35",
+      "kind": "node",
+      "name": "AfterToolCalls",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706079,
+        "endedAtMs": 1791804706079,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-73"
+      ],
+      "outputRefs": [
+        "content-74"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-36",
+      "kind": "node",
+      "name": "AfterToolCallsCancelCheck",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706079,
+        "endedAtMs": 1791804706080,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-75"
+      ],
+      "outputRefs": [
+        "content-76"
+      ],
+      "metrics": []
+    },
+    {
+      "id": "call-37",
+      "kind": "model",
+      "name": "ChatModel",
+      "parent": {
+        "state": "known",
+        "invocationId": "call-4"
+      },
+      "status": "succeeded",
+      "timing": {
+        "startedAtMs": 1791804706080,
+        "endedAtMs": 1791804706080,
+        "durationMs": 0,
+        "basis": "monotonic"
+      },
+      "inputRefs": [
+        "content-77"
+      ],
+      "outputRefs": [
+        "content-78"
+      ],
+      "metrics": []
+    }
+  ],
+  "events": [
+    {
+      "id": "event-1",
+      "sequence": 1,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-2",
+      "sequence": 2,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": [
+        "content-1"
+      ]
+    },
+    {
+      "id": "event-3",
+      "sequence": 3,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-4",
+      "sequence": 4,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": [
+        "content-2"
+      ]
+    },
+    {
+      "id": "event-5",
+      "sequence": 5,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-3"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-6",
+      "sequence": 6,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-3"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": [
+        "content-3"
+      ]
+    },
+    {
+      "id": "event-7",
+      "sequence": 7,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-3"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": [
+        "content-4"
+      ]
+    },
+    {
+      "id": "event-8",
+      "sequence": 8,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-3"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-9",
+      "sequence": 9,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-4"
+      },
+      "atMs": 1791804706074,
+      "contentRefs": []
+    },
+    {
+      "id": "event-10",
+      "sequence": 10,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-4"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-5"
+      ]
+    },
+    {
+      "id": "event-11",
+      "sequence": 11,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-5"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-12",
+      "sequence": 12,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-5"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-6"
+      ]
+    },
+    {
+      "id": "event-13",
+      "sequence": 13,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-5"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-7"
+      ]
+    },
+    {
+      "id": "event-14",
+      "sequence": 14,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-5"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-15",
+      "sequence": 15,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-16",
+      "sequence": 16,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-8"
+      ]
+    },
+    {
+      "id": "event-17",
+      "sequence": 17,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-9"
+      ]
+    },
+    {
+      "id": "event-18",
+      "sequence": 18,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-10"
+      ],
+      "attributes": {
+        "externalCallId": "call-child-slow",
+        "toolName": "worker"
+      }
+    },
+    {
+      "id": "event-19",
+      "sequence": 19,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-11"
+      ],
+      "attributes": {
+        "externalCallId": "call-child-fast",
+        "toolName": "worker"
+      }
+    },
+    {
+      "id": "event-20",
+      "sequence": 20,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-21",
+      "sequence": 21,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-7"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-22",
+      "sequence": 22,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-7"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-13"
+      ]
+    },
+    {
+      "id": "event-23",
+      "sequence": 23,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-7"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-14"
+      ]
+    },
+    {
+      "id": "event-24",
+      "sequence": 24,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-7"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-25",
+      "sequence": 25,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-8"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-26",
+      "sequence": 26,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-8"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-15"
+      ]
+    },
+    {
+      "id": "event-27",
+      "sequence": 27,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-28",
+      "sequence": 28,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-16"
+      ]
+    },
+    {
+      "id": "event-29",
+      "sequence": 29,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": []
+    },
+    {
+      "id": "event-30",
+      "sequence": 30,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "atMs": 1791804706075,
+      "contentRefs": [
+        "content-17"
+      ]
+    },
+    {
+      "id": "event-31",
+      "sequence": 31,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-11"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-32",
+      "sequence": 32,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-11"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-18"
+      ]
+    },
+    {
+      "id": "event-33",
+      "sequence": 33,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-12"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-34",
+      "sequence": 34,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-12"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-19"
+      ]
+    },
+    {
+      "id": "event-35",
+      "sequence": 35,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-13"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-36",
+      "sequence": 36,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-13"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-20"
+      ]
+    },
+    {
+      "id": "event-37",
+      "sequence": 37,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-14"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-38",
+      "sequence": 38,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-14"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-21"
+      ]
+    },
+    {
+      "id": "event-39",
+      "sequence": 39,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-14"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-22"
+      ]
+    },
+    {
+      "id": "event-40",
+      "sequence": 40,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-14"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-41",
+      "sequence": 41,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-15"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-42",
+      "sequence": 42,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-15"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-23"
+      ]
+    },
+    {
+      "id": "event-43",
+      "sequence": 43,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-16"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-44",
+      "sequence": 44,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-16"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-24"
+      ]
+    },
+    {
+      "id": "event-45",
+      "sequence": 45,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-16"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": [
+        "content-25"
+      ]
+    },
+    {
+      "id": "event-46",
+      "sequence": 46,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-16"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-47",
+      "sequence": 47,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-17"
+      },
+      "atMs": 1791804706076,
+      "contentRefs": []
+    },
+    {
+      "id": "event-48",
+      "sequence": 48,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-17"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-26"
+      ]
+    },
+    {
+      "id": "event-49",
+      "sequence": 49,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-18"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-50",
+      "sequence": 50,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-18"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-27"
+      ]
+    },
+    {
+      "id": "event-51",
+      "sequence": 51,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-18"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-28"
+      ]
+    },
+    {
+      "id": "event-52",
+      "sequence": 52,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-18"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-53",
+      "sequence": 53,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-54",
+      "sequence": 54,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-29"
+      ]
+    },
+    {
+      "id": "event-55",
+      "sequence": 55,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-20"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-56",
+      "sequence": 56,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-20"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-30"
+      ]
+    },
+    {
+      "id": "event-57",
+      "sequence": 57,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-21"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-58",
+      "sequence": 58,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-21"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-31"
+      ]
+    },
+    {
+      "id": "event-59",
+      "sequence": 59,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-21"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-32"
+      ]
+    },
+    {
+      "id": "event-60",
+      "sequence": 60,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-21"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-61",
+      "sequence": 61,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-62",
+      "sequence": 62,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-33"
+      ]
+    },
+    {
+      "id": "event-63",
+      "sequence": 63,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-34"
+      ]
+    },
+    {
+      "id": "event-64",
+      "sequence": 64,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-35"
+      ],
+      "attributes": {
+        "externalCallId": "shared-inner-call",
+        "toolName": "lookup_item"
+      }
+    },
+    {
+      "id": "event-65",
+      "sequence": 65,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-66",
+      "sequence": 66,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-37"
+      ]
+    },
+    {
+      "id": "event-67",
+      "sequence": 67,
+      "type": "tool.requested",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-38"
+      ],
+      "attributes": {
+        "externalCallId": "shared-inner-call",
+        "toolName": "lookup_item"
+      }
+    },
+    {
+      "id": "event-68",
+      "sequence": 68,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-69",
+      "sequence": 69,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-23"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-70",
+      "sequence": 70,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-23"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-40"
+      ]
+    },
+    {
+      "id": "event-71",
+      "sequence": 71,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-23"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-41"
+      ]
+    },
+    {
+      "id": "event-72",
+      "sequence": 72,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-23"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-73",
+      "sequence": 73,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-24"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-74",
+      "sequence": 74,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-24"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-42"
+      ]
+    },
+    {
+      "id": "event-75",
+      "sequence": 75,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-76",
+      "sequence": 76,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-43"
+      ]
+    },
+    {
+      "id": "event-77",
+      "sequence": 77,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-26"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": []
+    },
+    {
+      "id": "event-78",
+      "sequence": 78,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-26"
+      },
+      "atMs": 1791804706077,
+      "contentRefs": [
+        "content-44"
+      ]
+    },
+    {
+      "id": "event-79",
+      "sequence": 79,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-26"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-45"
+      ]
+    },
+    {
+      "id": "event-80",
+      "sequence": 80,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-26"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-81",
+      "sequence": 81,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-27"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-82",
+      "sequence": 82,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-27"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-46"
+      ]
+    },
+    {
+      "id": "event-83",
+      "sequence": 83,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-84",
+      "sequence": 84,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-47"
+      ]
+    },
+    {
+      "id": "event-85",
+      "sequence": 85,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-48"
+      ]
+    },
+    {
+      "id": "event-86",
+      "sequence": 86,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-87",
+      "sequence": 87,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-24"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-49"
+      ]
+    },
+    {
+      "id": "event-88",
+      "sequence": 88,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-24"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-89",
+      "sequence": 89,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-29"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-90",
+      "sequence": 90,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-29"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-50"
+      ]
+    },
+    {
+      "id": "event-91",
+      "sequence": 91,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-29"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-51"
+      ]
+    },
+    {
+      "id": "event-92",
+      "sequence": 92,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-29"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-93",
+      "sequence": 93,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-30"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-94",
+      "sequence": 94,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-30"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-52"
+      ]
+    },
+    {
+      "id": "event-95",
+      "sequence": 95,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-30"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-53"
+      ]
+    },
+    {
+      "id": "event-96",
+      "sequence": 96,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-30"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-97",
+      "sequence": 97,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-98",
+      "sequence": 98,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-54"
+      ]
+    },
+    {
+      "id": "event-99",
+      "sequence": 99,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-55"
+      ]
+    },
+    {
+      "id": "event-100",
+      "sequence": 100,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-101",
+      "sequence": 101,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-17"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-57"
+      ]
+    },
+    {
+      "id": "event-102",
+      "sequence": 102,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-17"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-103",
+      "sequence": 103,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-13"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": [
+        "content-58"
+      ]
+    },
+    {
+      "id": "event-104",
+      "sequence": 104,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-13"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-105",
+      "sequence": 105,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-11"
+      },
+      "atMs": 1791804706078,
+      "contentRefs": []
+    },
+    {
+      "id": "event-106",
+      "sequence": 106,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-59"
+      ]
+    },
+    {
+      "id": "event-107",
+      "sequence": 107,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-108",
+      "sequence": 108,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-60"
+      ]
+    },
+    {
+      "id": "event-109",
+      "sequence": 109,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-110",
+      "sequence": 110,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-27"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-61"
+      ]
+    },
+    {
+      "id": "event-111",
+      "sequence": 111,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-27"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-112",
+      "sequence": 112,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-32"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-113",
+      "sequence": 113,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-32"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-62"
+      ]
+    },
+    {
+      "id": "event-114",
+      "sequence": 114,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-32"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-63"
+      ]
+    },
+    {
+      "id": "event-115",
+      "sequence": 115,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-32"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-116",
+      "sequence": 116,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-33"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-117",
+      "sequence": 117,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-33"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-64"
+      ]
+    },
+    {
+      "id": "event-118",
+      "sequence": 118,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-33"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-65"
+      ]
+    },
+    {
+      "id": "event-119",
+      "sequence": 119,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-33"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-120",
+      "sequence": 120,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-121",
+      "sequence": 121,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-66"
+      ]
+    },
+    {
+      "id": "event-122",
+      "sequence": 122,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-67"
+      ]
+    },
+    {
+      "id": "event-123",
+      "sequence": 123,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-124",
+      "sequence": 124,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-20"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-69"
+      ]
+    },
+    {
+      "id": "event-125",
+      "sequence": 125,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-20"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-126",
+      "sequence": 126,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-15"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-70"
+      ]
+    },
+    {
+      "id": "event-127",
+      "sequence": 127,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-15"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-128",
+      "sequence": 128,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-71"
+      ]
+    },
+    {
+      "id": "event-129",
+      "sequence": 129,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-130",
+      "sequence": 130,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-12"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-131",
+      "sequence": 131,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-8"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-72"
+      ]
+    },
+    {
+      "id": "event-132",
+      "sequence": 132,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-8"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-133",
+      "sequence": 133,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-35"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-134",
+      "sequence": 134,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-35"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-73"
+      ]
+    },
+    {
+      "id": "event-135",
+      "sequence": 135,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-35"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": [
+        "content-74"
+      ]
+    },
+    {
+      "id": "event-136",
+      "sequence": 136,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-35"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-137",
+      "sequence": 137,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-36"
+      },
+      "atMs": 1791804706079,
+      "contentRefs": []
+    },
+    {
+      "id": "event-138",
+      "sequence": 138,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-36"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-75"
+      ]
+    },
+    {
+      "id": "event-139",
+      "sequence": 139,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-36"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-76"
+      ]
+    },
+    {
+      "id": "event-140",
+      "sequence": 140,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-36"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": []
+    },
+    {
+      "id": "event-141",
+      "sequence": 141,
+      "type": "invocation.started",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": []
+    },
+    {
+      "id": "event-142",
+      "sequence": 142,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-77"
+      ]
+    },
+    {
+      "id": "event-143",
+      "sequence": 143,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-78"
+      ]
+    },
+    {
+      "id": "event-144",
+      "sequence": 144,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": []
+    },
+    {
+      "id": "event-145",
+      "sequence": 145,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-4"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-80"
+      ]
+    },
+    {
+      "id": "event-146",
+      "sequence": 146,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-4"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": []
+    },
+    {
+      "id": "event-147",
+      "sequence": 147,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-81"
+      ]
+    },
+    {
+      "id": "event-148",
+      "sequence": 148,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": []
+    },
+    {
+      "id": "event-149",
+      "sequence": 149,
+      "type": "content.captured",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": [
+        "content-82"
+      ]
+    },
+    {
+      "id": "event-150",
+      "sequence": 150,
+      "type": "invocation.ended",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "atMs": 1791804706080,
+      "contentRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-1",
+      "type": "responds_to",
+      "from": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "to": {
+        "kind": "event",
+        "id": "event-18"
+      }
+    },
+    {
+      "id": "relation-2",
+      "type": "responds_to",
+      "from": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "to": {
+        "kind": "event",
+        "id": "event-19"
+      }
+    },
+    {
+      "id": "relation-3",
+      "type": "responds_to",
+      "from": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "to": {
+        "kind": "event",
+        "id": "event-64"
+      }
+    },
+    {
+      "id": "relation-4",
+      "type": "responds_to",
+      "from": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "to": {
+        "kind": "event",
+        "id": "event-67"
+      }
+    }
+  ],
+  "contents": [
+    {
+      "id": "content-1",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "parallel",
+            "role": "user"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-2",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {}
+      }
+    },
+    {
+      "id": "content-3",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-3"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {}
+      }
+    },
+    {
+      "id": "content-4",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-3"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "parallel",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-5",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-4"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "parallel",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-6",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-5"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "parallel",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-7",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-5"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "parallel",
+            "role": "user"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-8",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "messages": [
+            {
+              "content": "parallel",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-9",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "role": "model-response",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"request\":\"slow\"}",
+                  "name": "worker"
+                },
+                "id": "call-child-slow",
+                "type": "function"
+              },
+              {
+                "function": {
+                  "arguments": "{\"request\":\"fast\"}",
+                  "name": "worker"
+                },
+                "id": "call-child-fast",
+                "type": "function"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "content-10",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "role": "other",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"request\":\"slow\"}"
+      }
+    },
+    {
+      "id": "content-11",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "role": "other",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"request\":\"fast\"}"
+      }
+    },
+    {
+      "id": "content-12",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-6"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "schemaRef": "urn:eino:run:2#/$defs/Message",
+      "provenance": "projected",
+      "completeness": "partial",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": ""
+            }
+          ],
+          "toolRequestEventIds": [
+            "event-18",
+            "event-19"
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-13",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-7"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "f792b9da-dad0-403c-875c-6a51829648ea"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"request\":\"slow\"}",
+                "name": "worker"
+              },
+              "id": "call-child-slow",
+              "type": "function"
+            },
+            {
+              "function": {
+                "arguments": "{\"request\":\"fast\"}",
+                "name": "worker"
+              },
+              "id": "call-child-fast",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-14",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-7"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "f792b9da-dad0-403c-875c-6a51829648ea"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"request\":\"slow\"}",
+                "name": "worker"
+              },
+              "id": "call-child-slow",
+              "type": "function"
+            },
+            {
+              "function": {
+                "arguments": "{\"request\":\"fast\"}",
+                "name": "worker"
+              },
+              "id": "call-child-fast",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-15",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-8"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "f792b9da-dad0-403c-875c-6a51829648ea"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"request\":\"slow\"}",
+                "name": "worker"
+              },
+              "id": "call-child-slow",
+              "type": "function"
+            },
+            {
+              "function": {
+                "arguments": "{\"request\":\"fast\"}",
+                "name": "worker"
+              },
+              "id": "call-child-fast",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-16",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "argumentsJson": "{\"request\":\"slow\"}"
+        }
+      }
+    },
+    {
+      "id": "content-17",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "argumentsJson": "{\"request\":\"fast\"}"
+        }
+      }
+    },
+    {
+      "id": "content-18",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-11"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "fast",
+            "role": "user"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-19",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-12"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "slow",
+            "role": "user"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-20",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-13"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {}
+      }
+    },
+    {
+      "id": "content-21",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-14"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {}
+      }
+    },
+    {
+      "id": "content-22",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-14"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-23",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-15"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {}
+      }
+    },
+    {
+      "id": "content-24",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-16"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {}
+      }
+    },
+    {
+      "id": "content-25",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-16"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-26",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-17"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-27",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-18"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-28",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-18"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "fast",
+            "role": "user"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-29",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-30",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-20"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-31",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-21"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "Messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-32",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-21"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "slow",
+            "role": "user"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-33",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-34",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "role": "model-response",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"fast\"}",
+                  "name": "lookup_item"
+                },
+                "id": "shared-inner-call",
+                "type": "function"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "content-35",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "role": "other",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"key\":\"fast\"}"
+      }
+    },
+    {
+      "id": "content-36",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-19"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "schemaRef": "urn:eino:run:2#/$defs/Message",
+      "provenance": "projected",
+      "completeness": "partial",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": ""
+            }
+          ],
+          "toolRequestEventIds": [
+            "event-64"
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-37",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "role": "model-response",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "message": {
+            "content": "",
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"key\":\"slow\"}",
+                  "name": "lookup_item"
+                },
+                "id": "shared-inner-call",
+                "type": "function"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "content-38",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "role": "other",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": "{\"key\":\"slow\"}"
+      }
+    },
+    {
+      "id": "content-39",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-22"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "schemaRef": "urn:eino:run:2#/$defs/Message",
+      "provenance": "projected",
+      "completeness": "partial",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": ""
+            }
+          ],
+          "toolRequestEventIds": [
+            "event-67"
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-40",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-23"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "cad6f7ea-6fe7-47f9-b916-b335420888b5"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"key\":\"fast\"}",
+                "name": "lookup_item"
+              },
+              "id": "shared-inner-call",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-41",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-23"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "cad6f7ea-6fe7-47f9-b916-b335420888b5"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"key\":\"fast\"}",
+                "name": "lookup_item"
+              },
+              "id": "shared-inner-call",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-42",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-24"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "cad6f7ea-6fe7-47f9-b916-b335420888b5"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"key\":\"fast\"}",
+                "name": "lookup_item"
+              },
+              "id": "shared-inner-call",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-43",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "argumentsJson": "{\"key\":\"fast\"}"
+        }
+      }
+    },
+    {
+      "id": "content-44",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-26"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "7e642bf3-f9ff-4955-92b1-a329e5fdf829"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"key\":\"slow\"}",
+                "name": "lookup_item"
+              },
+              "id": "shared-inner-call",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-45",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-26"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "7e642bf3-f9ff-4955-92b1-a329e5fdf829"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"key\":\"slow\"}",
+                "name": "lookup_item"
+              },
+              "id": "shared-inner-call",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-46",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-27"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "",
+          "extra": {
+            "_eino_msg_id": "7e642bf3-f9ff-4955-92b1-a329e5fdf829"
+          },
+          "role": "assistant",
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"key\":\"slow\"}",
+                "name": "lookup_item"
+              },
+              "id": "shared-inner-call",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-47",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "argumentsJson": "{\"key\":\"slow\"}"
+        }
+      }
+    },
+    {
+      "id": "content-48",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-25"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "response": "lookup:fast"
+        }
+      }
+    },
+    {
+      "id": "content-49",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-24"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:fast",
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-50",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-29"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:fast",
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-51",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-29"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:fast",
+            "extra": {
+              "_eino_msg_id": "8824b92c-a8d9-44dd-b775-466dc492ec81"
+            },
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-52",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-30"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:fast",
+            "extra": {
+              "_eino_msg_id": "8824b92c-a8d9-44dd-b775-466dc492ec81"
+            },
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-53",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-30"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:fast",
+            "extra": {
+              "_eino_msg_id": "8824b92c-a8d9-44dd-b775-466dc492ec81"
+            },
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-54",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "messages": [
+            {
+              "content": "fast",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "cad6f7ea-6fe7-47f9-b916-b335420888b5"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"fast\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "lookup:fast",
+              "extra": {
+                "_eino_msg_id": "8824b92c-a8d9-44dd-b775-466dc492ec81"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-inner-call",
+              "tool_name": "lookup_item"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-55",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "role": "model-response",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "message": {
+            "content": "child result:fast",
+            "role": "assistant"
+          }
+        }
+      }
+    },
+    {
+      "id": "content-56",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-31"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "schemaRef": "urn:eino:run:2#/$defs/Message",
+      "provenance": "projected",
+      "completeness": "partial",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "child result:fast"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-57",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-17"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "child result:fast",
+          "extra": {
+            "_eino_msg_id": "f9a00f0d-ecc9-4eab-88f1-58a65cee11ce"
+          },
+          "role": "assistant"
+        }
+      }
+    },
+    {
+      "id": "content-58",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-13"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "child result:fast",
+          "extra": {
+            "_eino_msg_id": "f9a00f0d-ecc9-4eab-88f1-58a65cee11ce"
+          },
+          "role": "assistant"
+        }
+      }
+    },
+    {
+      "id": "content-59",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-10"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "response": "child result:fast"
+        }
+      }
+    },
+    {
+      "id": "content-60",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-28"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "response": "lookup:slow"
+        }
+      }
+    },
+    {
+      "id": "content-61",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-27"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:slow",
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-62",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-32"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:slow",
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-63",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-32"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:slow",
+            "extra": {
+              "_eino_msg_id": "420c71bf-69ea-486a-b7dc-29c6c4f2566c"
+            },
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-64",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-33"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:slow",
+            "extra": {
+              "_eino_msg_id": "420c71bf-69ea-486a-b7dc-29c6c4f2566c"
+            },
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-65",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-33"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "lookup:slow",
+            "extra": {
+              "_eino_msg_id": "420c71bf-69ea-486a-b7dc-29c6c4f2566c"
+            },
+            "role": "tool",
+            "tool_call_id": "shared-inner-call",
+            "tool_name": "lookup_item"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-66",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "messages": [
+            {
+              "content": "slow",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "7e642bf3-f9ff-4955-92b1-a329e5fdf829"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"key\":\"slow\"}",
+                    "name": "lookup_item"
+                  },
+                  "id": "shared-inner-call",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "lookup:slow",
+              "extra": {
+                "_eino_msg_id": "420c71bf-69ea-486a-b7dc-29c6c4f2566c"
+              },
+              "role": "tool",
+              "tool_call_id": "shared-inner-call",
+              "tool_name": "lookup_item"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-67",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "role": "model-response",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "message": {
+            "content": "child result:slow",
+            "role": "assistant"
+          }
+        }
+      }
+    },
+    {
+      "id": "content-68",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-34"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "schemaRef": "urn:eino:run:2#/$defs/Message",
+      "provenance": "projected",
+      "completeness": "partial",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "child result:slow"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-69",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-20"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "child result:slow",
+          "extra": {
+            "_eino_msg_id": "b5be8097-0dc0-434f-861f-cb314bbd7e04"
+          },
+          "role": "assistant"
+        }
+      }
+    },
+    {
+      "id": "content-70",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-15"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "child result:slow",
+          "extra": {
+            "_eino_msg_id": "b5be8097-0dc0-434f-861f-cb314bbd7e04"
+          },
+          "role": "assistant"
+        }
+      }
+    },
+    {
+      "id": "content-71",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-9"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "response": "child result:slow"
+        }
+      }
+    },
+    {
+      "id": "content-72",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-8"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "child result:slow",
+            "role": "tool",
+            "tool_call_id": "call-child-slow",
+            "tool_name": "worker"
+          },
+          {
+            "content": "child result:fast",
+            "role": "tool",
+            "tool_call_id": "call-child-fast",
+            "tool_name": "worker"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-73",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-35"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "child result:slow",
+            "role": "tool",
+            "tool_call_id": "call-child-slow",
+            "tool_name": "worker"
+          },
+          {
+            "content": "child result:fast",
+            "role": "tool",
+            "tool_call_id": "call-child-fast",
+            "tool_name": "worker"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-74",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-35"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "child result:slow",
+            "extra": {
+              "_eino_msg_id": "4b57182b-9651-4e7a-a6a1-0cc309ea0ddd"
+            },
+            "role": "tool",
+            "tool_call_id": "call-child-slow",
+            "tool_name": "worker"
+          },
+          {
+            "content": "child result:fast",
+            "extra": {
+              "_eino_msg_id": "cf01f616-7e52-4a29-bd86-fb36a185588e"
+            },
+            "role": "tool",
+            "tool_call_id": "call-child-fast",
+            "tool_name": "worker"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-75",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-36"
+      },
+      "role": "input",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "child result:slow",
+            "extra": {
+              "_eino_msg_id": "4b57182b-9651-4e7a-a6a1-0cc309ea0ddd"
+            },
+            "role": "tool",
+            "tool_call_id": "call-child-slow",
+            "tool_name": "worker"
+          },
+          {
+            "content": "child result:fast",
+            "extra": {
+              "_eino_msg_id": "cf01f616-7e52-4a29-bd86-fb36a185588e"
+            },
+            "role": "tool",
+            "tool_call_id": "call-child-fast",
+            "tool_name": "worker"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-76",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-36"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": [
+          {
+            "content": "child result:slow",
+            "extra": {
+              "_eino_msg_id": "4b57182b-9651-4e7a-a6a1-0cc309ea0ddd"
+            },
+            "role": "tool",
+            "tool_call_id": "call-child-slow",
+            "tool_name": "worker"
+          },
+          {
+            "content": "child result:fast",
+            "extra": {
+              "_eino_msg_id": "cf01f616-7e52-4a29-bd86-fb36a185588e"
+            },
+            "role": "tool",
+            "tool_call_id": "call-child-fast",
+            "tool_name": "worker"
+          }
+        ]
+      }
+    },
+    {
+      "id": "content-77",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "role": "model-request",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "messages": [
+            {
+              "content": "parallel",
+              "role": "user"
+            },
+            {
+              "content": "",
+              "extra": {
+                "_eino_msg_id": "f792b9da-dad0-403c-875c-6a51829648ea"
+              },
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"slow\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-slow",
+                  "type": "function"
+                },
+                {
+                  "function": {
+                    "arguments": "{\"request\":\"fast\"}",
+                    "name": "worker"
+                  },
+                  "id": "call-child-fast",
+                  "type": "function"
+                }
+              ]
+            },
+            {
+              "content": "child result:slow",
+              "extra": {
+                "_eino_msg_id": "4b57182b-9651-4e7a-a6a1-0cc309ea0ddd"
+              },
+              "role": "tool",
+              "tool_call_id": "call-child-slow",
+              "tool_name": "worker"
+            },
+            {
+              "content": "child result:fast",
+              "extra": {
+                "_eino_msg_id": "cf01f616-7e52-4a29-bd86-fb36a185588e"
+              },
+              "role": "tool",
+              "tool_call_id": "call-child-fast",
+              "tool_name": "worker"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-78",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "role": "model-response",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "message": {
+            "content": "parent final: combined slow and fast",
+            "role": "assistant"
+          }
+        }
+      }
+    },
+    {
+      "id": "content-79",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-37"
+      },
+      "role": "message",
+      "mediaType": "application/json",
+      "schemaRef": "urn:eino:run:2#/$defs/Message",
+      "provenance": "projected",
+      "completeness": "partial",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "role": "assistant",
+          "parts": [
+            {
+              "kind": "text",
+              "text": "parent final: combined slow and fast"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "content-80",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-4"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "parent final: combined slow and fast",
+          "extra": {
+            "_eino_msg_id": "902b4c6d-673d-4b35-a924-ccfa1156c88a"
+          },
+          "role": "assistant"
+        }
+      }
+    },
+    {
+      "id": "content-81",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-2"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "projected",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "parent final: combined slow and fast",
+          "extra": {
+            "_eino_msg_id": "902b4c6d-673d-4b35-a924-ccfa1156c88a"
+          },
+          "role": "assistant"
+        }
+      }
+    },
+    {
+      "id": "content-82",
+      "owner": {
+        "kind": "invocation",
+        "id": "call-1"
+      },
+      "role": "output",
+      "mediaType": "application/json",
+      "provenance": "observed",
+      "completeness": "complete",
+      "transforms": [],
+      "data": {
+        "availability": "inline",
+        "value": {
+          "content": "parent final: combined slow and fast",
+          "extra": {
+            "_eino_msg_id": "902b4c6d-673d-4b35-a924-ccfa1156c88a"
+          },
+          "role": "assistant"
+        }
+      }
+    }
+  ],
+  "usage": [
+    {
+      "id": "usage-1",
+      "invocationId": "call-6",
+      "source": "unknown",
+      "completeness": "unknown",
+      "tokens": {}
+    },
+    {
+      "id": "usage-2",
+      "invocationId": "call-19",
+      "source": "unknown",
+      "completeness": "unknown",
+      "tokens": {}
+    },
+    {
+      "id": "usage-3",
+      "invocationId": "call-22",
+      "source": "unknown",
+      "completeness": "unknown",
+      "tokens": {}
+    },
+    {
+      "id": "usage-4",
+      "invocationId": "call-31",
+      "source": "unknown",
+      "completeness": "unknown",
+      "tokens": {}
+    },
+    {
+      "id": "usage-5",
+      "invocationId": "call-34",
+      "source": "unknown",
+      "completeness": "unknown",
+      "tokens": {}
+    },
+    {
+      "id": "usage-6",
+      "invocationId": "call-37",
+      "source": "unknown",
+      "completeness": "unknown",
+      "tokens": {}
+    }
+  ],
+  "annotations": []
+}

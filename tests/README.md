@@ -4,6 +4,8 @@
 
 当前用例的 P0/P1/P2 分级及全部 P3 删除台账见[优先级清单](PRIORITIES.md)。2026-09-30 核对：浏览器现有 255 个独立场景（P0 174、P1 72、P2 9），默认执行 603 次（Chromium 255、Firefox 174、WebKit 174）；每个用例在源码中都有优先级标签。Workflow 两栏及默认向右调整复用现有案例，没有增加浏览器案例数量。
 
+2026-10-12：原生 v2 增加 21 个 P0 浏览器场景，当前为 276 个独立场景，默认 666 次执行（Chromium 276、Firefox 195、WebKit 195）。旧场景全部保留。新增范围与实际执行结果见 [v2 运行链路验收](../docs/PROTOCOL_V2_RUNTIME_ACCEPTANCE_2026-10-12.md)。
+
 Agent 完整阅读入口改验轨迹，保留原始步骤、值、身份、来源、范围和导出断言；低层 `createEinoViewer` 的 Agent 画布兼容仍验证。画布缩放/键盘机制移到真实 Graph/Workflow，不因移除完整阅读器的 Agent 路径而删除。现有合成规模用例复用同一份显式 UI-only 的 105 条轨迹，验证完整平铺无重漏、焦点、内部定位与语言切换滚动保留，不冒充新的真实 Recorder 场景。
 
 工作台 Workflow 不再通过已移除的步骤列表选择节点，而是等待真实画布更新后使用公开键盘交互；节点身份、来源、原值与子范围断言仍保留。嵌入／离线 Graph/Workflow 的目录、检索和证据检查不变。本轮实际运行与复验口径见[验收基线](../docs/LOCAL_VERSION_CONTROL.md#验证记录)，不把分轮复验表述成一次全量通过。
@@ -17,11 +19,22 @@ npm run typecheck
 npm run test:browser -- --workers=4
 ```
 
-- **Node**：23 个测试入口，覆盖协议、值类型、投影、身份、来源、状态、阅读次序、生命周期与损坏输入，包括轨迹身份桥接、Graph 重复访问聚合与定义拓扑；32 个真实 Recorder 场景和评估器的变异负例全部保留。
+- **Node**：原有 23 个测试入口加 `viewer-v2.test.js`，覆盖协议、值类型、投影、身份、来源、状态、阅读次序、生命周期与损坏输入；另执行 v2 合同与审查负例。32 个旧版 Recorder 场景和评估器的变异负例全部保留。
 - **Chromium**：完整浏览器场景，覆盖工作台、嵌入组件与离线版的实际接线和数据展示。
 - **Firefox / WebKit**：与 Chromium 共享交互、布局、原生浏览器机制和已知引擎回归；不重复穷举明确标记的数据组合。
 
-`npm run inspect:recorder-matrix -- --strict` 另外生成可读的 32 场景评估报告。它与 Node 测试使用相同评估器，不应被计作一份独立 oracle。需要重新验证 Recorder 采集端时运行 `npm run test:recorder-matrix`；本轮未修改采集端或原始 fixtures。
+`npm run inspect:recorder-matrix -- --strict` 另外生成可读的 32 场景评估报告。它与 Node 测试使用相同评估器，不应被计作一份独立 oracle。需要重新验证旧版 Recorder 采集端时运行 `npm run test:recorder-matrix`；旧版原始 fixtures 保持不变。
+
+### 原生 v2 验证
+
+```sh
+npm run test:protocol-v2:all
+npm run test:browser -- --grep 'v2|real Go Recorder export' --workers=4
+```
+
+完整组合检查生成类型与预编译校验器漂移、JS/TS 合同、Go wire types、11 份合成合同的跨语言往返，并重新运行真实 Eino 测试产生 21 份记录交给同一校验器和 Viewer 投影。模型和工具使用本地测试实现，不调用线上服务；真实 Eino 执行不等于真实业务验证。
+
+`protocol-v2.spec.js` 覆盖三入口、根结果、重复调用、未派发请求、版本切换、非法替换不污染已接受记录、离线原文导出、5 份 Go 产物及严格 CSP。`protocol-v2-navigation.spec.js` 覆盖回环与连线、四向布局、缩放/平移及语言保留、嵌套定义/调用范围、Agent 平铺，以及底层 v1/v2 切换后的实际画布。上述 21 个场景默认均跑三引擎。
 
 ### 浏览器回归防重入（M1）
 

@@ -2,7 +2,7 @@
 
 日期：2026-10-08。状态：设计分析，尚未实现新协议。
 
-后续进展（2026-10-12）：已建立 [RunRecord v2 可校验合同包](../protocol/v2/README.md)，落实本文的协议语义和业务扩展；采集、存储/API、Viewer 与平台迁移仍未实施。
+后续进展（2026-10-12）：已建立 [RunRecord v2 可校验合同包](../protocol/v2/README.md)，通用 Recorder / Viewer 也已原生接入，见 [运行链路验收](./PROTOCOL_V2_RUNTIME_ACCEPTANCE_2026-10-12.md)。业务采集、存储/API 与平台迁移仍未实施；按用户要求先验证通用链路，再接入 cloud-focus。
 
 基线：eino-viewer `417a6b1`、cloud-focus `d360bf3`、suggest-platform `473e6b8` 的本地代码。核对范围为真实运行、采集与存储、平台消费三条链路；没有访问线上数据库、配置或生产服务。
 

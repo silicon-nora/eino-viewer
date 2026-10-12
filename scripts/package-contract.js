@@ -18,7 +18,7 @@ import { assertNoSensitiveContent } from "./sensitive-content.js";
 import { validatePublishedSourceMaps } from "./source-map-contract.js";
 import { assertTypeSurface, readTypeSurfaceInputs } from "./type-surface.js";
 
-export const maximumPackedSize = 350 * 1024;
+export const maximumPackedSize = 400 * 1024;
 
 const alwaysRequired = [
   "package.json",
@@ -84,7 +84,7 @@ export function validatePackageReport(report, manifest, tarball) {
   if (!Number.isSafeInteger(report?.size) || report.size < 0) {
     failures.push("tarball size is invalid");
   } else if (report.size > maximumPackedSize) {
-    failures.push(`tarball exceeds 350 KiB: ${report.size} bytes`);
+    failures.push(`tarball exceeds 400 KiB: ${report.size} bytes`);
   }
   if (!Array.isArray(report?.files)) {
     failures.push("tarball file report is missing");

@@ -1,6 +1,6 @@
 # RunRecord v2 合同包
 
-2026-10-12 · 合同候选版本，供采集端与消费端共同实施。当前 Viewer 和 Recorder 仍使用 v1；本目录尚未接入现有 UI，也不在当前 npm 包的公开导出中。本轮交付的是可验证的数据合同，不代表业务迁移完成。
+2026-10-12 · 通用 Recorder 和 Viewer 已接入 v2，旧版仍可独立读取。Go 使用显式 `New*RecorderV2` 构造函数直接观察新事实；三种 Viewer 入口原生读取新记录，公开 `eino-viewer/protocol-v2` 提供相同的结构和语义校验。业务宿主 cloud-focus / suggest-platform 仍需后续接入，这不代表业务迁移完成。
 
 本规范落实 [业务落地分析](../../docs/PROTOCOL_BUSINESS_ANALYSIS_2026-10-08.md)。优先保持功能和事实完整性，采用独立的 `schemaVersion: 2`；旧 `schemaVersion: 1 + evidence` 不按字段重命名自动升级。
 
@@ -9,7 +9,7 @@
 | 文件 | 职责 |
 | --- | --- |
 | [run-record.schema.json](./run-record.schema.json) | JSON Schema 2020-12；核心字段、类型、必填项与封闭对象结构的权威定义 |
-| [validate.js](./validate.js) | 结构校验、引用/状态/账本等跨实体校验，以及已注册业务扩展校验；不修改记录，不获取外部内容 |
+| [validate.js](./validate.js) / [浏览器共享实现](../../src/run-record-v2.js) | CLI 与公开 API 共用结构、引用/状态/账本及注册业务扩展校验；不修改记录，不获取外部内容 |
 | [types.d.ts](./types.d.ts) / [Go types](../../integrations/go/protocolv2/types.go) | 从核心 Schema 生成的线格式类型；类型通过不能代替数据校验 |
 | [cloud-focus.schema.json](./cloud-focus.schema.json) / [业务规范](./CLOUD_FOCUS.md) | 独立版本的 cloud-focus annotation、评测材料和结果合同 |
 | [fixtures](./fixtures/README.md) | 根据真实代码路径制作的合成、脱敏合同样例；不是线上采集记录 |
@@ -19,11 +19,12 @@
 ```sh
 npm run test:protocol-v2:all
 node protocol/v2/validate.js protocol/v2/fixtures/*.json
+npm run test:protocol-v2:recorders
 ```
 
-单项入口为 `npm run test:protocol-v2`（JS 语义和 TS 类型）、`npm run test:protocol-v2:go`（Go 保真往返）、`npm run check:protocol-v2-types`（生成漂移）。修改核心 Schema 后运行 `npm run generate:protocol-v2-types`。生成器要求 Node 与 Go/gofmt。
+单项入口为 `npm run test:protocol-v2`（JS 语义和 TS 类型）、`npm run test:protocol-v2:go`（Go 保真往返）、`npm run check:protocol-v2-types` 和 `npm run check:protocol-v2-validator`（生成漂移）。修改 Schema 后运行 `npm run generate:protocol-v2-types` 和 `npm run generate:protocol-v2-validator`。生成器要求 Node 与 Go/gofmt。浏览器运行预编译校验代码，不依赖运行时 Ajv 或 `unsafe-eval`。
 
-Go 只提供 wire types 和往返工具，尚无独立的全功能 Go 校验器。跨语言验收会把 Go 输出重新交给同一 JS 校验器，避免“各自能解析”被误认为一致。
+Go 提供 wire types、原生 Recorder 和往返工具，尚无独立的全功能 Go 校验器。跨语言验收会把 Go 输出重新交给同一 JS 校验器，避免“各自能解析”被误认为一致。
 
 ## 最小模型
 
@@ -108,7 +109,7 @@ inputCached ⊆ input
 outputReasoning ⊆ output
 ```
 
-缓存和推理细分不再加到 total。complete 需要 input/output/total 与已知计量 source；partial 可只记录已知维度；unknown 必须为空 tokens。零是观测到的零，未知不是零。失败调用仍可产生 usage；没有真正模型调用的修复节点不产生 usage。若声明完整 model coverage，每个模型 invocation 都有一项 usage，无法取得计量则显式 unknown。图父级合计由消费端派生，不写成另一笔账本。单价、币种、价格版本和费用估算留宿主。
+缓存和推理细分不再加到 total。partial 用量也须满足已知下界：total 不得小于已知 input/output 或其缓存/推理子集之和；校验不填充未知维度。complete 需要 input/output/total 与已知计量 source；partial 可只记录已知维度；unknown 必须为空 tokens。零是观测到的零，未知不是零。失败调用仍可产生 usage；没有真正模型调用的修复节点不产生 usage。若声明完整 model coverage，每个模型 invocation 都有一项 usage，无法取得计量则显式 unknown。图父级合计由消费端派生，不写成另一笔账本。单价、币种、价格版本和费用估算留宿主。
 
 input/output 引用不要求内容唯一归属于调用：共享状态、复用结果可以有多个读者，但生产 owner 与读写关系要明确。sourceRecords 仅作附件；任何核心 Ref 都不能指向它，删除附件不影响规范化语义。
 
@@ -118,4 +119,6 @@ input/output 引用不要求内容唯一归属于调用：共享状态、复用�
 
 存储采用 runId 幂等封存，任务与 run 分离；运行结果、内容保存和宿主交付各有边界。重试或 producer 丢失的事实不能从现有 v1 记录补造。旧数据如需读取，在独立入口适配并保留缺失语义。
 
-下一阶段以 cloud-focus 的 Generate → Eino/LLMClient/State 采集 → RunRecord → 保存/API → 读回为首条实际链路，然后迁移 Viewer 和平台的详情、计费、评测、点击关联。合同样例通过是实施前提，不是已完成迁移的证明。
+目前先完成通用 Eino 采集 → RunRecord v2 → Viewer 的闭环。运行 `npm run test:protocol-v2:recorders` 会重新执行真实 Eino mock 场景，再将实时生成的 JSON 交给完整校验器和 Viewer 投影；它不依赖已提交样例冒充当前采集结果。
+
+下一阶段以 cloud-focus 的 Generate → Eino/LLMClient/State 采集 → RunRecord → 保存/API → 读回为业务链路，然后迁移平台的详情、计费、评测、点击关联。通用回调不能观察 Lambda 内部的自定义 LLMClient 与业务状态，需要就地扩展采集，不能因为 Viewer 能打开 v2 就宣称业务事实已采齐。

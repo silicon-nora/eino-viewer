@@ -21,6 +21,9 @@ import { completedRunStatus, runCompletion, runCompletionDiagnostics, validateRu
 import { buildRepeatedInvocationLabels, buildStepIdentityLabels, workflowAccessibilityLabel, workflowNodeLabel, workflowPresentationSnapshot } from "./renderer-presentation.js";
 import { createTimingContext, nodeTiming } from "./execution-timing.js";
 import { findJSONValueIssues } from "./json-value.js";
+import { projectRunRecordV2Document } from "./viewer-v2.js";
+import { createRunViewerV2 } from "./run-viewer-v2.js";
+import { createVersionedViewer } from "./versioned-viewer.js";
 
 export const EINO_VIEWER_SCHEMA_VERSION = 1;
 export const EINO_VIEWER_KINDS = Object.freeze(["agent", "graph", "workflow"]);
@@ -383,6 +386,7 @@ function executionFor(evidence, runId) {
 
 /** Project source records into one Agent, Graph, or Workflow viewer document. */
 export function projectEinoViewerDocument(input, options = {}) {
+  if (own(input, "schemaVersion") === 2 && own(input, "run") !== undefined) return projectRunRecordV2Document(input, options);
   const jsonIssues = findJSONValueIssues(input);
   if (jsonIssues.length) return finish({ ok: false, diagnostics: jsonIssues.map((entry) => diagnostic(
     entry.code === "recursive_reference" || entry.code === "unsafe_integer" || entry.code.startsWith("max_")
@@ -662,6 +666,10 @@ function mountGraph(container, viewerDocumentValue, options) {
 
 /** Mount one projected document. Graph definitions preserve cycles. */
 export function createEinoViewer(container, input, options = {}) {
+  return createVersionedViewer(container, input, options, createLegacyEinoViewer, createRunViewerV2, EinoViewerError);
+}
+
+function createLegacyEinoViewer(container, input, options = {}) {
   if (!container || container.nodeType !== 1 || typeof container.replaceChildren !== "function") {
     const diagnostics = [diagnostic("viewer.invalid_container", "root.container", "Expected an Element container.")];
     throw new EinoViewerError("viewer.invalid_container", diagnostics[0].message, diagnostics);

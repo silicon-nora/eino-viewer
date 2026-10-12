@@ -35,6 +35,7 @@ type WorkflowRecorderOptions struct {
 // execution outcomes. Create one recorder for one compiled Workflow invocation.
 // It is safe for concurrent Eino node callbacks.
 type WorkflowRecorder struct {
+	v2             *nativeV2Recorder
 	mu             sync.Mutex
 	runID          string
 	options        WorkflowRecorderOptions
@@ -64,6 +65,7 @@ func NewWorkflowRecorder(runID string, options WorkflowRecorderOptions) *Workflo
 // OnFinish implements compose.GraphCompileCallback. Applications normally use
 // CompileOption instead of calling this method directly.
 func (recorder *WorkflowRecorder) OnFinish(_ context.Context, info *compose.GraphInfo) {
+	recorder.v2.definition(info, recorder.options.Project)
 	snapshot, err := ProjectWithOptions(info, recorder.options.Project)
 	compiledAtMS := recorder.now().UnixMilli()
 	if err == nil {
@@ -88,7 +90,7 @@ func (recorder *WorkflowRecorder) CompileOption() compose.GraphCompileOption {
 // Handler records node execution paths, final status, timing, errors, and
 // JSON-safe component inputs and outputs for every observed Workflow node.
 func (recorder *WorkflowRecorder) Handler() callbacks.Handler {
-	return callbacks.NewHandlerBuilder().
+	legacy := callbacks.NewHandlerBuilder().
 		OnStartFn(func(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
 			recorder.recordRootLifecycle(ctx, "started", nil)
 			path := nodePath(ctx)
@@ -136,6 +138,7 @@ func (recorder *WorkflowRecorder) Handler() callbacks.Handler {
 			return ctx
 		}).
 		Build()
+	return recorder.v2.wrap(legacy)
 }
 
 func (recorder *WorkflowRecorder) recordRootLifecycle(ctx context.Context, state string, runErr error) {

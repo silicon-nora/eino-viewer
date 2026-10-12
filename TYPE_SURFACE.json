@@ -13,11 +13,11 @@
   },
   "./viewer": {
     "path": "src/viewer.d.ts",
-    "sha256": "a77a5005c7e24ee15bbff45165177d7ae67f31574c81272723324df0ca32155c"
+    "sha256": "55173181cbb6ef07731f288eeb6c1d4c93aebfdfa699c638164b5fd056f4c672"
   },
   "./run-viewer": {
     "path": "src/run-viewer.d.ts",
-    "sha256": "03347919f3de9a3ee482f9a177dc2b4ac921d21616e1e116673202920a6c53c1"
+    "sha256": "d052792db63b289b9957f5acf58d203a5b7d6fb4bf21a052c2fe8220be3c0b11"
   },
   "./execution-dag": {
     "path": "src/execution-dag.d.ts",
@@ -34,5 +34,9 @@
   "./workflow": {
     "path": "src/workflow.d.ts",
     "sha256": "20cc5c0a780c27b14837fe338bd9500accf936fa83f2a59586cb292460f38e90"
+  },
+  "./protocol-v2": {
+    "path": "src/run-record-v2.d.ts",
+    "sha256": "003f47eb1de0e3a6bf455595bea4c1ad10579305ec1dd3f7c85a1ee82fdbf0bf"
   }
 }

@@ -1018,6 +1018,10 @@ async function loadFixtureCatalog() {
     fixture("recorder-matrix/agent-nested-distinct-results.json"),
   ]);
   const byKind = (kind) => schemas.filter((entry) => entry.kind === kind);
+  // Catalog labels are descriptive metadata. A v2 run has no v1 evidence
+  // collection, and an invalid candidate must remain selectable for validation.
+  const recordDomains = (record) => record?.schemaVersion === 2 ? ["RunRecord v2"]
+    : (Array.isArray(record?.evidence) ? record.evidence : []).map((entry) => entry.kind);
   const componentItems = components.map((entry, index) => {
     const payload = entry.payload;
     const boundary = payload.streaming ? "stream boundary" : payload.direction;
@@ -1173,7 +1177,7 @@ async function loadFixtureCatalog() {
       labelKey: "scenarioWeatherWorkflow",
       noteKey: "scenarioWeatherWorkflowNote",
       document: realisticAgentRun,
-      domains: realisticAgentRun.evidence.map((entry) => entry.kind),
+      domains: recordDomains(realisticAgentRun),
       executionDAG: true,
       expected: "valid",
     },
@@ -1182,7 +1186,7 @@ async function loadFixtureCatalog() {
       labelKey: "scenarioWeatherAgent",
       noteKey: "scenarioWeatherAgentNote",
       document: weatherAgentScenario,
-      domains: weatherAgentScenario.evidence.map((entry) => entry.kind),
+      domains: recordDomains(weatherAgentScenario),
       steps: [
         "weatherStepQuestion",
         "weatherStepToolContract",
@@ -1243,7 +1247,7 @@ async function loadFixtureCatalog() {
       {
         id: "agent-nested-distinct-results",
         document: nestedAgentRun,
-        domains: nestedAgentRun.evidence.map((entry) => entry.kind),
+        domains: recordDomains(nestedAgentRun),
         executionDAG: true,
         expected: "valid",
         labelKey: "exampleAgentNested",
@@ -1251,7 +1255,7 @@ async function loadFixtureCatalog() {
       {
         id: "agent-weather-failure",
         document: weatherAgentFailure,
-        domains: weatherAgentFailure.evidence.map((entry) => entry.kind),
+        domains: recordDomains(weatherAgentFailure),
         executionDAG: true,
         expected: "valid",
         labelKey: "exampleAgentFailure",
@@ -1260,7 +1264,7 @@ async function loadFixtureCatalog() {
       {
         id: "agent-incomplete",
         document: weatherAgentIncomplete,
-        domains: weatherAgentIncomplete.evidence.map((entry) => entry.kind),
+        domains: recordDomains(weatherAgentIncomplete),
         executionDAG: true,
         expected: "valid",
         labelKey: "exampleAgentIncomplete",
@@ -1495,9 +1499,9 @@ function updateRecordLabel() {
   ui.sampleTitle.closest(".example-summary").hidden = !currentDocument;
   ui.sampleTitle.textContent = currentFixture
     ? currentFixture.labelKey ? translate(currentFixture.labelKey) : currentFixture.label
-    : currentRecordName || currentDocument?.runId || translate("importedRecord");
+    : currentRecordName || currentDocument?.runId || currentDocument?.run?.id || translate("importedRecord");
   ui.sampleNote.textContent = "";
-  ui.recordKind.textContent = { agent: "Agent", graph: "Graph", workflow: "Workflow" }[currentObjectKind];
+  ui.recordKind.textContent = { agent: "Agent", graph: "Graph", workflow: "Workflow", application: "Application" }[currentDocument?.run?.source || currentObjectKind];
 }
 
 function applyLanguage(language, { persist = true, updateUrl = true } = {}) {
@@ -3816,7 +3820,7 @@ function recordDiagnostics() {
 
 function renderCurrentDocument({ fit = true, scopeOnly = false, graphViewport } = {}) {
   if (!currentProjection?.ok) return;
-  if (currentProjection.document.kind === "agent") {
+  if (currentProjection.document.schemaVersion === 2 || currentProjection.document.kind === "agent") {
     currentGraphReading = undefined;
     currentGraphTopology = undefined;
     graphTopologyInstance?.destroy();
@@ -3994,12 +3998,14 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
     if (expectedKind && next.kind !== expectedKind) return rejectDocument([
       { path: "root", code: "viewer.unexpected_kind", message: "The example does not match the selected record type." },
     ]);
-    trajectoryResult = next.kind === "agent"
+    trajectoryResult = next.schemaVersion !== 2 && next.kind === "agent"
       ? einoAPI.buildExecutionTrajectory(next.evidence, { runId: next.execution.runId })
       : undefined;
-    if (next.execution) executionSnapshot(next.execution, next);
-    else if (next.kind === "workflow") workflowAPI.parseWorkflowSnapshot(next.definition);
-    if (next.kind === "agent") {
+    if (next.schemaVersion !== 2) {
+      if (next.execution) executionSnapshot(next.execution, next);
+      else if (next.kind === "workflow") workflowAPI.parseWorkflowSnapshot(next.definition);
+    }
+    if (next.schemaVersion === 2 || next.kind === "agent") {
       if (agentReader) agentReader.update(candidate);
       else agentReader = createEinoRunViewer(agentHost, candidate, { locale: currentLanguage });
     }
@@ -4007,7 +4013,7 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
     return rejectDocument(error.diagnostics || [{ path: "root", code: "viewer.invalid_document", message: error.message }]);
   }
   const changedSource = currentObjectKind !== next.kind;
-  if (next.kind !== "agent") {
+  if (next.schemaVersion !== 2 && next.kind !== "agent") {
     agentReader?.destroy();
     agentReader = undefined;
   }
@@ -4056,7 +4062,7 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   currentMode = next.kind === "agent" ? "scenario" : "domain";
   currentDomain = next.kind === "graph" ? "compose.graph" : "workflow.snapshot";
   currentFixture = fixtureItem;
-  currentRecordName = candidate.runId;
+  currentRecordName = candidate.runId || candidate.run?.id;
   if (next.kind !== "agent") currentRunView = "path";
   ui.editor.value = text;
   ui.editor.readOnly = true;
@@ -4066,7 +4072,7 @@ function applyDocument({ fit = true, text = ui.editor.value, fixtureItem, expect
   ui.sample.value = fixtureItem?.id || "";
   updateRecordLabel();
   renderCurrentDocument({ fit });
-  if (next.kind !== "agent" && !selectInitialReadingDetail()) setInspectorOpen(false);
+  if (next.schemaVersion !== 2 && next.kind !== "agent" && !selectInitialReadingDetail()) setInspectorOpen(false);
   window.scrollTo({ top: 0 });
   ui.domainView.scrollTop = 0;
   ui.importStatus.textContent = "";

@@ -31,6 +31,7 @@ type GraphRecorderOptions struct {
 // GraphRecorder captures an Eino Graph definition without imposing DAG
 // semantics and records its invocation as callback.event evidence.
 type GraphRecorder struct {
+	v2            *nativeV2Recorder
 	mu            sync.Mutex
 	runID         string
 	options       GraphRecorderOptions
@@ -58,6 +59,7 @@ func NewGraphRecorder(runID string, options GraphRecorderOptions) *GraphRecorder
 
 // OnFinish implements compose.GraphCompileCallback.
 func (recorder *GraphRecorder) OnFinish(_ context.Context, info *compose.GraphInfo) {
+	recorder.v2.definition(info, recorder.options.Graph.Projection)
 	recorder.mu.Lock()
 	defer recorder.mu.Unlock()
 	options := recorder.options.Graph
@@ -79,7 +81,7 @@ func (recorder *GraphRecorder) CompileOption() compose.GraphCompileOption {
 
 // Handler records callback timing, component identity, and hierarchical paths.
 func (recorder *GraphRecorder) Handler() callbacks.Handler {
-	return callbacks.NewHandlerBuilder().
+	legacy := callbacks.NewHandlerBuilder().
 		OnStartFn(func(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
 			return recorder.recordIO(ctx, info, CallbackPhaseStart, false, input, nil)
 		}).OnEndFn(func(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
@@ -97,6 +99,7 @@ func (recorder *GraphRecorder) Handler() callbacks.Handler {
 		}
 		return recorder.recordIO(ctx, info, CallbackPhaseEnd, true, nil, nil)
 	}).Build()
+	return recorder.v2.wrap(legacy)
 }
 
 type graphInvocationKey struct{ recorder *GraphRecorder }

@@ -18,11 +18,11 @@ const packageRoot = projectRoot;
 const workflowRoot = resolve(projectRoot, "node_modules/eino-workflow-dag");
 const work = mkdtempSync(resolve(projectRoot, ".eino-viewer-release-"));
 const nodeModules = resolve(work, "node_modules");
-// Iteration 6 adds a source-backed local-call read model and embedded local
-// diagrams (~169 KiB packed, up from 158.6 KiB in iteration 5). Keep a bounded
-// 175 KiB budget; portable HTML, fixtures and the site remain outside the SDK.
+// Native v2 adds the ahead-of-time schema validator, typed entity reader and
+// ESM/CJS declarations. The local candidate measures ~358 KiB packed; retain a
+// bounded 400 KiB budget. Fixtures/site/portable outputs remain outside the SDK.
 // This check only verifies a local artifact; it does not publish anything.
-const maximumEinoViewerPackedSize = 175 * 1024;
+const maximumEinoViewerPackedSize = 400 * 1024;
 
 function fail(message) {
   throw new Error(`eino-viewer release check failed: ${message}`);
@@ -113,6 +113,7 @@ try {
   const cjsEntries = new Map([
     [".", require("eino-viewer")],
     ["./protocol", require("eino-viewer/protocol")],
+    ["./protocol-v2", require("eino-viewer/protocol-v2")],
     ["./views", require("eino-viewer/views")],
     ["./viewer", require("eino-viewer/viewer")],
     ["./run-viewer", require("eino-viewer/run-viewer")],
@@ -124,6 +125,7 @@ try {
   const esmEntries = new Map([
     [".", await import(pathToFileURL(resolve(nodeModules, "eino-viewer/dist/eino-viewer.js")))],
     ["./protocol", await import(pathToFileURL(resolve(nodeModules, "eino-viewer/dist/protocol.js")))],
+    ["./protocol-v2", await import(pathToFileURL(resolve(nodeModules, "eino-viewer/dist/protocol-v2.js")))],
     ["./views", await import(pathToFileURL(resolve(nodeModules, "eino-viewer/dist/views.js")))],
     ["./viewer", await import(pathToFileURL(resolve(nodeModules, "eino-viewer/dist/viewer.js")))],
     ["./run-viewer", await import(pathToFileURL(resolve(nodeModules, "eino-viewer/dist/run-viewer.js")))],

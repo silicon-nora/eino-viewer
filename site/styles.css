@@ -1665,7 +1665,7 @@ textarea { background: var(--ice); color: var(--ink); border-color: var(--line);
 
 /* The workbench owns the entry shell; the shared Agent reader owns its UI. */
 .agent-reader-host { grid-column: 1 / -1; display: flex; flex: 1; min-width: 0; }
-.agent-reader-host > .eino-agent-reader { flex: 1; border: 0; border-radius: 0 0 12px 12px; }
+.agent-reader-host > [data-eino-run-viewer] { flex: 1; min-width: 0; width: 100%; border: 0; border-radius: 0 0 12px 12px; }
 
 /* Graph and Workflow share the fixed path-reading workbench; Agent owns its UI. */
 .workbench:is([data-reading-kind="graph"],[data-reading-kind="workflow"]) { --ink: #172536; --ink-soft: #526275; --line: #d8e0e8; --paper: #fff; --ice: #f3f6fa; --blue: #2758c7; font: 14px/1.5 var(--body); }

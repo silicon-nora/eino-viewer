@@ -38,3 +38,9 @@
 - `codex_protocol-v2-contract`：从 `main` 的 `417a6b1` 开始，先用 `d3f642f` 保存 10 月 8 日的两份设计分析，再实现 RunRecord v2 合同包。
 - 本轮包含 Schema、生成 Go/TS 类型、语义校验、cloud-focus 扩展与合成样例；当前 Viewer/Recorder 和三个业务/上游仓库没有进行协议迁移。
 - 验证范围与结果见 [合同包验收](./PROTOCOL_V2_CONTRACT_ACCEPTANCE_2026-10-12.md)。主线与已有验收标签保持在原基线，未推送或发布。
+
+## 2026-10-12 通用 v2 采集与阅读
+
+- 接续合同提交 `05363dc`，仍在 `codex_protocol-v2-contract` 开发。
+- 新增原生 Go Recorder 和应用采集边界、共享 v2 校验器、三入口 v2 阅读器、实际 Eino 运行样例及回归。旧构造函数和旧记录仍保留原行为，新采集需显式启用。
+- 详细验证与限制见 [运行链路验收](./PROTOCOL_V2_RUNTIME_ACCEPTANCE_2026-10-12.md)。cloud-focus / suggest-platform 尚未迁移；上游 `eino-workflow-dag` 不变。主线仍为 `417a6b1`，未发布或推送。

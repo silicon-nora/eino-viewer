@@ -7,11 +7,29 @@ final output or failure without executing the program or inventing missing
 relationships. Agent, Graph, and Workflow are supported run sources, detected
 from the record.
 
-Protocol development: the [RunRecord v2 contract package](./protocol/v2/README.md) contains the next schema, generated types, validator and synthetic business fixtures. It is not yet supported by the current Viewer or Recorder.
+RunRecord v2 is captured directly by Go's `NewAgentRecorderV2`, `NewGraphRecorderV2`,
+and `NewWorkflowRecorderV2`, using `RunRecordV2()` / `MarshalRunRecordV2()` to export.
+The embedded, workbench and portable readers accept v1 and v2. V2 preserves definitions,
+individual invocations, events, content, usage and annotations without reconstructing v1 evidence.
+Business integration in cloud-focus / suggest-platform is a separate step.
+These v2 APIs are local and unreleased; existing Go constructors still produce v1.
 
-The product reads saved **non-streaming** results only. It does not execute
-runs, consume streams, subscribe to live events, or upload records. Older,
-incomplete and definition-only records remain readable without invented results.
+```js
+import { parseRunRecordV2, validateRunRecordV2 } from "eino-viewer/protocol-v2";
+import { createEinoRunViewer } from "eino-viewer/run-viewer";
+const record = parseRunRecordV2(jsonText); // Exact numeric/input guards, schema and semantic checks.
+const result = validateRunRecordV2(record); // { ok, errors, warnings }; never mutates input.
+createEinoRunViewer(container, record, { locale: "en" });
+```
+
+See the [v2 contract](https://github.com/silicon-nora/eino-viewer/blob/main/protocol/v2/README.md)
+for capture coverage and content availability rules.
+
+The product reads saved static records. V2 can retain explicitly observed partial
+stream content, but the Viewer does not execute runs, consume streams, subscribe
+to live events, or upload records. Older, incomplete and definition-only records
+remain readable without invented results. Automatic Go capture is bounded; see
+the Recorder's stream limitations before instrumenting a streaming application.
 
 ## Choose an entry
 
@@ -63,7 +81,10 @@ does not open or accept dropped files. Use the [offline HTML](#offline-html) for
 existing saved records, or pass them to the [embedded reader](#embed-the-complete-reader).
 
 An invalid example preserves the last accepted record and selection. The workbench
-has no Raw editor or technical directory.
+has no Raw editor or technical directory for its existing v1 examples.
+
+The following describes the accepted v1 example UI. V2 uses the shared reader
+described under Reading rules.
 
 - **Agent: trajectory and details.** The complete trajectory flows down the page,
   with its first item selected. Click a full row to read input/output; only exceptional states are marked.
@@ -85,7 +106,7 @@ embedded/offline Graph and Workflow have not adopted this UI revision. Agent alr
 one reading core across all three entries. Records, public APIs and drawing safeguards are
 unchanged; Graph definitions exceeding 500 diagram nodes also require explicit drawing.
 
-See the [local version-control and acceptance baseline](docs/LOCAL_VERSION_CONTROL.md).
+See the [local version-control and acceptance baseline](https://github.com/silicon-nora/eino-viewer/blob/main/docs/LOCAL_VERSION_CONTROL.md).
 The original Agent tag and the full subsequent commit history are preserved.
 
 ## Embed the complete reader
@@ -131,7 +152,7 @@ viewer.update(nextRunRecord);
 viewer.destroy();
 ```
 
-`selectStep(id)` selects an explained step; `selectEvidence(index)` uses a
+`selectStep(id)` selects an explained step; v1 `selectEvidence(index)` uses a
 zero-based original envelope index. `selectGroup(id)` selects a scope and its
 descendants; `selectGroup(null)` returns to all steps. Unknown selections return
 `false`. Invalid input throws `EinoViewerError` with `diagnostics`; a rejected
@@ -143,6 +164,17 @@ The offline file/paste entry and workbench example loading also validate origina
 number tokens before parsing. The workbench has no Raw-copy editor; see [input boundaries](#input-fidelity-boundaries).
 
 ## Reading rules
+
+V2 uses one reader across all three entries: an explicit root summary, searchable
+and paged actual calls, source-linked content, and inspectable events, relations,
+usage and annotations. Agent has no flow diagram; Graph/Workflow retain declared
+structure and nested scopes. Content copy preserves the recorded value. V2 uses
+invocation IDs for `selectStep`, and typed `{ kind, id }` references for
+`selectEntity`; `selectEvidence(index)` selects the original `events[index]`.
+Unknown or missing content is not reconstructed. Large scopes use drawing limits
+and paged definition/edge access without removing facts from the record.
+
+The following detailed presentation rules describe the existing v1 reader:
 
 - Root results stay separate from intermediate and child outputs. Failures retain
   their original reasons and supported node links. Execution outcome and
@@ -175,7 +207,7 @@ number tokens before parsing. The workbench has no Raw-copy editor; see [input b
 
 ## Low-level canvas and compatibility
 
-`createEinoViewer` remains the low-level canvas entry for consumers that arrange
+For v1, `createEinoViewer` remains the low-level canvas entry for consumers that arrange
 their own result, detail and evidence UI. It is not an alias for the complete
 reader; its API has not changed:
 
@@ -194,7 +226,11 @@ It also supports `update(input)` and idempotent `destroy()`; invalid updates
 preserve the valid canvas. Node clicks return `{ id, node }`: Run Records use
 canonical `ExecutionDAG` nodes, and definition-only inputs use source nodes.
 
-The primary input is one `EinoRunRecord`. Compatibility inputs include
+For v2, `createEinoViewer` uses the native reader while retaining the same small
+`kind`/`document`/`update`/`destroy` interface; node clicks provide an invocation
+with its reading projection. Prefer `createEinoRunViewer` for selection and complete reading APIs.
+
+The primary input is one v1 `EinoRunRecord` or native v2 `RunRecord`. Compatibility inputs include
 schema-v1 `EinoWorkflowSnapshot`, supported envelopes from one run, and validated
 `EinoViewerDocument` objects. `projectEinoViewerDocument()` returns stable
 `code`/`path` diagnostics instead of throwing input errors. Mixed runs,
@@ -239,6 +275,6 @@ are not promised.
 
 See the [example-first and Agent trajectory acceptance](https://github.com/silicon-nora/eino-viewer/blob/main/docs/AGENT_TRAJECTORY_ACCEPTANCE.md),
 [static-result roadmap](https://github.com/silicon-nora/eino-viewer/blob/main/docs/STATIC_RESULT_ROADMAP.md)
-and [test maintenance guide](tests/README.md). `npm run benchmark:static`
+and [test maintenance guide](https://github.com/silicon-nora/eino-viewer/blob/main/tests/README.md). `npm run benchmark:static`
 measures synthetic 100/1,000/10,000-record inputs on the local machine; it is not
 business coverage or a performance SLA. Publication is outside the current work.
