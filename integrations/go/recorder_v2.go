@@ -21,6 +21,9 @@ import (
 
 var ErrV2NotEnabled = errors.New("eino recorder: construct with NewAgentRecorderV2, NewGraphRecorderV2 or NewWorkflowRecorderV2 before invoking")
 
+// ErrV2Sealed means the first static export has already frozen this recorder.
+var ErrV2Sealed = errors.New("eino recorder: v2 run is sealed")
+
 // NewAgentRecorderV2 enables native v2 observations while retaining the legacy API.
 // Each recorder belongs to one execution. V2 is captured at callbacks, never
 // reconstructed from RunRecord v1. The same configured safe-body policy applies.
@@ -68,6 +71,7 @@ type nativeV2Recorder struct {
 	agentDone                []chan struct{}
 	record                   v2.RunRecord
 	options                  EnvelopeOptions
+	explicitRedactor         Redactor
 	disableIO, disableRootIO bool
 	starts                   map[v2.Id]time.Time
 	byID                     map[v2.Id]int
@@ -78,6 +82,7 @@ type nativeV2Recorder struct {
 	rootFinalized            bool
 	rootError                *v2.Error
 	entryError               error
+	sealed                   []byte
 }
 
 func newNativeV2(runID, source string, options EnvelopeOptions, disabled bool) *nativeV2Recorder {
@@ -155,6 +160,9 @@ func (r *nativeV2Recorder) startAgent(ctx context.Context, messages []*schema.Me
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return ctx
+	}
 	if r.record.Run.RootInvocationID != nil {
 		return context.WithValue(ctx, v2ContextKey{r}, v2Frame{id: *r.record.Run.RootInvocationID})
 	}
@@ -169,6 +177,9 @@ func (r *nativeV2Recorder) finishAgentRun(outcome string) {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	r.agentDrained = outcome != "unknown"
 	if r.record.Run.RootInvocationID == nil {
 		return
@@ -241,6 +252,9 @@ func (r *nativeV2Recorder) start(ctx context.Context, info *callbacks.RunInfo, i
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return ctx
+	}
 	parentFrame, _ := ctx.Value(v2ContextKey{r}).(v2Frame)
 	kind := v2Kind(string(info.Component))
 	path := callbackNodePath(callbackAddressFromContext(ctx))
@@ -301,6 +315,9 @@ func (r *nativeV2Recorder) end(ctx context.Context, info *callbacks.RunInfo, out
 	identity := string(info.Component) + ":" + callbackAddressID(callbackAddressFromContext(ctx))
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if frame.id == "" || frame.identity != identity {
 		r.issue("unmatched_callback_end", "Callback end has no matching start identity.", v2Ref("run", r.record.Run.ID))
 		return
@@ -369,6 +386,9 @@ func (r *nativeV2Recorder) observeAgent(ctx context.Context, id v2.Id, info *cal
 		func() {
 			r.mu.Lock()
 			defer r.mu.Unlock()
+			if r.sealed != nil {
+				return
+			}
 			if event.Action != nil && event.Action.TransferToAgent != nil {
 				attrs := v2.JsonObject{"destinationAgent": v2JSON(event.Action.TransferToAgent.DestAgentName)}
 				r.event("agent.transfer-requested", id, nil, &attrs)
@@ -386,6 +406,9 @@ func (r *nativeV2Recorder) observeAgent(ctx context.Context, id v2.Id, info *cal
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if streamed && status == "succeeded" {
 		r.issue("stream_end_unobserved", "Agent message stream was not consumed; its terminal outcome is unknown.", v2Ref("invocation", id))
 		return
@@ -585,11 +608,14 @@ func (r *nativeV2Recorder) definition(info *compose.GraphInfo, options ProjectOp
 	graph, err := ProjectComposeGraph(info, options)
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if err != nil {
 		r.issue("definition_omitted", "Compiled graph could not be projected.", v2Ref("run", r.record.Run.ID))
 		return
 	}
-	r.record.Run.Capture.Coverage = append(r.record.Run.Capture.Coverage, "definitions")
+	r.addCoverage("definitions")
 	var visit func(Graph, []string, *v2.Id, string) v2.Id
 	visit = func(graph Graph, path []string, parent *v2.Id, kind string) v2.Id {
 		id := v2.Id(fmt.Sprintf("def-%d", len(r.record.Definitions)+1))
@@ -692,6 +718,11 @@ func (r *nativeV2Recorder) snapshot() (v2.RunRecord, error) {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		var result v2.RunRecord
+		err := json.Unmarshal(r.sealed, &result)
+		return result, err
+	}
 	if r.entryError != nil {
 		return v2.RunRecord{}, r.entryError
 	}
@@ -719,6 +750,9 @@ func (r *nativeV2Recorder) snapshot() (v2.RunRecord, error) {
 	}
 	var result v2.RunRecord
 	err = json.Unmarshal(data, &result)
+	if err == nil {
+		r.sealed = append([]byte(nil), data...)
+	}
 	return result, err
 }
 
@@ -729,6 +763,15 @@ type nativeV2Handler struct {
 	legacy   callbacks.Handler
 }
 
+var _ callbacks.TimingChecker = (*nativeV2Handler)(nil)
+
+// Needed is queried by Eino before allocating callback stream copies. A
+// manually observed model needs this wrapper only when the legacy handler needs
+// that timing; the native On* guards remain necessary for direct handler calls.
+func (h *nativeV2Handler) Needed(ctx context.Context, info *callbacks.RunInfo, timing callbacks.CallbackTiming) bool {
+	return !skipV2ChatModel(ctx, info) || h.needed(ctx, info, timing)
+}
+
 func (r *nativeV2Recorder) wrap(legacy callbacks.Handler) callbacks.Handler {
 	if r == nil {
 		return legacy
@@ -736,28 +779,36 @@ func (r *nativeV2Recorder) wrap(legacy callbacks.Handler) callbacks.Handler {
 	return &nativeV2Handler{r, legacy}
 }
 func (h *nativeV2Handler) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
-	ctx = h.recorder.safeStart(ctx, info, input, false)
+	if !skipV2ChatModel(ctx, info) {
+		ctx = h.recorder.safeStart(ctx, info, input, false)
+	}
 	if h.needed(ctx, info, callbacks.TimingOnStart) {
 		return h.legacy.OnStart(ctx, info, input)
 	}
 	return ctx
 }
 func (h *nativeV2Handler) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-	h.recorder.safeEnd(ctx, info, output, false, nil)
+	if !skipV2ChatModel(ctx, info) {
+		h.recorder.safeEnd(ctx, info, output, false, nil)
+	}
 	if h.needed(ctx, info, callbacks.TimingOnEnd) {
 		return h.legacy.OnEnd(ctx, info, output)
 	}
 	return ctx
 }
 func (h *nativeV2Handler) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
-	h.recorder.safeEnd(ctx, info, nil, false, err)
+	if !skipV2ChatModel(ctx, info) {
+		h.recorder.safeEnd(ctx, info, nil, false, err)
+	}
 	if h.needed(ctx, info, callbacks.TimingOnError) {
 		return h.legacy.OnError(ctx, info, err)
 	}
 	return ctx
 }
 func (h *nativeV2Handler) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo, input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
-	ctx = h.recorder.safeStart(ctx, info, nil, true)
+	if !skipV2ChatModel(ctx, info) {
+		ctx = h.recorder.safeStart(ctx, info, nil, true)
+	}
 	if h.needed(ctx, info, callbacks.TimingOnStartWithStreamInput) {
 		return h.legacy.OnStartWithStreamInput(ctx, info, input)
 	}
@@ -767,7 +818,9 @@ func (h *nativeV2Handler) OnStartWithStreamInput(ctx context.Context, info *call
 	return ctx
 }
 func (h *nativeV2Handler) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo, output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
-	h.recorder.safeEnd(ctx, info, nil, true, nil)
+	if !skipV2ChatModel(ctx, info) {
+		h.recorder.safeEnd(ctx, info, nil, true, nil)
+	}
 	if h.needed(ctx, info, callbacks.TimingOnEndWithStreamOutput) {
 		return h.legacy.OnEndWithStreamOutput(ctx, info, output)
 	}
@@ -788,6 +841,9 @@ func (r *nativeV2Recorder) guard() {
 	if recover() != nil {
 		r.mu.Lock()
 		defer r.mu.Unlock()
+		if r.sealed != nil {
+			return
+		}
 		r.issue("recorder_panic", "Recorder could not safely inspect a runtime value.", v2Ref("run", r.record.Run.ID))
 	}
 }
@@ -841,6 +897,9 @@ func (r *nativeV2Recorder) rootEvent(event *adk.AgentEvent) {
 	defer r.guard()
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if r.record.Run.RootInvocationID == nil {
 		r.entryError = fmt.Errorf("eino recorder v2: standalone RecordEvent is a legacy source API; use Run or Query")
 		return
@@ -858,6 +917,9 @@ func (r *nativeV2Recorder) rejectEntry(message string) {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if r.entryError == nil {
 		r.entryError = fmt.Errorf("eino recorder v2: %s", message)
 	}
@@ -868,6 +930,9 @@ func (r *nativeV2Recorder) requireRootForWrap() {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if r.record.Run.RootInvocationID == nil || !r.rootBound && r.record.Invocations[0].Parent.State != "root" {
 		r.entryError = fmt.Errorf("eino recorder v2: Wrap-only recording is unsupported; use Run or Query to establish the explicit root boundary")
 	}
@@ -878,6 +943,9 @@ func (r *nativeV2Recorder) requireRootForExplicitRecord() {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.sealed != nil {
+		return
+	}
 	if r.record.Run.RootInvocationID == nil {
 		r.entryError = fmt.Errorf("eino recorder v2: standalone RecordMessage is a legacy source API; use Run or Query to capture the full root input")
 	}

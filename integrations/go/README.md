@@ -8,13 +8,18 @@ It also provides the compatibility-first `eino-dag` envelope used to carry
 independently versioned Eino information domains. Existing snapshot functions
 remain unchanged.
 
-## Native RunRecord v2 (local implementation)
+## Native RunRecord v2
 
 The current checkout also provides **native v2 capture**. Use the explicit v2
 constructors before execution; `RunRecordV2()` never upgrades or guesses facts
 from a v1 `RunRecord`. The older constructors and APIs described below retain
-their existing behavior. The released module tag in the install example below
-predates these local v2 APIs; use this checkout until a release includes them.
+their existing behavior. Go releases use the `integrations/go/vX.Y.Z` tag prefix;
+see [release instructions](../../RELEASING.md) for the independent SDK gate.
+
+`RunRecorderV2Options.ExplicitContentRedactor` optionally applies a separate
+redactor to caller-projected content, event attributes and annotations. Automatic
+callback I/O continues using `Envelope.Policy.Redact`; all safe serialization and
+size limits remain in force. Leave it nil to apply the same policy everywhere.
 
 ```go
 recorder := workflowdag.NewAgentRecorderV2("agent-run-42", workflowdag.AgentRecorderOptions{})
@@ -93,6 +98,40 @@ erases known counts. `Annotate(childCtx, "namespace.type", 1, payload)` takes a 
 redacted snapshot of a business extension. The authoritative JS validator must
 still validate registered annotation payloads and cross-record semantics.
 
+`RecordContent(ctx, ContentV2{Content: protocolv2.Content{...}, InputOf: ..., OutputOf: ...})`
+records an explicit wire descriptor and returns its allocated content ID. The
+descriptor retains `schemaRef`, availability (`inline`, `reference`, `missing`),
+provenance, completeness and redacted/truncated transforms. An inline
+`json.RawMessage("null")` is an observed null; an absent body needs a missing
+descriptor with a reason and unknown completeness. Inline bodies use the same
+bounded safe-body/redaction policy. `InputOf` and `OutputOf` attach the immutable
+content to existing invocation IDs, including shared state and root results.
+
+`RecordEvent(ctx, protocolv2.Event{...})` and
+`RecordRelation(protocolv2.Relation{...})` allocate IDs and retain explicit
+content/definition references and evidenced relationships. Events receive the
+recorder's increasing observation sequence; source timestamps remain optional.
+Content/event owners default to the invocation in `ctx`. Use
+`AnnotateOwner(protocolv2.Ref{...}, type, version, payload)` for an explicit run,
+event, invocation or other local owner. Unknown extension types/versions and
+unknown content schemas remain preserved for the shared validator to report.
+
+`CurrentInvocationID(ctx)` returns the actual Eino or manual invocation identity.
+`DefinitionID(fullPath)` resolves IDs from this recorder's compile callback;
+names and unrelated GraphInfo documents are not identity keys.
+`SetCorrelation(map[string]string)` and `SetLabels(map[string]string)` copy
+external identifiers and producer labels. `SetCapture(protocolv2.Capture{...})`
+replaces declared coverage and adds caller-observed gaps while retaining any
+previous recorder issues. `SkipChatModelCallbacks(ctx)` suppresses all five
+native model callback timings in an explicitly recorded model call, preserving
+legacy handlers and preventing a second usage ledger row for the same request.
+
+The first successful `RunRecordV2()` or `MarshalRunRecordV2()` seals the static
+document, including its seal timestamp. Finish observations before exporting.
+Subsequent exports have identical bytes and return defensive copies; explicit
+write APIs return `ErrV2Sealed`. Late Eino callbacks and compile callbacks cannot
+change the native document, and configured legacy callbacks still run.
+
 ### V2 capture limits
 
 - Supported automatic Agent entry points are **Run and Query**. Legacy
@@ -145,6 +184,17 @@ records live in [testdata/v2](./testdata/v2); their timestamps are observations,
 not deterministic golden values. The same producer tests can generate fresh
 inputs for Viewer validation on every run.
 
+`TestNativeV2ApplicationWorkflowExplicitFacts` executes a real Workflow with a
+manual callback-enabled model, one merged usage row, partial/missing content,
+cloud-focus route/result/evaluation references and an unknown extension.
+`TestNativeV2SealedWritesAndLegacyCallbacks` covers all write APIs, repeated
+byte-identical exports and five legacy callback timings; concurrent observations
+and preserved caller gaps are covered separately. Run
+`node scripts/check-protocol-v2-recorders.js` from the repository root to validate
+fresh output from these tests through the shared JS and business-profile
+validator and Viewer projection. The SDK release workflow repeats these checks
+for the exact module tag before a GitHub release is published.
+
 ## Start here
 
 1. Attach the [Agent](#agentrecorder), [Graph](#graphrecorder) or
@@ -162,12 +212,12 @@ Already have a JSON file? Skip Recorder setup and follow the
 ## Install
 
 ```bash
-go get github.com/silicon-nora/eino-viewer/integrations/go@v1.2.0
+go get github.com/silicon-nora/eino-viewer/integrations/go@v0.1.0
 ```
 
 The module is versioned independently from the npm package. Because its
 `go.mod` lives in this repository subdirectory, Go releases use tags prefixed
-with the module directory, such as `integrations/go/v1.2.0`.
+with the module directory, such as `integrations/go/v0.1.0`.
 
 ## Recorder overview
 

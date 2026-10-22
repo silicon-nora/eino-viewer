@@ -21,6 +21,10 @@ type RunRecorderV2Options struct {
 	Source   string
 	Scope    string
 	Envelope EnvelopeOptions
+	// ExplicitContentRedactor applies to caller-projected contents, event
+	// attributes and annotations. Nil uses Envelope.Policy.Redact. Automatic
+	// component I/O always keeps Envelope.Policy.Redact and all size limits.
+	ExplicitContentRedactor Redactor
 }
 
 // InvocationStartV2 makes absence and an observed JSON null distinct.
@@ -62,6 +66,7 @@ func NewRunRecorderV2(runID string, options RunRecorderV2Options) (*RunRecorderV
 		return nil, fmt.Errorf("invalid v2 scope")
 	}
 	native := newNativeV2(runID, options.Source, options.Envelope, false)
+	native.explicitRedactor = options.ExplicitContentRedactor
 	native.record.Run.Scope = v2.Id(options.Scope)
 	return &RunRecorderV2{native}, nil
 }
@@ -89,6 +94,9 @@ func (r *RunRecorderV2) Begin(ctx context.Context, start InvocationStartV2) (con
 	n := r.native
 	n.mu.Lock()
 	defer n.mu.Unlock()
+	if n.sealed != nil {
+		return ctx, "", ErrV2Sealed
+	}
 	frame, _ := ctx.Value(v2ContextKey{n}).(v2Frame)
 	parent := v2.Parent{State: "known", InvocationID: v2Ptr(frame.id)}
 	if frame.id == "" {
@@ -118,6 +126,9 @@ func (r *RunRecorderV2) End(ctx context.Context, end InvocationEndV2) error {
 	n := r.native
 	n.mu.Lock()
 	defer n.mu.Unlock()
+	if n.sealed != nil {
+		return ErrV2Sealed
+	}
 	frame, _ := ctx.Value(v2ContextKey{n}).(v2Frame)
 	index, ok := n.byID[frame.id]
 	if !ok || frame.identity != "manual:"+string(frame.id) {
@@ -157,6 +168,9 @@ func (r *RunRecorderV2) RecordModelUsage(ctx context.Context, usage ModelUsageV2
 	n := r.native
 	n.mu.Lock()
 	defer n.mu.Unlock()
+	if n.sealed != nil {
+		return ErrV2Sealed
+	}
 	frame, _ := ctx.Value(v2ContextKey{n}).(v2Frame)
 	index, ok := n.byID[frame.id]
 	if !ok || n.record.Invocations[index].Kind != "model" {
@@ -258,11 +272,19 @@ func (r *RunRecorderV2) Annotate(ctx context.Context, annotationType string, ver
 	n := r.native
 	n.mu.Lock()
 	defer n.mu.Unlock()
+	if n.sealed != nil {
+		return "", ErrV2Sealed
+	}
 	frame, _ := ctx.Value(v2ContextKey{n}).(v2Frame)
 	if _, ok := n.byID[frame.id]; !ok {
 		return "", fmt.Errorf("annotation requires an invocation context")
 	}
-	envelope, diagnostics, err := safeComponentIO(ctx, &callbacks.RunInfo{Component: "Lambda"}, ComponentIOInput, false, payload, "root", n.options)
+	return n.annotate(ctx, v2Ref("invocation", frame.id), annotationType, version, payload)
+}
+
+// annotate is called only while the native recorder lock is held.
+func (n *nativeV2Recorder) annotate(ctx context.Context, owner v2.Ref, annotationType string, version int, payload any) (v2.Id, error) {
+	envelope, diagnostics, err := safeComponentIO(ctx, &callbacks.RunInfo{Component: "Lambda"}, ComponentIOInput, false, payload, "root", n.explicitOptions())
 	if err != nil {
 		return "", err
 	}
@@ -272,18 +294,18 @@ func (r *RunRecorderV2) Annotate(ctx context.Context, annotationType string, ver
 	}
 	body, ok := value["body"]
 	if ok && !v2SafeNumbers(body) {
-		n.issue("annotation_omitted", "Business annotation contains unsupported numbers.", v2Ref("invocation", frame.id))
+		n.issue("annotation_omitted", "Business annotation contains unsupported numbers.", owner)
 		return "", ErrUnsafeJSON
 	}
 	if !ok {
-		n.issue("annotation_omitted", "Business annotation body could not be safely captured.", v2Ref("invocation", frame.id))
+		n.issue("annotation_omitted", "Business annotation body could not be safely captured.", owner)
 		return "", ErrUnsafeJSON
 	}
 	for _, d := range diagnostics {
-		n.issue(d.Code, d.Message, v2Ref("invocation", frame.id))
+		n.issue(d.Code, d.Message, owner)
 	}
 	id := v2.Id(fmt.Sprintf("annotation-%d", len(n.record.Annotations)+1))
-	n.record.Annotations = append(n.record.Annotations, v2.Annotation{ID: id, Owner: v2Ref("invocation", frame.id), Type: annotationType, SchemaVersion: v2Number(int64(version)), Payload: body})
+	n.record.Annotations = append(n.record.Annotations, v2.Annotation{ID: id, Owner: owner, Type: annotationType, SchemaVersion: v2Number(int64(version)), Payload: body})
 	return id, nil
 }
 func (r *RunRecorderV2) Handler() callbacks.Handler {

@@ -484,17 +484,19 @@ func TestNativeV2ApplicationBoundaryAndExplicitModel(t *testing.T) {
 	}
 	// A partial update is checked against existing observations; rejected updates
 	// must preserve both the counters and metadata of the previous ledger row.
-	before, _ := recorder.RunRecordV2()
+	recorder.native.mu.Lock()
+	before, _ := json.Marshal(recorder.native.record.Usage)
+	recorder.native.mu.Unlock()
 	if recorder.RecordModelUsage(modelCtx, ModelUsageV2{Source: "provider", Model: "rejected-model", Total: &badTotal}) == nil {
 		t.Fatal("accepted inconsistent merged usage")
 	}
 	if err = recorder.RecordModelUsage(modelCtx, ModelUsageV2{Source: "unknown"}); err != nil {
 		t.Fatal(err)
 	}
-	after, _ := recorder.RunRecordV2()
-	beforeJSON, _ := json.Marshal(before.Usage)
-	afterJSON, _ := json.Marshal(after.Usage)
-	if string(beforeJSON) != string(afterJSON) {
+	recorder.native.mu.Lock()
+	after, _ := json.Marshal(recorder.native.record.Usage)
+	recorder.native.mu.Unlock()
+	if string(before) != string(after) {
 		t.Fatal("rejected or unknown observation erased prior usage")
 	}
 	if err = recorder.End(modelCtx, InvocationEndV2{Status: "succeeded", HasOutput: true, Output: "result"}); err != nil {
