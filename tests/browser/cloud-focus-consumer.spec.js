@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { prepareWorkbenchExample } from "../helpers/workbench-ui.js";
+import { projectEinoViewerDocument } from "../../src/viewer.js";
 
 const fixtureDir = process.env.EINO_CLOUD_FOCUS_FIXTURES;
 const fixtures = fixtureDir ? readdirSync(fixtureDir).filter(name => name.endsWith(".json")) : [];
@@ -19,10 +20,14 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       page.on("pageerror", onError);
       let prepared;
       if (mode === "workbench") {
-        prepared = await prepareWorkbenchExample(page, record, { kind: "workflow", id: "workflow-parallel-join-success" });
+        const projected = projectEinoViewerDocument(record);
+        expect(projected.ok, name).toBe(true);
+        const kind = projected.document.kind;
+        const id = { workflow: "workflow-parallel-join-success", graph: "graph-multistep-loop-success", agent: "agent-weather-workflow" }[kind];
+        prepared = await prepareWorkbenchExample(page, record, { kind, id });
         await page.goto("/.artifacts/pages/?lang=zh");
         await page.waitForFunction(() => window.playground?.ready);
-        await page.locator('[data-open-example="workflow-parallel-join-success"]').click();
+        await page.locator(`[data-open-example="${prepared.id}"]`).click();
         await expect.poll(() => page.evaluate(() => window.playground.document)).toEqual(record);
       } else if (mode === "portable") {
         await page.goto(portableURL);
@@ -41,7 +46,17 @@ for (const mode of ["workbench", "embedded", "portable"]) {
       const viewer = page.locator('[data-eino-run-viewer][data-record-version="2"]');
       await expect(viewer).toBeVisible();
       await expect(viewer.locator("[data-run-result]").first()).toHaveAttribute("data-run-result", record.run.status);
-      await expect(viewer.locator("button[data-step-id]")).toHaveCount(record.invocations.length - 1);
+      const steps = viewer.locator('[data-reading-mode="steps"]');
+      if (await steps.count()) await steps.click();
+      const calls = viewer.locator('[data-step-search]').locator('..');
+      const observed = [];
+      for (let index = 0; index <= record.invocations.length; index++) {
+        observed.push(...await calls.locator('button[data-step-id]').evaluateAll(nodes => nodes.map(node => node.dataset.stepId)));
+        const next = calls.getByRole('button', { name: /^(下一页|Next)$/ });
+        if (!await next.count() || await next.isDisabled()) break;
+        await next.click();
+      }
+      expect(observed.sort(), name).toEqual(record.invocations.filter(call => call.id !== record.run.rootInvocationId).map(call => call.id).sort());
       await viewer.locator("summary").filter({ hasText: /^(完整原始记录|Original record)$/ }).click();
       expect(JSON.parse(await viewer.locator("[data-original-record]").textContent())).toEqual(record);
       expect(errors).toEqual([]);
