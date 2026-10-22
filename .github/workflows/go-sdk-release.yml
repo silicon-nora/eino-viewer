@@ -3,6 +3,12 @@ name: Go SDK release
 on:
   push:
     tags: ['integrations/go/v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable Go SDK tag to verify
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,6 +21,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version: '1.25.x'
@@ -29,7 +36,8 @@ jobs:
       - run: npm run test:protocol-v2:all
       - name: Verify module path and tag
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           test "$(cd integrations/go && go list -m)" = github.com/silicon-nora/eino-viewer/integrations/go
           case "$RELEASE_TAG" in integrations/go/v0.*|integrations/go/v1.*) ;; *) exit 1 ;; esac
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"

@@ -7,7 +7,8 @@ The Go module is released separately from the npm viewer. Its module path is
 the subdirectory prefix, for example `integrations/go/v0.1.0`. Run the SDK tests,
 vet, race tests and `npm run test:protocol-v2:all` before tagging. The Go SDK
 release workflow repeats these gates for the immutable tag. Publish the GitHub
-release only after that workflow passes, then verify a fresh module download
+release only after that workflow passes (the manual trigger can verify an
+already pushed immutable tag), then verify a fresh module download
 from `proxy.golang.org` and a consumer build without a local replace directive.
 The first SDK version contains the v2 public content/event/relation APIs,
 immutable sealing, callback ownership filtering and separate redactors for
